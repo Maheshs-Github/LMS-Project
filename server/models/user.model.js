@@ -54,8 +54,3 @@ userSchema.methods.generateToken=async function () {
 
 
  export const User=mongoose.model("User",userSchema)
-
-
-
-
-//  Meeting

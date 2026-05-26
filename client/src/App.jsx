@@ -1,33 +1,24 @@
 import React, { useEffect } from "react";
-import { Button } from "./components/ui/button";
 import Login from "./pages/LoginSignUp";
 import { Toaster } from "react-hot-toast";
 import { Route, Routes } from "react-router-dom";
 import { SignUp } from "./pages/SignUp";
 import Home from "./pages/Home";
 import Profile from "./components/student/Profile";
+import { useDispatch } from "react-redux";
+import { setUser } from "../redux/AuthSlice";
+import { useGet } from "./hooks/useGet";
 
 const App = () => {
+  const dispatch=useDispatch();
+const { data } = useGet("user/me");
 
-  const loadUser = async () => {
-  try {
-    const res = await axios.get(
-      `${BASE_URL}user/me`,
-      {
-        withCredentials: true,
-      }
-    );
-
-    dispatch(setUser(res.data.user));
-
-  } catch (error) {
-    dispatch(logout());
+useEffect(() => {
+  if(data?.user){
+    dispatch(setUser(data.user));
   }
-};
+}, [data]);
 
- useEffect(() => {
-    loadUser();
-  }, []);
   return (
     <div>
       <Toaster

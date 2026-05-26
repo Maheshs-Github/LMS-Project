@@ -1,11 +1,22 @@
-export const apiClient = async (url, options = {}) => {
-  const token = localStorage.getItem("token");
+import BASE_URL from "./BASE_URL";
 
-  const res = await fetch(url, {
+export const apiClient = async (url, options = {}) => {
+  const res = await fetch(`${BASE_URL}${url}`, {
     ...options,
+
+    credentials: "include",
+
+    // headers: {
+    //   "Content-Type": "application/json",
+    //   ...options.headers,
+    // },
     headers: {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
+      ...(options.body instanceof FormData
+        ? {}
+        : {
+            "Content-Type": "application/json",
+          }),
+
       ...options.headers,
     },
   });
@@ -13,13 +24,12 @@ export const apiClient = async (url, options = {}) => {
   let data;
 
   try {
-    data = await res.json(); // ✅ always try to read response
+    data = await res.json();
   } catch {
     data = null;
   }
 
   if (!res.ok) {
-    // ✅ use backend message if available
     throw new Error(data?.message || "Something went wrong");
   }
 

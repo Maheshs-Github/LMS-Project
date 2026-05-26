@@ -37,7 +37,7 @@ export function SignUp() {
     // console.log("BASE_URL: ",BASE_URL)
     try {
       const res=await mutate({
-        url: `${BASE_URL}user/register`,
+        url: `user/register`,
         method: "post",
         body: signUpData,
       });

@@ -3,7 +3,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 const me=asyncHandler( async(req,res)=>{
-  const user=await User.findById(req.user?._id);
+  const user=await User.findById(req.user?._id).select("-password -createdAt -updatedAt -__v");
 
   return res.status(200).json(new ApiResponse(200,{User:user},"User Fetched Successfully"));
 })

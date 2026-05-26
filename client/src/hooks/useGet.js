@@ -1,5 +1,5 @@
+import { apiClient } from "@/utils/apiClient";
 import { useEffect, useState } from "react";
-import { apiClient } from "../api/apiClient";
 
 export const useGet = (url) => {
   const [data, setData] = useState(null);

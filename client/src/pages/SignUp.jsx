@@ -44,7 +44,7 @@ export function SignUp() {
       toast.success(res.message || "User Sign Up Successfully");
       console.log("res: ",res);
       console.log("res: ",res?.data?.User);
-      Dispatch(setUser(res?.data.User));
+      Dispatch(setUser(res?.data?.User));
       
       setSignUpData({
         name:"",

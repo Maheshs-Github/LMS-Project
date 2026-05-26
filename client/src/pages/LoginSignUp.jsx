@@ -8,19 +8,22 @@ import { SignUp } from "./SignUp";
 
 export function TabsDemo() {
   return (
-    <Tabs defaultValue="overview" className="max-w-sm sm:w-86">
-      <TabsList className="w-full">
-        <TabsTrigger value="overview" className={"w-1/2"}>
+    <Tabs defaultValue="login" className="w-full max-w-md">
+      <TabsList className="grid w-full grid-cols-2">
+        <TabsTrigger value="login">
           Login
         </TabsTrigger>
-        <TabsTrigger value="analytics" className={"w-1/2"}>
-          SignUp
+
+        <TabsTrigger value="signup">
+          Sign Up
         </TabsTrigger>
       </TabsList>
-      <TabsContent value="overview">
+
+      <TabsContent value="login">
         <Login />
       </TabsContent>
-      <TabsContent value="analytics">
+
+      <TabsContent value="signup">
         <SignUp />
       </TabsContent>
     </Tabs>
@@ -31,7 +34,7 @@ export function TabsDemo() {
 
 const LoginSignUp = () => {
   return (
-    <div className="flex justify-center items-center w-screen h-screen">
+    <div className="flex justify-center mt-10 w-full ">
       {/* <h2>Login</h2> */}
       <TabsDemo />
       {/* <CardDemo /> */}

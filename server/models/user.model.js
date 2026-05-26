@@ -25,7 +25,7 @@ const userSchema=mongoose.Schema({
     enum:["student","instructor"],
     default:"student",
   },
-  enrolledIn:{
+  coursesEnrolledIn:{
     type:mongoose.Schema.Types.ObjectId,
     ref:"course"
   },
@@ -54,3 +54,8 @@ userSchema.methods.generateToken=async function () {
 
 
  export const User=mongoose.model("User",userSchema)
+
+
+
+
+//  Meeting

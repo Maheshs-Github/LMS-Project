@@ -51,7 +51,7 @@ export function Login() {
     }
   }
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Login to your account</CardTitle>
         <CardDescription>

@@ -85,4 +85,8 @@ return res
 .status(200).json(new ApiResponse(200,{},"Logged Out Successfully"))
 })
 
+const updateUser=asyncHandler(async(req,res)=>{
+  
+})
+
 export {registerUser,loginUser,loggedOut}

@@ -13,7 +13,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
+import { Link, useNavigate } from "react-router-dom";
+
 const Navbar = () => {
+  const navigate = useNavigate();
   const [mode, setMode] = useState(true);
   return (
     <div className="flex items-center w-full border-b-2 p-2 justify-between px-28">
@@ -23,33 +26,40 @@ const Navbar = () => {
       </div>
       <div className="flex w-full gap-3 items-center justify-end">
         <div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline-none">
-              {/* <img
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline-none " className={"border-0 p-0"}>
+                {/* <img
                 src={Frieren}
                 alt="profile picture"
                 className="h-9 w-9 rounded-full"
               /> */}
-              <Avatar>
-            <AvatarImage src="https://github.com/shadcn.png" alt="shadcn" />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuItem>Dashboard</DropdownMenuItem>
-              <DropdownMenuItem>My Learning</DropdownMenuItem>
-              <DropdownMenuItem>Edit Profile</DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem ><div className="flex gap-2 items-center text-red-700 w-full h-full"><span>Log out </span> <LogOut /></div></DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+                <Avatar>
+                  <AvatarImage
+                    src="https://github.com/shadcn.png"
+                    alt="shadcn"
+                  />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>My Profile</DropdownMenuLabel>
+                <DropdownMenuItem><Link to={"/profile"}>Dashboard</Link></DropdownMenuItem>
+                <DropdownMenuItem>My Learning</DropdownMenuItem>
+                <DropdownMenuItem>Edit Profile</DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem>
+                  <div className="flex gap-2 items-center text-red-700 w-full h-full">
+                    <span>Log out </span> <LogOut />
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <button
           className="p-1 border outline-gray-500 rounded-xs cursor-pointer"
@@ -63,4 +73,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

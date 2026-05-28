@@ -4,7 +4,7 @@ import { SignUp } from '@/pages/SignUp'
 import React from 'react'
 import { Route, Routes } from 'react-router-dom'
 
-const MainLayout = () => {
+const PublicLayout = () => {
   return (
     <div>
             <Routes>
@@ -16,4 +16,4 @@ const MainLayout = () => {
   )
 }
 
-export default MainLayout
+export default PublicLayout

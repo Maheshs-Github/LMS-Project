@@ -1,0 +1,44 @@
+import React from "react";
+import PublicLayout from "@/Latyout/PublicLayout";
+import Home from "@/pages/Home";
+import LoginSignUp from "@/pages/LoginSignUp";
+import InstructorLayout from "@/Latyout/InstructorLayout";
+import InstructorDashboard from "@/pages/instructor/InstructorDashboard";
+import StudentLayout from "@/Latyout/StudentLayout";
+import StudentDashBoard from "@/pages/student/StudentDashBoard";
+import Profile from "@/components/student/Profile";
+import { Route, Routes } from "react-router-dom";
+import AdminLayout from "@/Latyout/AdminLayout";
+import AddCourse from "@/pages/admin/course/AddCourse";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import MyCourses from "@/pages/instructor/MyCourses";
+import NewCourse from "@/pages/instructor/NewCourse";
+
+const AppRoutes = () => {
+  return (
+    <Routes>
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/auth" element={<LoginSignUp />} />
+      </Route>
+
+      <Route path="/instructor" element={<InstructorLayout />}>
+        <Route path="dashboard" element={<InstructorDashboard />} />
+        <Route path="my-courses" element={<MyCourses />} />
+        <Route path="new-course" element={<NewCourse />} />
+
+      </Route>
+
+      <Route path="/student" element={<StudentLayout />}>
+        <Route path="dashboard" element={<StudentDashBoard />} />
+        <Route path="profile" element={<Profile />} />
+      </Route>
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="courses" element={<AddCourse />} />
+      </Route>
+    </Routes>
+  );
+};
+
+export default AppRoutes;

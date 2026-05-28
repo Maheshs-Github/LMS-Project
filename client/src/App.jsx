@@ -8,6 +8,7 @@ import Profile from "./components/student/Profile";
 import { useDispatch } from "react-redux";
 import { setUser } from "../redux/AuthSlice";
 import { useGet } from "./hooks/useGet";
+import AppRoutes from "./Routes/AppRoutes";
 
 const App = () => {
   const dispatch=useDispatch();
@@ -31,7 +32,7 @@ useEffect(() => {
       {/* <h1 className='text-cyan-400 font-bold bg-amber-800'>Hello There , this is a LMS Projcet</h1>
       <Button>Let's go damn 🕊️</Button> */}
 
-      <Routes>
+      {/* <Routes>
         <Route path="/" element={<Home />} />
         <Route
           path="/auth"
@@ -41,16 +42,10 @@ useEffect(() => {
             </div>
           }
         />
-        {/* <Route
-          path="/signup"
-          element={
-            <div className="h-screen flex mt-10 justify-center px-4">
-              <SignUp />
-            </div>
-          }
-        /> */}
         <Route path="/profile" element={<Profile />} />
-      </Routes>
+      </Routes> */}
+
+      <AppRoutes />
     </div>
   );
 };

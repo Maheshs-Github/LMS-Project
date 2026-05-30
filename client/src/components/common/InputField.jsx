@@ -7,7 +7,7 @@ const InputField = ({ label, name, placeholder, value, onChange, type, required 
       <label htmlFor={name} className="font-medium">
         {label}
       </label>
-      <div className="relative rounded-md border-2 border-gray-300 p-2 transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200">
+      <div className="relative rounded-md border-2 border-gray-300 p-2 transition-all focus-within:border-black focus-within:ring-4 focus-within:ring-blue-200">
         <input
           type={
             type === "password" ? (showPassword ? "text" : "password") : (type || "text")

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const courseSchama=new mongoose.Schema({
-  courseTitle:{
+  title:{
     required:true,
     type:String,
   },
@@ -16,12 +16,16 @@ const courseSchama=new mongoose.Schema({
     required:true,
     type:String,
   },
-  courseLevel:{
+    price:{
+    required:true,
+    type:Number,
+  },
+  level:{
     type:String,
     enum:["Beginner","Moderate","Advance"],
     required:true,
   },
-  courseThumbnail:{
+  thumbnail:{
     type:String,
     required:true,
   },
@@ -46,4 +50,4 @@ const courseSchama=new mongoose.Schema({
   }
 },{timestamps:true});
 
-export const Course=mongoose.model("User",courseSchama);
+export const Course=mongoose.model("Course",courseSchama);

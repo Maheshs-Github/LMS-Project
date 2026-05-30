@@ -136,3 +136,75 @@ export const courses = [
     students: 200,
   },
 ];
+
+
+export const courseCategories = [
+  {
+    value: "web-development",
+    label: "Web Development",
+  },
+  {
+    value: "mobile-development",
+    label: "Mobile Development",
+  },
+  {
+    value: "programming",
+    label: "Programming",
+  },
+  {
+    value: "data-structures-algorithms",
+    label: "Data Structures & Algorithms",
+  },
+  {
+    value: "database",
+    label: "Database",
+  },
+  {
+    value: "devops",
+    label: "DevOps",
+  },
+  {
+    value: "cloud-computing",
+    label: "Cloud Computing",
+  },
+  {
+    value: "cyber-security",
+    label: "Cyber Security",
+  },
+  {
+    value: "artificial-intelligence",
+    label: "Artificial Intelligence",
+  },
+  {
+    value: "machine-learning",
+    label: "Machine Learning",
+  },
+  {
+    value: "data-science",
+    label: "Data Science",
+  },
+  {
+    value: "ui-ux-design",
+    label: "UI/UX Design",
+  },
+  {
+    value: "software-testing",
+    label: "Software Testing",
+  },
+  {
+    value: "computer-science",
+    label: "Computer Science",
+  },
+  {
+    value: "personality-development",
+    label: "Personality Development",
+  },
+  {
+    value: "communication-skills",
+    label: "Communication Skills",
+  },
+  {
+    value: "career-development",
+    label: "Career Development",
+  },
+];

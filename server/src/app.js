@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import userRouter from "../routes/user.routes.js"
+import courseRouter from "../routes/course.route.js"
 
 import cookieParser from "cookie-parser"
 
@@ -17,11 +18,12 @@ app.use(cookieParser())
 app.use(express.json())
 
 app.use("/api/v1/user",userRouter)
+app.use("/api/v1/course",courseRouter)
 
 
 app.use((err,req,res,next)=>{
   res.status(err.statusCode ||500).json({
-    message:err.message,
+    message:"Something Went Wrong"|| err.message,
     error:err.errors,
     success:false,
   })

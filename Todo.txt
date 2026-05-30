@@ -1,4 +1,7 @@
-Let's see how we can implmenet the Validation handling in a place 
+Let's see how we can implmenet the Validation handling in a place , it is was zod i g 
 isuathenticatd and loading befire that 
 what is a formDtaa, also check frealted things 
 4. To show sidebar use the role later now using as props 
+5. it is giving failed to fetch for backedn error , whati sgood paractice 
+6. is it okay not use the try catch here 
+7. is it okay to pass crateer like tais

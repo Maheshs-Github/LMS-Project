@@ -15,6 +15,8 @@ import { useMutation } from "../hooks/useMutation";
 import BASE_URL from "@/utils/BASE_URL";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { setUser } from "../../redux/AuthSlice";
 
 
 export function Login() {
@@ -26,6 +28,7 @@ export function Login() {
 
   const {mutate}=useMutation();
   const Dispatch=useDispatch();
+  const Navigate=useNavigate();
   const handleLoginDataChnage=(e)=>{
     setLoginData((prev)=>({...prev,[e.target.name]:e.target.value}))
   }
@@ -33,17 +36,18 @@ export function Login() {
     console.log("loginData: ",loginData)
     try {
       const res=await mutate({
-        url:`${BASE_URL}user/login`,
+        url:`user/login`,
         method:"post",
         body:loginData
       })
       console.log("res: ",res);
       toast.success(res.message || "Logged In Successfully");
-      Dispatch(res.User);
+            Dispatch(setUser(res?.data?.User));
       setLoginData({
         email:"",
         password:"",
       })
+      Navigate("/");
     } catch (error) {
       console.log("error: ",error);
       toast.error(error.message || "There is been some Error while loggin in ");

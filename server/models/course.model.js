@@ -40,7 +40,7 @@ const courseSchama=new mongoose.Schema({
     ref:"Lecture"
   }
   ],
-  creator:{
+  instructor:{
     type:mongoose.Schema.Types.ObjectId,
     ref:"User",
   },

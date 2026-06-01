@@ -26,6 +26,7 @@ const AppRoutes = () => {
         <Route path="dashboard" element={<InstructorDashboard />} />
         <Route path="my-courses" element={<MyCourses />} />
         <Route path="new-course" element={<NewCourse />} />
+        <Route path="edit-course/:id" element={<NewCourse />} />
 
       </Route>
 

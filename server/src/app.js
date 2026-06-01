@@ -23,7 +23,7 @@ app.use("/api/v1/course",courseRouter)
 
 app.use((err,req,res,next)=>{
   res.status(err.statusCode ||500).json({
-    message:"Something Went Wrong"|| err.message,
+    message: err.message || "Something Went Wrong",
     error:err.errors,
     success:false,
   })

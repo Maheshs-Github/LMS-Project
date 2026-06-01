@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Icons from "@/utils/Icons";
 
-const CourseTable = ({ data }) => {
+const CourseTable = ({ data, handleEdit }) => {
   return (
     <div className="rounded-xl border bg-white overflow-x-auto">
 
@@ -38,8 +38,8 @@ const CourseTable = ({ data }) => {
 
         <TableBody>
 
-          {data.map((course) => (
-            <TableRow key={course.id}>
+          {data.map((course,index) => (
+            <TableRow key={index}>
 
               <TableCell className="font-medium">
                 {course.name}
@@ -64,12 +64,13 @@ const CourseTable = ({ data }) => {
               </TableCell>
 
               <TableCell>
-                {course.students}
+                {course.students ?? 0}
               </TableCell>
 
               <TableCell className="text-right">
+                {console.log("(course._id): ",(course._id))}
 
-                <Button size="sm" className={"cursor-pointer p-4"}>
+                <Button size="sm" className={"cursor-pointer p-4"} onClick={()=>handleEdit(course._id)}>
                    <Icons.SquarePen className="w-5 h-5 mr-1" /> <span>Edit</span>
                 </Button>
 

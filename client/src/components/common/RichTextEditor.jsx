@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
 
 const RichTextEditor = ({
   value = "",
@@ -36,6 +37,13 @@ const RichTextEditor = ({
       onChange(editor.getHTML());
     },
   });
+
+useEffect(() => {
+  if (!editor) return;
+
+  editor.commands.setContent(value);
+}, [editor, value]);
+
 
   if (!editor) return null;
 

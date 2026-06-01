@@ -12,6 +12,8 @@ import {
 import { courseCategories } from "@/resources/Data";
 import { useMutation } from "@/hooks/useMutation";
 import toast from "react-hot-toast";
+import { useLocation, useParams } from "react-router-dom";
+import { useGet } from "@/hooks/useGet";
 
 const NewCourse = () => {
   const [description, setDescription] = useState("");
@@ -20,37 +22,100 @@ const NewCourse = () => {
     subTitle: "",
     category: "",
     level: "",
-    price:"",
+    price: "",
     thumbnail: "",
   });
-  const {mutate}=useMutation();
-  // const [category,setCategory]=useState("");
 
-  const handleSubmit = async() => {
+  // useEffect(() => console.log("id: ", id), [id]);
+  const { id } = useParams();
+  const { data } = useGet(id ? `course/${id}` : null);
+
+  useEffect(
+    () => console.log("data: ", data, " courseData", courseData),
+    [data, courseData],
+  );
+
+  useEffect(() => {
+    if (!id) return;
+    setCourseData({
+      _id: data?.data?._id ?? "",
+      title: data?.data?.title ?? "",
+      subTitle: data?.data?.subTitle ?? "",
+      category: data?.data?.category ?? "",
+      level: data?.data?.level ?? "",
+      price: data?.data?.price ?? "",
+      thumbnail: data?.data?.thumbnail ?? "",
+    });
+    setDescription(data?.data?.description ?? "");
+  }, [data]);
+
+  useEffect(() => {
+    console.log("courseData:", courseData);
+    console.log("description:", description);
+  }, [courseData, description]);
+
+  const { mutate } = useMutation();
+
+  const handleSubmit = async () => {
     console.log(courseData);
-    console.log("description: ",description);
-    const formData=new FormData();
-    formData.append("title",courseData.title)
-    formData.append("subTitle",courseData.subTitle)
-    formData.append("category",courseData.category)
-    formData.append("level",courseData.level)
-    formData.append("price",courseData.price)
-    formData.append("thumbnail",courseData.thumbnail)
-    formData.append("description",description)
-try {
-  const res=await mutate({
-          url: `course`,
-        method: "post",
+    console.log("description: ", description);
+    const formData = new FormData();
+    formData.append("title", courseData.title);
+    formData.append("subTitle", courseData.subTitle);
+    formData.append("category", courseData.category);
+    formData.append("level", courseData.level);
+    formData.append("price", courseData.price);
+    formData.append("description", description);
+    if (courseData.thumbnail instanceof File)
+      formData.append("thumbnail", courseData.thumbnail);
+    try {
+      const res = await mutate({
+        url: !id ? `course/` : `course/${courseData?._id}`,
+        method: !id ? "post" : "PATCH",
         body: formData,
-});
-  console.log("Res: ",res);
-  toast.success(res.message || "Course Craetion success");
-} catch (error) {
-  console.log("Error: ",error);
+      });
+      console.log("Res: ", res);
+      toast.success(res.message || "Course Craetion success");
+      setCourseData({
+        title: "",
+        subTitle: "",
+        category: "",
+        level: "",
+        price: "",
+        thumbnail: "",
+      });
+      setDescription("");
+    } catch (error) {
+      console.log("Error: ", error);
       toast.error(error.message || "Error while course Cration");
-}
-
+    }
   };
+
+  // const handleEdit = async () => {
+  //   console.log(courseData);
+  //   console.log("description: ", description);
+  //   const formData = new FormData();
+  //   formData.append("title", courseData.title);
+  //   formData.append("subTitle", courseData.subTitle);
+  //   formData.append("category", courseData.category);
+  //   formData.append("level", courseData.level);
+  //   formData.append("price", courseData.price);
+  //   formData.append("thumbnail", courseData.thumbnail);
+  //   formData.append("description", description);
+  //   try {
+  //     const res = await mutate({
+  //       url: `course/${courseData?._id}`,
+  //       method: "PATCH",
+  //       body: formData,
+  //     });
+  //     console.log("Res: ", res);
+  //     toast.success(res.message || "Course Craetion success");
+  //   } catch (error) {
+  //     console.log("Error: ", error);
+  //     toast.error(error.message || "Error while course Cration");
+  //   }
+  // };
+  
   const handleInputChange = (e) => {
     setCourseData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -69,16 +134,23 @@ try {
     console.log("DFiles: ", e.dataTransfer.files[0]);
     setCourseData((prev) => ({ ...prev, thumbnail: e.dataTransfer.files[0] }));
   };
+
+  const thumbnailSrc =
+    courseData.thumbnail instanceof File
+      ? URL.createObjectURL(courseData.thumbnail)
+      : courseData.thumbnail;
+
   return (
     <div className="p-6 ">
       <h2 className="text-lg font-semibold mb-4">
-        Let's add up the details of new course
+        {!id
+          ? "Let's add up the details of new course"
+          : "Edit the Course details"}
       </h2>
       <div className="p-5 border rounded-lg flex flex-col gap-5">
         <div className="flex justify-between">
           <div>
             <h4 className="font-semibold">Basic Information </h4>
-            <p>Fill up the Info to Launch new Course</p>
           </div>
           <div className="flex gap-6">
             <button className="p-2 px-4 rounded text-black shadow-md border cursor-pointer bg-white">
@@ -124,8 +196,12 @@ try {
               </SelectTrigger>
               <SelectContent className={"p-2"}>
                 <SelectGroup>
-                  {courseCategories.map((category) => (
-                    <SelectItem value={category.value} className="text-base py-2">
+                  {courseCategories.map((category, index) => (
+                    <SelectItem
+                      key={index}
+                      value={category.value}
+                      className="text-base py-2"
+                    >
                       {category.label}
                     </SelectItem>
                   ))}
@@ -151,21 +227,26 @@ try {
               </SelectTrigger>
               <SelectContent className={"p-2"}>
                 <SelectGroup>
-                  <SelectItem value="Beginner" className="text-base py-2">Beginner</SelectItem>
-                  <SelectItem value="Moderate" className="text-base py-2">Moderate</SelectItem>
-                  <SelectItem value="Advanced" className="text-base py-2">Advance</SelectItem>
+                  <SelectItem value="Beginner" className="text-base py-2">
+                    Beginner
+                  </SelectItem>
+                  <SelectItem value="Moderate" className="text-base py-2">
+                    Moderate
+                  </SelectItem>
+                  <SelectItem value="Advance" className="text-base py-2">
+                    Advance
+                  </SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
           </div>
           <InputField
-          name={"price"}
-          label={"Course Price"}
-          placeholder={"Enter Price"}
-          onChange={handleInputChange}
-          value={courseData.price}
-        />
-          
+            name={"price"}
+            label={"Course Price"}
+            placeholder={"Enter Price"}
+            onChange={handleInputChange}
+            value={courseData.price}
+          />
         </div>
         <div className="">
           <h3 className="font-medium mb-2"> Course Thumbnail</h3>
@@ -194,7 +275,7 @@ try {
           {courseData.thumbnail && (
             <div className="mt-4 max-w-xl rounded-xl border bg-muted/20 p-3">
               <img
-                src={URL.createObjectURL(courseData.thumbnail)}
+                src={thumbnailSrc}
                 alt="Thumbnail Preview"
                 className="h-56 w-full rounded-lg object-cover border"
               />
@@ -206,8 +287,15 @@ try {
           )}
         </div>
         <div className="flex gap-4 mt-3">
-      <button className="border rounded font-semibold p-2 px-8 cursor-pointer">Cancel</button>
-      <button className="text-white font-semibold bg-black rounded p-2 px-8 cursor-pointer" onClick={handleSubmit}>Submit</button>
+          <button className="border rounded font-semibold p-2 px-8 cursor-pointer">
+            Cancel
+          </button>
+          <button
+            className="text-white font-semibold bg-black rounded p-2 px-8 cursor-pointer"
+            onClick={handleSubmit}
+          >
+            {!id ? "Submit" : "Edit"}
+          </button>
         </div>
       </div>
     </div>

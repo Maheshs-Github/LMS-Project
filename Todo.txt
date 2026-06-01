@@ -5,3 +5,8 @@ what is a formDtaa, also check frealted things
 5. it is giving failed to fetch for backedn error , whati sgood paractice 
 6. is it okay not use the try catch here 
 7. is it okay to pass crateer like tais
+8. frotend and backedn dat avalidtaions 
+
+What to check next 
+1. u dodn't need the state there 
+2. check tehcode once NewCourse Lecture fun

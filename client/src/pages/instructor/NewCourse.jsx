@@ -14,8 +14,22 @@ import { useMutation } from "@/hooks/useMutation";
 import toast from "react-hot-toast";
 import { useLocation, useParams } from "react-router-dom";
 import { useGet } from "@/hooks/useGet";
+import { Plus } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+import { Card, CardContent } from "@/components/ui/card";
 
 const NewCourse = () => {
+  // const lectureState = useSelector((state) => state.lectures.lectures);
+  // const Dispatch = useDispatch();
   const [description, setDescription] = useState("");
   const [courseData, setCourseData] = useState({
     title: "",
@@ -26,9 +40,15 @@ const NewCourse = () => {
     thumbnail: "",
   });
 
+  const [lectureData, setLectureData] = useState({
+    title: "",
+    video: "",
+  });
+
   // useEffect(() => console.log("id: ", id), [id]);
   const { id } = useParams();
   const { data } = useGet(id ? `course/${id}` : null);
+  const { mutate } = useMutation();
 
   useEffect(
     () => console.log("data: ", data, " courseData", courseData),
@@ -49,13 +69,21 @@ const NewCourse = () => {
     setDescription(data?.data?.description ?? "");
   }, [data]);
 
+  // useEffect(() => {
+  //   console.log("courseData:", courseData);
+  //   console.log("description:", description);
+  // }, [courseData, description]);
+
   useEffect(() => {
-    console.log("courseData:", courseData);
-    console.log("description:", description);
-  }, [courseData, description]);
+    console.log("lectureData: ", lectureData);
+  }, [lectureData]);
 
-  const { mutate } = useMutation();
+  // useEffect(() => {
+  //   const res = useGet("course/6a1a7630f91aba30565481b8/lectures");
+  //   console.log("rea: ", res);
+  // }, [lectureState]);
 
+  const { data: lectures, refetch } = useGet(`course/${id}/lectures`);
   const handleSubmit = async () => {
     console.log(courseData);
     console.log("description: ", description);
@@ -91,33 +119,12 @@ const NewCourse = () => {
     }
   };
 
-  // const handleEdit = async () => {
-  //   console.log(courseData);
-  //   console.log("description: ", description);
-  //   const formData = new FormData();
-  //   formData.append("title", courseData.title);
-  //   formData.append("subTitle", courseData.subTitle);
-  //   formData.append("category", courseData.category);
-  //   formData.append("level", courseData.level);
-  //   formData.append("price", courseData.price);
-  //   formData.append("thumbnail", courseData.thumbnail);
-  //   formData.append("description", description);
-  //   try {
-  //     const res = await mutate({
-  //       url: `course/${courseData?._id}`,
-  //       method: "PATCH",
-  //       body: formData,
-  //     });
-  //     console.log("Res: ", res);
-  //     toast.success(res.message || "Course Craetion success");
-  //   } catch (error) {
-  //     console.log("Error: ", error);
-  //     toast.error(error.message || "Error while course Cration");
-  //   }
-  // };
-  
   const handleInputChange = (e) => {
     setCourseData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleLectureInputChange = (e) => {
+    setLectureData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
   const handleSelectedChange = (field, value) => {
     setCourseData((prev) => ({ ...prev, [field]: value }));
@@ -139,6 +146,30 @@ const NewCourse = () => {
     courseData.thumbnail instanceof File
       ? URL.createObjectURL(courseData.thumbnail)
       : courseData.thumbnail;
+
+  const handleAddVideo = async () => {
+    console.log("LecutureData: ", lectureData);
+    try {
+      const formData = new FormData();
+      formData.append("title", lectureData?.title);
+      formData.append("videoUrl", lectureData?.video);
+      const res = await mutate({
+        url: `lecture/${id}`,
+        method: "POST",
+        body: formData,
+      });
+      console.log("res: ", res);
+      toast.success(res?.message || "Lecture Added Successfully");
+      setLectureData({
+        title: "",
+        video: "",
+      });
+      refetch();
+    } catch (error) {
+      console.log("Error: ", error);
+      toast.error(error.message || "Error while Adding the Lecture");
+    }
+  };
 
   return (
     <div className="p-6 ">
@@ -242,7 +273,7 @@ const NewCourse = () => {
           </div>
           <InputField
             name={"price"}
-            label={"Course Price"}
+            label={"Price"}
             placeholder={"Enter Price"}
             onChange={handleInputChange}
             value={courseData.price}
@@ -286,6 +317,108 @@ const NewCourse = () => {
             </div>
           )}
         </div>
+
+        {/* Add Lecture */}
+        <div className=" my-2 p-10!">
+          {lectures?.data?.length ? (
+            lectures?.data?.map((lecture) => {
+              return (
+                <Card className={"my-2 p-1.5!"}>
+                  <CardContent className="flex items-center justify-between ">
+                    <p className="text-lg font-medium italic">
+                      {lecture.title ?? "Not avaliable"}
+                    </p>
+
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline "
+                        className={
+                          "text-lg font-semibold p-5 bg-gray-400 hover:bg-gray-500 cursor-pointer"
+                        }
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        className={
+                          "text-lg font-semibold p-5  bg-red-100 hover:bg-red-300 cursor-pointer"
+                        }
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
+          ) : (
+            <div>No lectures Found</div>
+          )}
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                className={
+                  "flex gap-4 cursor-pointer py-6 px-4 font-semibold text-lg bg-transparent text-black "
+                }
+              >
+                <Plus />
+                <span>Add Lecture</span>
+              </Button>
+            </DialogTrigger>
+
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle></DialogTitle>
+              </DialogHeader>
+              <InputField
+                name={"title"}
+                label={" Title"}
+                placeholder={"Enter Lecture Title"}
+                onChange={handleLectureInputChange}
+                value={lectureData.title}
+              />
+
+              <div className="">
+                <h3 className="font-medium mb-2"> Lecture Video</h3>
+
+                <label
+                  htmlFor="video"
+                  className="border-dashed border-2 max-w-xl h-28 border-black hover:border-gray-500 rounded flex  flex-col justify-center items-center cursor-pointer"
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                >
+                  <h4 className="text-lg">Drag & Drop </h4>
+                  <div className="font-semibold">or</div>
+                  <h4 className="text-blue-600 font-semibold">
+                    Click to Browse
+                  </h4>
+                </label>
+                <input
+                  type="file"
+                  id="video"
+                  className="hidden"
+                  onChange={(e) => {
+                    setLectureData((prev) => ({
+                      ...prev,
+                      video: e.target.files[0],
+                    }));
+                  }}
+                />
+                {lectureData.video && (
+                  <div className="mt-3 rounded-md bg-background px-3 py-2  font-medium text-muted-foreground truncate">
+                    {lectureData.video.name}
+                  </div>
+                )}
+              </div>
+              <Button onClick={handleAddVideo} className={"cursor-pointer"}>
+                Add Video
+              </Button>
+
+              {/* Form Fields */}
+            </DialogContent>
+          </Dialog>
+        </div>
         <div className="flex gap-4 mt-3">
           <button className="border rounded font-semibold p-2 px-8 cursor-pointer">
             Cancel
@@ -308,3 +441,4 @@ export default NewCourse;
 // also about health my feel fatigue even after small activity or why not feeling fresh after completing the sleep , u eat but still , to increase immnity and weight gain
 // what can we do for the hair fall, any thing about t otake care of it
 // let's see the personalty development any good courses or videos about it , gita , being mindfula nd peaceful , less overthinking
+// shrimat Bhagvad Gita, mobile no use

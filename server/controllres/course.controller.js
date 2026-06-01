@@ -1,4 +1,5 @@
 import { Course } from "../models/course.model.js";
+import { Lecture } from "../models/lecture.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -154,4 +155,31 @@ const updateCourse = asyncHandler(async (req, res) => {
     );
 });
 
-export { createCourse, getMyCourses, getCourseById, updateCourse };
+const getCourseLectures = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+  if (!courseId) throw new ApiError(400, "No Course Id Found");
+
+  const courseLectures = await Lecture.find({ course: courseId });
+  // const courseLectures = await Course.findById(courseId).populate("lectures");
+  console.log("couser lec: ", courseLectures);
+  if (!courseLectures.length ) throw new ApiError(404, "No Lectures Found");
+  // if (!courseLectures ) throw new ApiError(404, "No Lectures Found");
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        courseLectures,
+        "Course Lectures has been fetched successfully",
+      ),
+    );
+});
+
+export {
+  createCourse,
+  getMyCourses,
+  getCourseById,
+  updateCourse,
+  getCourseLectures,
+};

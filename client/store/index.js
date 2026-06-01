@@ -10,6 +10,7 @@
 
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "../redux/AuthSlice";
+import lectureReducer from "../redux/LectureSlice"
 
 import storage from "redux-persist/es/storage";
 
@@ -31,6 +32,7 @@ const persistedReducer = persistReducer(
 export const store = configureStore({
   reducer: {
     auth: persistedReducer,
+    lectures: lectureReducer
   },
 
   middleware: (getDefaultMiddleware) =>

@@ -8,6 +8,11 @@ export const StudentItems = [
     url: "/student/dashboard",
     icon: Icons.Home ,
   },
+    {
+    title: "Browse Courses",
+    url: "/student/course/6a1a7630f91aba30565481b8",
+    icon: Icons.BookOpen,
+  },
   {
     title: "My Courses",
     url: "/student/my-courses",

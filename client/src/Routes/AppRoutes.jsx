@@ -13,6 +13,7 @@ import AddCourse from "@/pages/admin/course/AddCourse";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import MyCourses from "@/pages/instructor/MyCourses";
 import NewCourse from "@/pages/instructor/NewCourse";
+import CourseDetails from "@/pages/course/CourseDetails";
 
 const AppRoutes = () => {
   return (
@@ -27,12 +28,12 @@ const AppRoutes = () => {
         <Route path="my-courses" element={<MyCourses />} />
         <Route path="new-course" element={<NewCourse />} />
         <Route path="edit-course/:id" element={<NewCourse />} />
-
       </Route>
 
       <Route path="/student" element={<StudentLayout />}>
         <Route path="dashboard" element={<StudentDashBoard />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="course/:courseId" element={<CourseDetails />} />
       </Route>
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="dashboard" element={<AdminDashboard />} />

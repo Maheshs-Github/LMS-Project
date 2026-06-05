@@ -12,7 +12,7 @@ const uploadLecture = asyncHandler(async (req, res) => {
   console.log("req.file: ", req.file);
   if (!title || title.trim() === "")
     throw new ApiError(400, "Video Title is required");
-  if (!req.file.path) throw new ApiError(400, "Video File is Missing ");
+  if (!req.file) throw new ApiError(400, "Video File is Missing ");
   const uploadFile = await uploadOnCloudinary(req.file.path);
   console.log("Up;oaded file: ", uploadFile);
   const isCourseExist = await Course.findById(courseId);
@@ -57,7 +57,7 @@ const updateLecture = asyncHandler(async (req, res) => {
   const { title } = req.body;
   const { lectureId } = req.params;
   const updatedData = {};
-  if (req.file?.path) {
+  if (req.file) {
     const upploadedfile = await uploadOnCloudinary(req.file.path);
     if (!upploadedfile)
       throw new ApiError(500, "Error while updating the Video");
@@ -93,10 +93,10 @@ const deleteLecture=asyncHandler(async(req,res)=>{
   if(!lectureId)
     throw new ApiError(400,"No COurse Id is FOund");
 
-  const deletedLecture=await Course.findByIdAndDelete(lectureId);
+  const deletedLecture=await Lecture.findByIdAndDelete(lectureId);
 
   if(!deleteLecture)
-    throw new ApiError(404,"Course is not FOund");
+    throw new ApiError(404,"Lecture is not FOund");
 
   return res.status(200).json(new ApiResponse(204,{},"Lecture has been deleted Successfully"));
 })

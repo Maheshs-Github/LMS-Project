@@ -43,7 +43,10 @@ const NewCourse = () => {
   const [lectureData, setLectureData] = useState({
     title: "",
     video: "",
+    _id: "",
   });
+  const [open, setOpen] = useState(false);
+  const [videoEdit, setVideoEdit] = useState(false);
 
   // useEffect(() => console.log("id: ", id), [id]);
   const { id } = useParams();
@@ -155,7 +158,7 @@ const NewCourse = () => {
       formData.append("videoUrl", lectureData?.video);
       const res = await mutate({
         url: `lecture/${id}`,
-        method: "POST",
+        method: "post",
         body: formData,
       });
       console.log("res: ", res);
@@ -164,11 +167,65 @@ const NewCourse = () => {
         title: "",
         video: "",
       });
+      setOpen(false);
       refetch();
     } catch (error) {
       console.log("Error: ", error);
       toast.error(error.message || "Error while Adding the Lecture");
     }
+  };
+
+  const handleLectureEdit = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("title", lectureData.title);
+      formData.append("videoUrl", lectureData.video);
+
+      const res = await mutate({
+        url: `lecture/${lectureData?._id}`,
+        method: "patch",
+        body: formData,
+      });
+      console.log("res: ", res);
+      setLectureData({
+        title: "",
+        video: "",
+        _id: "",
+      });
+      setVideoEdit(false);
+      setOpen(false);
+      refetch();
+      toast.success(res?.message || "Lecture has been updated Successfully");
+    } catch (error) {
+      console.log("Error: ", error);
+      toast.error(error?.message || "Error Occured While UPadting the Lecture");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const res = await mutate({
+        url: `lecture/${id}`,
+        method: "delete",
+      });
+      console.log("res: ", res);
+      toast.success(res.message || "Lecture has been Deleted Successfully");
+      refetch();
+    } catch (error) {
+      console.log("Error: ", error);
+      toast.error(error.message || "There is been some error while Deleting");
+    }
+  };
+
+  const handleLectureEditOpen = (data) => {
+    setVideoEdit(true);
+    setOpen(true);
+
+    setLectureData({
+      title: data?.title || "",
+      video: data?.videoUrl || "",
+      _id: data?._id || "",
+    });
   };
 
   return (
@@ -335,6 +392,7 @@ const NewCourse = () => {
                         className={
                           "text-lg font-semibold p-5 bg-gray-400 hover:bg-gray-500 cursor-pointer"
                         }
+                        onClick={() => handleLectureEditOpen(lecture)}
                       >
                         Edit
                       </Button>
@@ -343,6 +401,7 @@ const NewCourse = () => {
                         className={
                           "text-lg font-semibold p-5  bg-red-100 hover:bg-red-300 cursor-pointer"
                         }
+                        onClick={() => handleDelete(lecture?._id)}
                       >
                         Delete
                       </Button>
@@ -355,12 +414,20 @@ const NewCourse = () => {
             <div>No lectures Found</div>
           )}
 
-          <Dialog>
+          <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button
                 className={
                   "flex gap-4 cursor-pointer py-6 px-4 font-semibold text-lg bg-transparent text-black "
                 }
+                onClick={() => {
+                  setVideoEdit(false);
+                  setLectureData({
+                    title: "",
+                    video: "",
+                    _id: "",
+                  });
+                }}
               >
                 <Plus />
                 <span>Add Lecture</span>
@@ -406,13 +473,16 @@ const NewCourse = () => {
                   }}
                 />
                 {lectureData.video && (
-                  <div className="mt-3 rounded-md bg-background px-3 py-2  font-medium text-muted-foreground truncate">
-                    {lectureData.video.name}
+                  <div className="mt-3 rounded-md bg-background px-3 py-2  font-medium text-muted-foreground truncate max-w-xs">
+                    {lectureData.video.name ?? lectureData.video}
                   </div>
                 )}
               </div>
-              <Button onClick={handleAddVideo} className={"cursor-pointer"}>
-                Add Video
+              <Button
+                onClick={videoEdit ? handleLectureEdit : handleAddVideo}
+                className={"cursor-pointer"}
+              >
+                {videoEdit ? "Edit Video" : "Add Video"}
               </Button>
 
               {/* Form Fields */}

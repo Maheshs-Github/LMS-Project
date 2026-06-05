@@ -5,21 +5,23 @@ export const useMutation = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-const mutate = async ({
-  url,
+  
+  const mutate = async ({
+    url,
   method,
   body,
 }) => {
-
+  
   try {
-
+    
+    console.log("method: ",method);
     setLoading(true);
     setError(null);
 
     const res = await apiClient(
       `${url}`,
       {
-        method,
+        method: method.toUpperCase(),
 
         body:
           body instanceof FormData

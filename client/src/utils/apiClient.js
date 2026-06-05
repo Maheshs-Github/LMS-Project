@@ -1,6 +1,7 @@
 import BASE_URL from "./BASE_URL";
 
 export const apiClient = async (url, options = {}) => {
+  console.log("Method:", options.method);
   const res = await fetch(`${BASE_URL}${url}`, {
     ...options,
 

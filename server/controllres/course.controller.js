@@ -116,7 +116,7 @@ const updateCourse = asyncHandler(async (req, res) => {
     description,
   };
 
-  if (req.file.path) {
+  if (req.file) {
     const thumbnailPath = req.file.path;
     console.log("thumbnailPath: ", thumbnailPath);
 

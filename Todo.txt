@@ -8,4 +8,4 @@ what is a formDtaa, also check frealted things
 8. frotend and backedn dat avalidtaions 
 
 What to check next 
-1. create dthe Course details UI and getcoursby Id , integerate it and further 
+1. did the course details data mapping  and see furthere 

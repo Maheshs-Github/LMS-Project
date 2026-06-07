@@ -80,7 +80,7 @@ const getCourseById = asyncHandler(async (req, res) => {
   const fetchedCourse = await Course.findOne({
     _id: courseId,
     instructor: req.user.id,
-  });
+  }).populate("lectures","-__v -updatedAt -createdAt -course");
   console.log("fetchedCourse: ", fetchedCourse);
   if (!fetchedCourse) throw new ApiError(404, "Course not found");
 

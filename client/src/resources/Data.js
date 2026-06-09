@@ -10,7 +10,7 @@ export const StudentItems = [
   },
     {
     title: "Browse Courses",
-    url: "/student/course/6a1a7630f91aba30565481b8",
+    url: "/student/courses",
     icon: Icons.BookOpen,
   },
   {

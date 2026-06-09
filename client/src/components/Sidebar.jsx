@@ -21,7 +21,6 @@ export function AppSidebar({role="student"}) {
   instructor:InstructorItems,
 }
 
-
 const items=itemKey[role] || [];
 
   return (

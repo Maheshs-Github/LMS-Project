@@ -7,7 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 const MyCourses = () => {
   const navigate=useNavigate()
-  const { data } = useGet("course");
+  const { data } = useGet("course/myCourses");
   useEffect(() => console.log("data: ", data), [data]);
 
   const courseData = (data?.data || []).map((data) => ({

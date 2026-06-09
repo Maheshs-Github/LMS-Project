@@ -176,10 +176,19 @@ const getCourseLectures = asyncHandler(async (req, res) => {
     );
 });
 
+const getAllCourses=asyncHandler(async(req,res)=>{
+  const courses=await Course.find();
+  if(!courses)
+    throw new ApiError(404,"No Courses not Found");
+  console.log("courses: ",courses);
+  return res.status(200).json(new ApiResponse(200,courses,"Courses has been succcessfully"));
+})
+
 export {
   createCourse,
   getMyCourses,
   getCourseById,
   updateCourse,
   getCourseLectures,
+  getAllCourses,
 };

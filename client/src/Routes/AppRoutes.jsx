@@ -35,6 +35,8 @@ const AppRoutes = () => {
         <Route path="dashboard" element={<StudentDashBoard />} />
         <Route path="profile" element={<Profile />} />
         <Route path="courses" element={<BrowseCourses />} />
+        <Route path="course/:id" element={<CourseDetails />} />
+
       </Route>
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="dashboard" element={<AdminDashboard />} />

@@ -438,6 +438,7 @@ const NewCourse = () => {
               <DialogHeader>
                 <DialogTitle></DialogTitle>
               </DialogHeader>
+              
               <InputField
                 name={"title"}
                 label={" Title"}
@@ -498,6 +499,7 @@ const NewCourse = () => {
             onClick={handleSubmit}
           >
             {!id ? "Submit" : "Edit"}
+            {}
           </button>
         </div>
       </div>
@@ -529,3 +531,37 @@ export default NewCourse;
 // feeling fine, just litlle head on side of eyes and litle tight else fine ,power nap was nice 
 // "Am I actually present or am I somewhere in my head?"
 // yup seems like it 
+
+
+// next dy 10:00
+// "What am I thinking about right now?"
+// what to strt eiher aptitude or project , have to do apptitude but not feel like project have to do, well we have to do it , apptitude it is , about collegues amight not come today , ppl leaving IG but using the YT short , nthg else 
+// "How does my body feel?" (tight? tired? fine?)
+// hmm. slept about 10 hrs feeling good , but still litlle tightness in mind and neck , else good 
+// "Am I actually present or am I somewhere in my head?"
+// mostly yes, about what do do ,s trtig my work 
+
+// next dy 11:11
+// "What am I thinking about right now?"
+// nthg much wherther  to continuw with the apptitude or LMs , doing apptitude 
+// "How does my body feel?" (tight? tired? fine?)
+// hmm. feeling bettre than morning , just did face wash with water , little break 
+// "Am I actually present or am I somewhere in my head?"
+// yeah 
+
+
+// 13:00
+// "What am I thinking about right now?"
+// nthg much hungry, head is still not good , actually my health bben not that is why , thinkig baout when to go eat 
+// "How does my body feel?" (tight? tired? fine?)
+// nthg difremt that above 
+// "Am I actually present or am I somewhere in my head?"
+// yeah 
+
+// 17:48
+// "What am I thinking about right now?"
+// what i am thinking , just took powe nap, thinking about what should i do maybe juast write our weekly progress whethere to go face wash and et some air , will do then , thinking about the talking with collegues but guess they are working 
+// "How does my body feel?" (tight? tired? fine?)
+// feeling fine rn , songs and all
+// "Am I actually present or am I somewhere in my head?"
+// u can say i g 

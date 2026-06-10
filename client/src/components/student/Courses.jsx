@@ -13,6 +13,7 @@ import Friern from "../../assets/FrierenSama.jpg";
 import Icons from "@/utils/Icons";
 import CourseSkeleton from "./courseSkeleton";
 import { useGet } from "@/hooks/useGet";
+import { useNavigate } from "react-router-dom";
 
 const CourseData = [
   {
@@ -53,33 +54,49 @@ const CourseData = [
 ];
 
 const Courses = () => {
+  const navigate=useNavigate();
   const [courses, setCourses] = useState([
     {
+      _id:"",
       img: "",
       name: "",
       price: "",
     },
   ]);
-  const { data } = useGet("course");
+  const {loading, data } = useGet("course");
   useEffect(() => {
     console.log("Data: ", data);
     const formattedData = (data?.data || [])?.map((data) => ({
+      _id:data?._id,
       img: data?.thumbnail,
       name: data?.title,
       price: data?.price,
+      instructorName: data?.instructor?.name,
+      instructorImg: data?.instructor?.photoUrl,
     }));
     setCourses(formattedData);
   }, [data]);
   useEffect(() => {
     console.log("courses: ", courses);
   }, [courses]);
+
+  const initials = (Name) => {
+    return Name?.split(" ")
+      ?.map((name) => name[0])
+      ?.join("")
+      ?.toUpperCase();
+  };
+  const handleEnroll=(id)=>{
+    navigate(`/student/course/${id}`);
+  }
   return (
     <div className="p-8">
       <h3 className="w-full text-center font-bold text-3xl mb-6">
         Our Courses
       </h3>
       <div className="grid grid-cols-4 gap-10">
-        {courses?.slice(0, 4)?.map((course, index) => {
+        {!loading?
+        courses?.slice(0, 4)?.map((course, index) => {
           return (
             <Card
               className="relative mx-auto w-full max-w-sm pt-0 col-span-1"
@@ -97,13 +114,19 @@ const Courses = () => {
                 </CardTitle>
                 <div className="flex gap-0.5 justify-between w-full items-center">
                   <div className="flex gap-2 items-center">
-                    <img
-                      src={course?.img}
-                      className="rounded-full w-12"
-                      alt=""
-                    />
-                    <h4 className="font-medium text-base">
-                      {"frieren Sama"}
+                    {course?.instructorImg ? (
+                      <img
+                        src={course?.instructorImg ?? ""}
+                        className="rounded-full w-8 h-8 "
+                        alt=""
+                      />
+                    ) : (
+                      <div className="rounded-full w-8 h-8 flex justify-center gap-1 items-center bg-amber-600 text-white font-semibold">
+                        {initials(course?.instructorName)}
+                      </div>
+                    )}
+                    <h4 className="font-medium text-base capitalize">
+                      {course?.instructorName}
                     </h4>
                   </div>
                   <Badge
@@ -119,13 +142,18 @@ const Courses = () => {
                 </div>
               </CardHeader>
               <CardFooter>
-                <Button className="w-full cursor-pointer">Enroll Now</Button>
+                {console.log("id: ",course?._id)}
+                <Button className="w-full cursor-pointer" onClick={()=> handleEnroll(course?._id)}>Enroll Now</Button>
               </CardFooter>
             </Card>
           );
-        })}
+        })
+        :
+          Array.from({length:4}).map((_,i)=>(
+            <CourseSkeleton key={i} />
+          ))
+        }
       </div>
-      <CourseSkeleton />
     </div>
   );
 };

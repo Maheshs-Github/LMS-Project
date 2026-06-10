@@ -177,7 +177,7 @@ const getCourseLectures = asyncHandler(async (req, res) => {
 });
 
 const getAllCourses=asyncHandler(async(req,res)=>{
-  const courses=await Course.find();
+  const courses=await Course.find().populate("instructor","-__v -updatedAt -createdAt -password");
   if(!courses)
     throw new ApiError(404,"No Courses not Found");
   console.log("courses: ",courses);

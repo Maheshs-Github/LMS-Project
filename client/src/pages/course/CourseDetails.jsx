@@ -3,9 +3,11 @@ import React, { useEffect, useState } from "react";
 import video from "../../assets/video/file_example_MP4_480_1_5MG.mp4";
 import { useGet } from "@/hooks/useGet";
 import parse from "html-react-parser"
+import { useParams } from "react-router-dom";
 
 const CourseDetails = () => {
-  const { data, refetch } = useGet("course/6a1a7630f91aba30565481b8");
+  const {id} =useParams();
+  const { data, refetch } = useGet(id?`course/${id}`:null);
 
   const [courseData, setCourseData] = useState({
     title: "",

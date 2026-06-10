@@ -34,7 +34,7 @@ const CourseSkeleton = () => {
           <div className="w-20 flex items-center font-bold text-lg gap-2 h-7 bg-gray-300 dark:bg-gray-700 rounded-md"></div>
         </CardHeader>
         <CardFooter>
-          <Button className="w-full cursor-pointer h-16 bg-gray-300 dark:bg-gray-700">
+          <Button className="w-full cursor-pointer h-6 bg-gray-300 dark:bg-gray-700">
           </Button>
         </CardFooter>
       </Card>

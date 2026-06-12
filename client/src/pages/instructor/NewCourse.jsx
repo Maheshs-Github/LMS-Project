@@ -413,6 +413,8 @@ const NewCourse = () => {
           ) : (
             <div>No lectures Found</div>
           )}
+          {/* basic flow from tutorial  */}
+          {/* i haven't decide on the time line for DSA , but i will revise least 2 problme amd solve 2  */}
 
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>

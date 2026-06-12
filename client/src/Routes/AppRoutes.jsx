@@ -15,6 +15,8 @@ import MyCourses from "@/pages/instructor/MyCourses";
 import NewCourse from "@/pages/instructor/NewCourse";
 import CourseDetails from "@/pages/course/CourseDetails";
 import BrowseCourses from "@/pages/course/BrowseCourses";
+import MyLearning from "@/components/student/MyLearning";
+import LearningPlayer from "@/components/student/LearningPlayer";
 
 const AppRoutes = () => {
   return (
@@ -35,6 +37,8 @@ const AppRoutes = () => {
         <Route path="dashboard" element={<StudentDashBoard />} />
         <Route path="profile" element={<Profile />} />
         <Route path="courses" element={<BrowseCourses />} />
+        <Route path="my-learning" element={<MyLearning />} />
+        <Route path="learn/:id" element={<LearningPlayer />} />
         <Route path="course/:id" element={<CourseDetails />} />
 
       </Route>

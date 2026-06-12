@@ -15,7 +15,7 @@ export const StudentItems = [
   },
   {
     title: "My Courses",
-    url: "/student/my-courses",
+    url: "/student/my-learning",
     icon: Icons.BookOpen,
   },
   {

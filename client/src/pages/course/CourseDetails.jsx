@@ -2,14 +2,20 @@ import { IndianRupee, Info, Play, PlayCircleIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import video from "../../assets/video/file_example_MP4_480_1_5MG.mp4";
 import { useGet } from "@/hooks/useGet";
-import parse from "html-react-parser"
+import parse from "html-react-parser";
 import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { useMutation } from "@/hooks/useMutation";
+import toast from "react-hot-toast";
 
 const CourseDetails = () => {
-  const {id} =useParams();
-  const { data, refetch } = useGet(id?`course/${id}`:null);
+  const { id } = useParams();
+  const { data, refetch } = useGet(id ? `course/${id}` : null);
+  const user = useSelector((state) => state.auth.user);
+  const { mutate } = useMutation();
 
   const [courseData, setCourseData] = useState({
+    _id: "",
     title: "",
     subTitle: "",
     category: "",
@@ -26,6 +32,7 @@ const CourseDetails = () => {
   useEffect(() => {
     console.log("data: ", data);
     setCourseData({
+      _id: data?.data?._id ?? "",
       title: data?.data?.title ?? "",
       subTitle: data?.data?.subTitle ?? "",
       category: data?.data?.category ?? "",
@@ -39,6 +46,21 @@ const CourseDetails = () => {
       instructor: data?.data?.instructor ?? "",
     });
   }, [data]);
+
+  const handleEnroll = async (cId) => {
+    try {
+      const res = await mutate({
+        url: `course/${cId}`,
+        method: "post",
+        // body: { userId: user?._id },
+      });
+      console.log("res: ", res);
+      toast.success(res?.message);
+    } catch (error) {
+      console.log("error: ", error);
+      toast.error(error?.message);
+    }
+  };
   return (
     <div className="">
       <div className="bg-black text-white px-4 py-10 rounded flex flex-col gap-2">
@@ -46,8 +68,8 @@ const CourseDetails = () => {
         <h3 className="text-lg">{courseData.subTitle}</h3>
         <h3>
           Created By -{" "}
-          <span className="text-purple-400 font-semibold underline">
-            {courseData.instructor}
+          <span className="text-purple-400 font-semibold underline capitalize">
+            {courseData.instructor?.name}
           </span>
         </h3>
         <div className="flex gap-1 items-center italic">
@@ -67,18 +89,16 @@ const CourseDetails = () => {
         <div className="col-span-1">
           <div className=" ">
             <h2 className="text-xl font-semibold mb-3">Description</h2>
-            <div>
-              {parse(courseData?.description)}
-            </div>
+            <div>{parse(courseData?.description)}</div>
           </div>
           <div className="border px-4 py-4 mt-5 rounded ">
             <h2 className="text-xl font-semibold mb-3">Course Content</h2>
-            {(courseData?.lectures|| [])?.map((lecture,data)=>(
+            {(courseData?.lectures || [])?.map((lecture, data) => (
               <div className="flex items-center gap-1 my-2" key={data}>
                 {/* {console.log("lect: "+lecture.title)} */}
-              <PlayCircleIcon className="" strokeWidth={3} size={18} />{" "}
-              <span className="text-lg">{lecture?.title}</span>
-            </div>
+                <PlayCircleIcon className="" strokeWidth={3} size={18} />{" "}
+                <span className="text-lg">{lecture?.title}</span>
+              </div>
             ))}
           </div>
         </div>
@@ -92,7 +112,10 @@ const CourseDetails = () => {
             <h2 className="font-semibold text-2xl">{courseData.price} </h2>
             <IndianRupee size={16} strokeWidth={3} />
           </div>
-          <button className="rounded bg-green-600 hover:bg-green-700 text-white py-2 px-6 cursor-pointer flex items-center justify-center w-full">
+          <button
+            className="rounded bg-green-600 hover:bg-green-700 text-white py-2 px-6 cursor-pointer flex items-center justify-center w-full"
+            onClick={() => handleEnroll(courseData?._id)}
+          >
             Enroll Now
           </button>
         </div>

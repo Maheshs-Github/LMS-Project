@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { Course } from "../models/course.model.js";
 
 const registerUser = asyncHandler(async (req, res) => {
   console.log("req.body: ", req.body);
@@ -132,15 +133,15 @@ const updateUser = asyncHandler(async (req, res) => {
   if (name?.trim()) updateData.name = name;
   if (email?.trim()) updateData.email = email;
   for (const key in updateData) {
-    console.log("key: ",key," Val: ",updateData[key]);
+    console.log("key: ", key, " Val: ", updateData[key]);
   }
 
   const updatedProfile = await User.findByIdAndUpdate(
     req.user?._id,
-      updateData,
+    updateData,
     { new: true },
   ).select("-__v -updatedAt -createdAt -password");
-  console.log("updatedProfile: ",updatedProfile);
+  console.log("updatedProfile: ", updatedProfile);
 
   return res
     .status(200)
@@ -153,4 +154,16 @@ const updateUser = asyncHandler(async (req, res) => {
     );
 });
 
-export { registerUser, loginUser, loggedOut, updateUser };
+const enrolledCourses=asyncHandler(async(req,res)=>{
+  const {userId}=req.params;
+  if(!userId)
+    throw new ApiError(400,"No user Id found");
+
+  const userEnrolledCourses=await Course.find({ enrolledStudents: userId}).populate("instructor","-__v -updatedAt -createdAt -password");
+  if(!userEnrolledCourses.length)
+    throw new ApiError(404,"No Courses of USer Found");
+
+  return res.status(200).json(new ApiResponse(200,userEnrolledCourses,"My Learning is Successfully Fetched"));
+})
+
+export { registerUser, loginUser, loggedOut, updateUser ,enrolledCourses};

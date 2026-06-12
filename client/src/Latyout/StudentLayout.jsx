@@ -17,13 +17,13 @@ const StudentLayout = () => {
         <SidebarProvider>
 
         {/* SIDEBAR + CONTENT */}
-        <div className="flex">
+        <div className="flex w-full">
 
           {/* SIDEBAR */}
           <AppSidebar role="student" />
 
           {/* PAGE CONTENT */}
-          <main className="flex-1 p-4 ">
+          <main className="flex-1 p-4 w-full">
 
             {/* MOBILE SIDEBAR BUTTON */}
             <SidebarTrigger />

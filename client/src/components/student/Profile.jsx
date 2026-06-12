@@ -92,6 +92,8 @@ for (const pair of formData.entries()) {
     .map((name) => name.charAt(0)?.toUpperCase());
   // console.log("profilePicName: " + profilePicName);
 
+  
+
   return (
     <div className="p-8">
       {!editProfile ? (

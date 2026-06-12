@@ -15,10 +15,13 @@ const App = () => {
 const { data } = useGet("user/me");
 
 useEffect(() => {
-  if(data?.user){
-    dispatch(setUser(data.user));
+  if(data?.data?.User){
+    dispatch(setUser(data?.data?.User));
   }
 }, [data]);
+useEffect(()=>{
+  console.log("data: ",data)
+},[data])
 
   return (
     <div>

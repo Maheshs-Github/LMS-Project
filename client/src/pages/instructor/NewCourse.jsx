@@ -51,7 +51,7 @@ const NewCourse = () => {
   // useEffect(() => console.log("id: ", id), [id]);
   const { id } = useParams();
   const { data } = useGet(id ? `course/${id}` : null);
-  const { mutate } = useMutation();
+  const { mutate,loading } = useMutation();
 
   useEffect(
     () => console.log("data: ", data, " courseData", courseData),
@@ -87,6 +87,9 @@ const NewCourse = () => {
   // }, [lectureState]);
 
   const { data: lectures, refetch } = useGet(`course/${id}/lectures`);
+
+  useEffect(()=>console.log("lectures: ",lectures),[lectures]);
+
   const handleSubmit = async () => {
     console.log(courseData);
     console.log("description: ", description);
@@ -377,8 +380,8 @@ const NewCourse = () => {
 
         {/* Add Lecture */}
         <div className=" my-2 p-10!">
-          {lectures?.data?.length ? (
-            lectures?.data?.map((lecture) => {
+          {lectures?.data?.lectures?.length ? (
+            lectures?.data?.lectures?.map((lecture) => {
               return (
                 <Card className={"my-2 p-1.5!"}>
                   <CardContent className="flex items-center justify-between ">
@@ -483,9 +486,9 @@ const NewCourse = () => {
               </div>
               <Button
                 onClick={videoEdit ? handleLectureEdit : handleAddVideo}
-                className={"cursor-pointer"}
+                className={`cursor-pointer `} disabled={loading}
               >
-                {videoEdit ? "Edit Video" : "Add Video"}
+                {loading? "Plz.. wait In Progress":videoEdit ? "Edit Video" : "Add Video"}
               </Button>
 
               {/* Form Fields */}

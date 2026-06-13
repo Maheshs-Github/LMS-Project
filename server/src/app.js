@@ -3,6 +3,8 @@ import cors from "cors";
 import userRouter from "../routes/user.routes.js"
 import courseRouter from "../routes/course.route.js"
 import lectureRouter from "../routes/lecture.route.js"
+import progressRouter from "../routes/progress.route.js"
+
 
 import cookieParser from "cookie-parser"
 
@@ -21,6 +23,7 @@ app.use(express.json())
 app.use("/api/v1/user",userRouter)
 app.use("/api/v1/course",courseRouter)
 app.use("/api/v1/lecture",lectureRouter)
+app.use("/api/v1/progress",progressRouter)
 
 
 app.use((err,req,res,next)=>{

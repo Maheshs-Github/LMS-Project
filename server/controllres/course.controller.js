@@ -80,9 +80,11 @@ const getCourseById = asyncHandler(async (req, res) => {
   console.log("courseId: ", courseId);
   const fetchedCourse = await Course.findOne({
     _id: courseId,
-    // we are showing inthe student side so inructor matcjhing is commented for now 
+    // we are showing inthe student side so inructor matcjhing is commented for now
     // instructor: req.user.id,
-  }).populate("lectures","-__v -updatedAt -createdAt -course").populate("instructor", "name");
+  })
+    .populate("lectures", "-__v -updatedAt -createdAt -course")
+    .populate("instructor", "name");
   console.log("fetchedCourse: ", fetchedCourse);
   if (!fetchedCourse) throw new ApiError(404, "Course not found");
 
@@ -165,7 +167,7 @@ const getCourseLectures = asyncHandler(async (req, res) => {
   const courseLectures = await Course.findById(courseId).populate("lectures");
   console.log("couser lec: ", courseLectures);
   // if (!courseLectures.length ) throw new ApiError(404, "No Lectures Found");
-  if (!courseLectures ) throw new ApiError(404, "No Lectures Found");
+  if (!courseLectures) throw new ApiError(404, "No Lectures Found");
 
   return res
     .status(200)
@@ -178,34 +180,48 @@ const getCourseLectures = asyncHandler(async (req, res) => {
     );
 });
 
-const getAllCourses=asyncHandler(async(req,res)=>{
-  const courses=await Course.find().populate("instructor","-__v -updatedAt -createdAt -password");
-  if(!courses)
-    throw new ApiError(404,"No Courses not Found");
-  console.log("courses: ",courses);
-  return res.status(200).json(new ApiResponse(200,courses,"Courses has been succcessfully"));
-})
+const getAllCourses = asyncHandler(async (req, res) => {
+  const courses = await Course.find().populate(
+    "instructor",
+    "-__v -updatedAt -createdAt -password",
+  );
+  if (!courses) throw new ApiError(404, "No Courses not Found");
+  console.log("courses: ", courses);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, courses, "Courses has been succcessfully"));
+});
 
-const courseEnroll=asyncHandler(async(req,res)=>{
-  const userId=req.user.id;
-  const {courseId}=req.params;
+const courseEnroll = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const { courseId } = req.params;
   console.log("courseId: ", courseId);
 
-  if([courseId,userId].some((field)=>!field || field.trim()===""))
-    throw new ApiError(400,"CourseId and UserId both are required");
+  if ([courseId, userId].some((field) => !field || field.trim() === ""))
+    throw new ApiError(400, "CourseId and UserId both are required");
   // const updatedCourse=await Course.findByIdAndUpdate(courseId,{$addToSet:{enrolledStudents:userId}},{new:true});
   // const updateuser=await User.findByIdAndUpdate(userId,{$addToSet:{coursesEnrolledIn:courseId}},{new :true});
 
-  const [updatedCourse,updateuser]=await Promise.all([
-    Course.findByIdAndUpdate(courseId,{$addToSet:{enrolledStudents:userId}},{new:true}),
-    User.findByIdAndUpdate(userId,{$addToSet:{coursesEnrolledIn:courseId}},{new :true})
-  ])
-  if(!updatedCourse)
-    throw new ApiError(404,"Course not found ");
-  if(!updateuser)
-    throw new ApiError(401,"User Not Found")
-  return res.status(200).json(new ApiResponse(200,updatedCourse,"Course Enrollment is successful"));
-})
+  const [updatedCourse, updateuser] = await Promise.all([
+    Course.findByIdAndUpdate(
+      courseId,
+      { $addToSet: { enrolledStudents: userId } },
+      { new: true },
+    ),
+    User.findByIdAndUpdate(
+      userId,
+      { $addToSet: { coursesEnrolledIn: courseId } },
+      { new: true },
+    ),
+  ]);
+  if (!updatedCourse) throw new ApiError(404, "Course not found ");
+  if (!updateuser) throw new ApiError(401, "User Not Found");
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, updatedCourse, "Course Enrollment is successful"),
+    );
+});
 
 export {
   createCourse,
@@ -214,5 +230,5 @@ export {
   updateCourse,
   getCourseLectures,
   getAllCourses,
-  courseEnroll
+  courseEnroll,
 };

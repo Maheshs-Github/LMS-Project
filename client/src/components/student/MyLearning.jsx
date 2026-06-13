@@ -52,8 +52,9 @@ const MyLearning = () => {
       ?.toUpperCase();
   };
 
-  const handleContinueLearning=(id)=>{
-    navigate(`/student/learn/${id}`)
+  const handleContinueLearning=(courseId )=>{
+    console.log("courseId in My Learn: ",courseId);
+    navigate(`/student/learn/${courseId }`)
   }
 
   return (

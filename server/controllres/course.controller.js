@@ -169,12 +169,14 @@ const getCourseLectures = asyncHandler(async (req, res) => {
   // if (!courseLectures.length ) throw new ApiError(404, "No Lectures Found");
   if (!courseLectures) throw new ApiError(404, "No Lectures Found");
 
+  const count = courseLectures?.lectures?.length;
+
   return res
     .status(200)
     .json(
       new ApiResponse(
         200,
-        courseLectures,
+        { lecture: courseLectures, lectureCount: count },
         "Course Lectures has been fetched successfully",
       ),
     );

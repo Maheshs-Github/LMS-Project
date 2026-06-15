@@ -60,7 +60,7 @@ const MyLearning = () => {
   return (
     <div>
       <h1 className="font-semibold text-xl">My Learning</h1>
-      <h2 className="font-semibold text-lg">Continue where you left off</h2>
+      <h2 className="font-semibold text-lg my-4">Continue where you left off</h2>
 
       <div className="grid grid-cols-4 gap-10">
         {!loading

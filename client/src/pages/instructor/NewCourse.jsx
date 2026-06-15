@@ -51,7 +51,7 @@ const NewCourse = () => {
   // useEffect(() => console.log("id: ", id), [id]);
   const { id } = useParams();
   const { data } = useGet(id ? `course/${id}` : null);
-  const { mutate,loading } = useMutation();
+  const { mutate, loading } = useMutation();
 
   useEffect(
     () => console.log("data: ", data, " courseData", courseData),
@@ -86,9 +86,13 @@ const NewCourse = () => {
   //   console.log("rea: ", res);
   // }, [lectureState]);
 
-  const { data: lectures, refetch } = useGet(`course/${id}/lectures`);
+  const {
+    data: lectures,
+    refetch,
+    loading: loadingLec,
+  } = useGet(id ? `course/${id}/lectures` : null);
 
-  useEffect(()=>console.log("lectures: ",lectures),[lectures]);
+  useEffect(() => console.log("lectures: ", lectures), [lectures]);
 
   const handleSubmit = async () => {
     console.log(courseData);
@@ -380,41 +384,45 @@ const NewCourse = () => {
 
         {/* Add Lecture */}
         <div className=" my-2 p-10!">
-          {lectures?.data?.lectures?.length ? (
-            lectures?.data?.lectures?.map((lecture) => {
-              return (
-                <Card className={"my-2 p-1.5!"}>
-                  <CardContent className="flex items-center justify-between ">
-                    <p className="text-lg font-medium italic">
-                      {lecture.title ?? "Not avaliable"}
-                    </p>
+          {!loadingLec ? (
+            lectures?.data?.lecture?.lectures?.length ? (
+              lectures?.data?.lecture?.lectures?.map((lecture) => {
+                return (
+                  <Card className={"my-2 p-1.5!"}>
+                    <CardContent className="flex items-center justify-between ">
+                      <p className="text-lg font-medium italic">
+                        {lecture.title ?? "Not avaliable"}
+                      </p>
 
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline "
-                        className={
-                          "text-lg font-semibold p-5 bg-gray-400 hover:bg-gray-500 cursor-pointer"
-                        }
-                        onClick={() => handleLectureEditOpen(lecture)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        className={
-                          "text-lg font-semibold p-5  bg-red-100 hover:bg-red-300 cursor-pointer"
-                        }
-                        onClick={() => handleDelete(lecture?._id)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline "
+                          className={
+                            "text-lg font-semibold p-5 bg-gray-400 hover:bg-gray-500 cursor-pointer"
+                          }
+                          onClick={() => handleLectureEditOpen(lecture)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          className={
+                            "text-lg font-semibold p-5  bg-red-100 hover:bg-red-300 cursor-pointer"
+                          }
+                          onClick={() => handleDelete(lecture?._id)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            ) : (
+              <div>No lectures Found</div>
+            )
           ) : (
-            <div>No lectures Found</div>
+            <div>Loading...</div>
           )}
           {/* basic flow from tutorial  */}
           {/* i haven't decide on the time line for DSA , but i will revise least 2 problme amd solve 2  */}
@@ -443,7 +451,7 @@ const NewCourse = () => {
               <DialogHeader>
                 <DialogTitle></DialogTitle>
               </DialogHeader>
-              
+
               <InputField
                 name={"title"}
                 label={" Title"}
@@ -486,9 +494,14 @@ const NewCourse = () => {
               </div>
               <Button
                 onClick={videoEdit ? handleLectureEdit : handleAddVideo}
-                className={`cursor-pointer `} disabled={loading}
+                className={`cursor-pointer `}
+                disabled={loading}
               >
-                {loading? "Plz.. wait In Progress":videoEdit ? "Edit Video" : "Add Video"}
+                {loading
+                  ? "Plz.. wait In Progress"
+                  : videoEdit
+                    ? "Edit Video"
+                    : "Add Video"}
               </Button>
 
               {/* Form Fields */}
@@ -520,53 +533,50 @@ export default NewCourse;
 // let's see the personalty development any good courses or videos about it , gita , being mindfula nd peaceful , less overthinking
 // shrimat Bhagvad Gita, mobile no use
 
-// 13:30 
+// 13:30
 // "What am I thinking about right now?"
 // just thinking about completing the SI video ,or maybe continue with project , if not bale to focus on calculations, but not feeling really well to focus, guess health is not fine, alos thinking about the luch whaT to take for it , some thought about the trip also about switch
 // "How does my body feel?" (tight? tired? fine?)
-// tight and tired, well maybe bcoz of not feeking well, burt it is fine than morning 
+// tight and tired, well maybe bcoz of not feeking well, burt it is fine than morning
 // "Am I actually present or am I somewhere in my head?"
-// yeah mostly in the present , othere than above things 
-
+// yeah mostly in the present , othere than above things
 
 // /14:50
 // "What am I thinking about right now?"
-// hmm. mind is tired , it just want to sleep , actaully just had the lunch after that i was taking little nap first i was no thinking mode on ,but still some thing like evenmention in this reports pop up , then slowly i was sleeping damn one , thinking about so herd repluy to msg my friend , also have to sleep early today and about apptitude 
+// hmm. mind is tired , it just want to sleep , actaully just had the lunch after that i was taking little nap first i was no thinking mode on ,but still some thing like evenmention in this reports pop up , then slowly i was sleeping damn one , thinking about so herd repluy to msg my friend , also have to sleep early today and about apptitude
 // "How does my body feel?" (tight? tired? fine?)
-// feeling fine, just litlle head on side of eyes and litle tight else fine ,power nap was nice 
+// feeling fine, just litlle head on side of eyes and litle tight else fine ,power nap was nice
 // "Am I actually present or am I somewhere in my head?"
-// yup seems like it 
-
+// yup seems like it
 
 // next dy 10:00
 // "What am I thinking about right now?"
-// what to strt eiher aptitude or project , have to do apptitude but not feel like project have to do, well we have to do it , apptitude it is , about collegues amight not come today , ppl leaving IG but using the YT short , nthg else 
+// what to strt eiher aptitude or project , have to do apptitude but not feel like project have to do, well we have to do it , apptitude it is , about collegues amight not come today , ppl leaving IG but using the YT short , nthg else
 // "How does my body feel?" (tight? tired? fine?)
-// hmm. slept about 10 hrs feeling good , but still litlle tightness in mind and neck , else good 
+// hmm. slept about 10 hrs feeling good , but still litlle tightness in mind and neck , else good
 // "Am I actually present or am I somewhere in my head?"
-// mostly yes, about what do do ,s trtig my work 
+// mostly yes, about what do do ,s trtig my work
 
 // next dy 11:11
 // "What am I thinking about right now?"
-// nthg much wherther  to continuw with the apptitude or LMs , doing apptitude 
+// nthg much wherther  to continuw with the apptitude or LMs , doing apptitude
 // "How does my body feel?" (tight? tired? fine?)
-// hmm. feeling bettre than morning , just did face wash with water , little break 
+// hmm. feeling bettre than morning , just did face wash with water , little break
 // "Am I actually present or am I somewhere in my head?"
-// yeah 
-
+// yeah
 
 // 13:00
 // "What am I thinking about right now?"
-// nthg much hungry, head is still not good , actually my health bben not that is why , thinkig baout when to go eat 
+// nthg much hungry, head is still not good , actually my health bben not that is why , thinkig baout when to go eat
 // "How does my body feel?" (tight? tired? fine?)
-// nthg difremt that above 
+// nthg difremt that above
 // "Am I actually present or am I somewhere in my head?"
-// yeah 
+// yeah
 
 // 17:48
 // "What am I thinking about right now?"
-// what i am thinking , just took powe nap, thinking about what should i do maybe juast write our weekly progress whethere to go face wash and et some air , will do then , thinking about the talking with collegues but guess they are working 
+// what i am thinking , just took powe nap, thinking about what should i do maybe juast write our weekly progress whethere to go face wash and et some air , will do then , thinking about the talking with collegues but guess they are working
 // "How does my body feel?" (tight? tired? fine?)
 // feeling fine rn , songs and all
 // "Am I actually present or am I somewhere in my head?"
-// u can say i g 
+// u can say i g

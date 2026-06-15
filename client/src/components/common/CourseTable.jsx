@@ -15,12 +15,9 @@ import Icons from "@/utils/Icons";
 const CourseTable = ({ data, handleEdit }) => {
   return (
     <div className="rounded-xl border bg-white overflow-x-auto">
-
       <Table className={"text-lg"}>
-
         <TableHeader>
           <TableRow>
-
             <TableHead>Course</TableHead>
 
             <TableHead>Price</TableHead>
@@ -29,28 +26,18 @@ const CourseTable = ({ data, handleEdit }) => {
 
             <TableHead>Students</TableHead>
 
-            <TableHead className="text-right">
-              Actions
-            </TableHead>
-
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
-
-          {data.map((course,index) => (
+          {data.map((course, index) => (
             <TableRow key={index}>
+              <TableCell className="font-medium">{course.name}</TableCell>
 
-              <TableCell className="font-medium">
-                {course.name}
-              </TableCell>
-
-              <TableCell>
-                ₹{course.price}
-              </TableCell>
+              <TableCell>₹{course.price}</TableCell>
 
               <TableCell>
-
                 <span
                   className={`px-3 py-1 rounded-full text-sm ${
                     course.status === "Published"
@@ -60,29 +47,25 @@ const CourseTable = ({ data, handleEdit }) => {
                 >
                   {course.status}
                 </span>
-
               </TableCell>
 
-              <TableCell>
-                {course.students ?? 0}
-              </TableCell>
+              <TableCell>{course.students ?? 0}</TableCell>
 
               <TableCell className="text-right">
-                {console.log("(course._id): ",(course._id))}
+                {console.log("(course._id): ", course._id)}
 
-                <Button size="sm" className={"cursor-pointer p-4"} onClick={()=>handleEdit(course._id)}>
-                   <Icons.SquarePen className="w-5 h-5 mr-1" /> <span>Edit</span>
+                <Button
+                  size="sm"
+                  className={"cursor-pointer p-4"}
+                  onClick={() => handleEdit(course._id)}
+                >
+                  <Icons.SquarePen className="w-5 h-5 mr-1" /> <span>Edit</span>
                 </Button>
-
               </TableCell>
-
             </TableRow>
           ))}
-
         </TableBody>
-
       </Table>
-
     </div>
   );
 };

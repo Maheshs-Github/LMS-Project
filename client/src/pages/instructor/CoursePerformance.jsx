@@ -62,8 +62,8 @@ const CoursePerformance = ({ courses }) => {
                 </TableCell>
               </TableRow> */}
             {/* ))} */}
-            {(courses || [])?.map((course) => (
-              <TableRow>
+            {(courses || [])?.map((course,key) => (
+              <TableRow key={key}>
                 {/* {console.log("courses: ", courses)} */}
                 <TableCell className="font-medium">{course?.title}</TableCell>
 

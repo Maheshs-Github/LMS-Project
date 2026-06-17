@@ -70,12 +70,13 @@ const getInstructorDashboard = asyncHandler(async (req, res) => {
   // }).countDocuments();
   // console.log("courseCount: ", courseCount);
 
-  // const studentCount = await Course.aggregate([
+  // const studentCount1 = await Course.aggregate([
   //   {
   //     $match: {
   //       instructor: new mongoose.Types.ObjectId(req.user?._id),
   //     },
   //   },
+
   //   {
   //     $project: {
   //       enrolledCount: {
@@ -92,7 +93,7 @@ const getInstructorDashboard = asyncHandler(async (req, res) => {
   //     },
   //   },
   // ]);
-  // console.log("studentCount: ", studentCount);
+  // console.log("studentCount1: ", studentCount1);
   //   courseCount:  5
   // studentCount:  [
   // { _id: new ObjectId('6a1a7630f91aba30565481b8'), enrolledCount: 4 },
@@ -145,6 +146,35 @@ const getInstructorDashboard = asyncHandler(async (req, res) => {
   console.log("lectureCount: ", lectureCount);
   // console.log("courseData: ",courseData);
 
+  const perCourseCompletion = await Course.aggregate([
+    {
+      $match: {
+        instructor: new mongoose.Types.ObjectId(req.user._id),
+      },
+    },
+    {
+      $lookup:{
+        from:"progresses",
+        localField:"_id",
+        foreignField:"courseId",
+        as: "courseProgressDetails",
+      }
+    },
+  ]);
+
+  // console.dir(perCourseCompletion, { depth: null });
+  const ans=perCourseCompletion.map((courseData)=>{
+    const courseLen=courseData.lectures.length;    
+    return(courseData.courseProgressDetails.filter((pData)=>
+      {
+        return(pData.lecturesCompleted.length===courseLen)
+      }
+    ).length);
+    // console.log("courseData: ",courseData)
+  })
+  
+  console.log("ans: ",ans);
+
   const dashCourses = courseData?.map((course) => ({
     title: course?.title,
     students: course?.enrolledStudents.length || 0,
@@ -152,20 +182,18 @@ const getInstructorDashboard = asyncHandler(async (req, res) => {
   }));
   console.log("dashCourses: ", dashCourses);
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        {
-          studentCount: studentCount[0].totalStudents,
-          lectureCount: lectureCount[0].totalLectures,
-          courseCount: courseCount,
-          courseData: dashCourses,
-        },
-        "DashBoard Data has been fetched successfully",
-      ),
-    );
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        studentCount: studentCount[0].totalStudents,
+        lectureCount: lectureCount[0].totalLectures,
+        courseCount: courseCount,
+        courseData: dashCourses,
+      },
+      "DashBoard Data has been fetched successfully",
+    ),
+  );
 });
 
 export { getInstructorDashboard };

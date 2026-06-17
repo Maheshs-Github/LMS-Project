@@ -481,6 +481,7 @@ const NewCourse = () => {
                   className="hidden"
                   onChange={(e) => {
                     setLectureData((prev) => ({
+
                       ...prev,
                       video: e.target.files[0],
                     }));
@@ -533,50 +534,7 @@ export default NewCourse;
 // let's see the personalty development any good courses or videos about it , gita , being mindfula nd peaceful , less overthinking
 // shrimat Bhagvad Gita, mobile no use
 
-// 13:30
-// "What am I thinking about right now?"
-// just thinking about completing the SI video ,or maybe continue with project , if not bale to focus on calculations, but not feeling really well to focus, guess health is not fine, alos thinking about the luch whaT to take for it , some thought about the trip also about switch
-// "How does my body feel?" (tight? tired? fine?)
-// tight and tired, well maybe bcoz of not feeking well, burt it is fine than morning
-// "Am I actually present or am I somewhere in my head?"
-// yeah mostly in the present , othere than above things
 
-// /14:50
-// "What am I thinking about right now?"
-// hmm. mind is tired , it just want to sleep , actaully just had the lunch after that i was taking little nap first i was no thinking mode on ,but still some thing like evenmention in this reports pop up , then slowly i was sleeping damn one , thinking about so herd repluy to msg my friend , also have to sleep early today and about apptitude
-// "How does my body feel?" (tight? tired? fine?)
-// feeling fine, just litlle head on side of eyes and litle tight else fine ,power nap was nice
-// "Am I actually present or am I somewhere in my head?"
-// yup seems like it
 
-// next dy 10:00
-// "What am I thinking about right now?"
-// what to strt eiher aptitude or project , have to do apptitude but not feel like project have to do, well we have to do it , apptitude it is , about collegues amight not come today , ppl leaving IG but using the YT short , nthg else
-// "How does my body feel?" (tight? tired? fine?)
-// hmm. slept about 10 hrs feeling good , but still litlle tightness in mind and neck , else good
-// "Am I actually present or am I somewhere in my head?"
-// mostly yes, about what do do ,s trtig my work
 
-// next dy 11:11
-// "What am I thinking about right now?"
-// nthg much wherther  to continuw with the apptitude or LMs , doing apptitude
-// "How does my body feel?" (tight? tired? fine?)
-// hmm. feeling bettre than morning , just did face wash with water , little break
-// "Am I actually present or am I somewhere in my head?"
-// yeah
 
-// 13:00
-// "What am I thinking about right now?"
-// nthg much hungry, head is still not good , actually my health bben not that is why , thinkig baout when to go eat
-// "How does my body feel?" (tight? tired? fine?)
-// nthg difremt that above
-// "Am I actually present or am I somewhere in my head?"
-// yeah
-
-// 17:48
-// "What am I thinking about right now?"
-// what i am thinking , just took powe nap, thinking about what should i do maybe juast write our weekly progress whethere to go face wash and et some air , will do then , thinking about the talking with collegues but guess they are working
-// "How does my body feel?" (tight? tired? fine?)
-// feeling fine rn , songs and all
-// "Am I actually present or am I somewhere in my head?"
-// u can say i g

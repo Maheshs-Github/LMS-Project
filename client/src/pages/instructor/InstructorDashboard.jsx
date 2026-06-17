@@ -22,6 +22,7 @@ const InstructorDashboard = () => {
 
   const courses = data?.data?.courseData || [];
 
+
   useEffect(()=>console.log("data: ",data),[data])
   return (
 

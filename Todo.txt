@@ -8,4 +8,4 @@ what is a formDtaa, also check frealted things
 8. frotend and backedn dat avalidtaions 
 
 What to check next 
-1. did the course details data mapping, next we want the owner there too , skeleton structure in theer , redirect o course details page 
+1. Satrt from the course controller

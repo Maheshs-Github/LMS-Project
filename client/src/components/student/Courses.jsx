@@ -73,6 +73,7 @@ const Courses = () => {
       img: data?.thumbnail,
       name: data?.title,
       price: data?.price,
+      level: data?.level,
       instructorName: data?.instructor?.name,
       instructorImg: data?.instructor?.photoUrl,
       enrolledStudents: data?.enrolledStudents,
@@ -98,6 +99,13 @@ const Courses = () => {
     navigate(`/student/learn/${courseId }`)
   }
 
+
+  const levelStyles={
+    "Beginner":"bg-green-100 text-green-700 border border-green-200",
+    "Moderate":"bg-yellow-100 text-yellow-700 border border-yellow-200",
+    "Advance":"bg-red-100 text-red-700 border border-red-200",
+
+  }
   return (
     <div className="p-8">
       <h3 className="w-full text-center font-bold text-3xl mb-6">
@@ -114,6 +122,7 @@ const Courses = () => {
                   className="relative mx-auto w-full max-w-sm pt-0 col-span-1"
                   key={index}
                 >
+                  {/* {console.log("course: ",course)} */}
                   <div className="absolute inset-0 z-30 aspect-video bg-black/35" />
                   <img
                     src={course?.img}
@@ -145,9 +154,10 @@ const Courses = () => {
                       </div>
                       <Badge
                         variant="secondary"
-                        className={"bg-blue-600 text-white p-3 text-sm "}
+                        className={`${levelStyles[course?.level]} p-3 text-sm `}
                       >
-                        Advance
+                        {/* {console.log("course?.level: ",course?.level)} */}
+                        {course?.level}
                       </Badge>
                     </div>
                     <div className="flex items-center font-bold text-lg gap-2">

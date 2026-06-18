@@ -50,7 +50,12 @@ const NewCourse = () => {
 
   // useEffect(() => console.log("id: ", id), [id]);
   const { id } = useParams();
-  const { data } = useGet(id ? `course/${id}` : null);
+  // const { data } = useGet(id ? `course/${id}` : null);
+    const {
+    data,
+    refetch,
+    loading: loadingLec,
+  } = useGet(id ? `course/${id}/lectures` : null);
   const { mutate, loading } = useMutation();
 
   useEffect(
@@ -61,15 +66,15 @@ const NewCourse = () => {
   useEffect(() => {
     if (!id) return;
     setCourseData({
-      _id: data?.data?._id ?? "",
-      title: data?.data?.title ?? "",
-      subTitle: data?.data?.subTitle ?? "",
-      category: data?.data?.category ?? "",
-      level: data?.data?.level ?? "",
-      price: data?.data?.price ?? "",
-      thumbnail: data?.data?.thumbnail ?? "",
+      _id: data?.data?.course?._id ?? "",
+      title: data?.data?.course?.title ?? "",
+      subTitle: data?.data?.course?.subTitle ?? "",
+      category: data?.data?.course?.category ?? "",
+      level: data?.data?.course?.level ?? "",
+      price: data?.data?.course?.price ?? "",
+      thumbnail: data?.data?.course?.thumbnail ?? "",
     });
-    setDescription(data?.data?.description ?? "");
+    setDescription(data?.data?.course?.description ?? "");
   }, [data]);
 
   // useEffect(() => {
@@ -86,13 +91,9 @@ const NewCourse = () => {
   //   console.log("rea: ", res);
   // }, [lectureState]);
 
-  const {
-    data: lectures,
-    refetch,
-    loading: loadingLec,
-  } = useGet(id ? `course/${id}/lectures` : null);
 
-  useEffect(() => console.log("lectures: ", lectures), [lectures]);
+
+  // useEffect(() => console.log("lectures: ", lectures), [lectures]);
 
   const handleSubmit = async () => {
     console.log(courseData);
@@ -107,6 +108,7 @@ const NewCourse = () => {
     if (courseData.thumbnail instanceof File)
       formData.append("thumbnail", courseData.thumbnail);
     try {
+      console.log("idL ",id)
       const res = await mutate({
         url: !id ? `course/` : `course/${courseData?._id}`,
         method: !id ? "post" : "PATCH",
@@ -383,10 +385,11 @@ const NewCourse = () => {
         </div>
 
         {/* Add Lecture */}
+        {id?
         <div className=" my-2 p-10!">
           {!loadingLec ? (
-            lectures?.data?.lecture?.lectures?.length ? (
-              lectures?.data?.lecture?.lectures?.map((lecture) => {
+            data?.data?.course?.lectures?.length ? (
+              data?.data?.course?.lectures?.map((lecture) => {
                 return (
                   <Card className={"my-2 p-1.5!"}>
                     <CardContent className="flex items-center justify-between ">
@@ -508,7 +511,7 @@ const NewCourse = () => {
               {/* Form Fields */}
             </DialogContent>
           </Dialog>
-        </div>
+        </div>:null}
         <div className="flex gap-4 mt-3">
           <button className="border rounded font-semibold p-2 px-8 cursor-pointer">
             Cancel

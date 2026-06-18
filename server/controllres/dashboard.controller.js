@@ -11,7 +11,7 @@ const getInstructorDashboard = asyncHandler(async (req, res) => {
   if (req?.user?.role !== "instructor")
     throw new ApiError(403, "Non Instructor can't fetch on this endpoint");
 
-  const [courseCount, studentCount, lectureCount, courseData] =
+  const [courseCount, studentCount, lectureCount] =
     await Promise.all([
       Course.find({
         instructor: req?.user?._id,
@@ -60,9 +60,9 @@ const getInstructorDashboard = asyncHandler(async (req, res) => {
           },
         },
       ]),
-      Course.find({
-        instructor: req?.user?._id,
-      }),
+      // Course.find({
+      //   instructor: req?.user?._id,
+      // }),
     ]);
 
   // const courseCount = await Course.find({
@@ -163,33 +163,52 @@ const getInstructorDashboard = asyncHandler(async (req, res) => {
   ]);
 
   // console.dir(perCourseCompletion, { depth: null });
-  const ans=perCourseCompletion.map((courseData)=>{
-    const courseLen=courseData.lectures.length;    
-    return(courseData.courseProgressDetails.filter((pData)=>
-      {
-        return(pData.lecturesCompleted.length===courseLen)
-      }
-    ).length);
+  let totalCourseEnrollStudents=0, totalCourseCompletedStudents=0;
+  const coursesData=perCourseCompletion.map((courseData)=>{
     // console.log("courseData: ",courseData)
-  })
-  
-  console.log("ans: ",ans);
+    const courseLen=courseData.lectures.length;    
+    const enrolledStudents=courseData.enrolledStudents.length;
+    totalCourseEnrollStudents+=enrolledStudents;
+    const completedStudents=(courseData.courseProgressDetails.filter((pData)=>
+      
+        (pData.lecturesCompleted.length===courseLen)
+      
+    ).length);
+    totalCourseCompletedStudents+=completedStudents;
+    return(
+      {
+        title:courseData.title,
+        students:enrolledStudents,
+        lectures:courseData.lectures.length,
+        completedStudents:completedStudents,
+        completionRate:enrolledStudents>0 ? (completedStudents/enrolledStudents)*100:0,
 
-  const dashCourses = courseData?.map((course) => ({
-    title: course?.title,
-    students: course?.enrolledStudents.length || 0,
-    lectures: course?.lectures.length || 0,
-  }));
-  console.log("dashCourses: ", dashCourses);
+      }
+    )
+
+  })
+  console.log("totalCourseEnrollStudents: ",totalCourseEnrollStudents," totalCourseCompletedStudents: ",totalCourseCompletedStudents);
+  const totalCourseCompletionRate=totalCourseEnrollStudents >0 ?totalCourseCompletedStudents/totalCourseEnrollStudents*100:0;
+  // console.log("perCourseCompletion: ",perCourseCompletion);
+  
+  // console.log("ans: ",ans);
+
+  // const dashCourses = courseData?.map((course) => ({
+  //   title: course?.title,
+  //   students: course?.enrolledStudents.length || 0,
+  //   lectures: course?.lectures.length || 0,
+  // }));
+  // console.log("dashCourses: ", dashCourses);
 
   return res.status(200).json(
     new ApiResponse(
       200,
       {
-        studentCount: studentCount[0].totalStudents,
-        lectureCount: lectureCount[0].totalLectures,
+        studentCount: studentCount[0]?.totalStudents || 0,
+        lectureCount: lectureCount[0]?.totalLectures || 0,
         courseCount: courseCount,
-        courseData: dashCourses,
+        coursesData: coursesData,
+        totalCourseCompletionRate
       },
       "DashBoard Data has been fetched successfully",
     ),

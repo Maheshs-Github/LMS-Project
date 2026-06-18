@@ -12,6 +12,130 @@ import { useParams } from "react-router-dom";
 import video from "../../assets/video/file_example_MP4_480_1_5MG.mp4";
 import { useMutation } from "@/hooks/useMutation";
 import toast from "react-hot-toast";
+import { Button } from "@/components/ui/button";
+import Icons from "@/utils/Icons";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import { Textarea } from "../ui/textarea";
+
+const ReviewModel = () => {
+  const [openReviewPopUp, setOpenReviewPopup] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [review, setReview] = useState("");
+  const { courseId } = useParams();
+
+  const { mutate } = useMutation();
+
+  const handleSave = async () => {
+    console.log("review: ", review, " Rating: ", rating);
+    try {
+      const res = await mutate({
+        url: `reviewAndRating/${courseId}`,
+        method: "post",
+        body: { review, rating },
+      });
+      console.log("res: ", res);
+      toast.success(res.message || "review has been added successfully");
+      setRating(0);
+    setReview("");
+    setOpenReviewPopup(false);
+  } catch (error) {
+      console.log("error: ", error);
+      toast.error(error.message);
+    }
+  };
+
+  return (
+    <>
+      <div className="border rounded-xl p-3 m-3 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">MERN Stack Development</h2>
+
+            <div className="flex items-center gap-2 mt-2">
+              <div className="flex">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Icons.Star
+                    key={star}
+                    size={18}
+                    className="fill-yellow-400 text-yellow-400"
+                  />
+                ))}
+              </div>
+
+              <span className="font-medium">4.6</span>
+
+              <span className="text-muted-foreground">(128 Reviews)</span>
+            </div>
+          </div>
+
+          <Button
+            className="h-10 px-5 cursor-pointer"
+            onClick={() => setOpenReviewPopup(true)}
+          >
+            Write Review
+          </Button>
+        </div>
+      </div>
+
+      <Dialog open={openReviewPopUp} onOpenChange={setOpenReviewPopup}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Rate this Course</DialogTitle>
+
+            <DialogDescription>
+              Share your experience with other students.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col items-center gap-2 py-4">
+            <div className="flex gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Icons.Star
+                  key={star}
+                  onClick={() => setRating(star)}
+                  className={`cursor-pointer transition-all hover:scale-110 ${
+                    star <= rating
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "fill-gray-300"
+                  }`}
+                />
+              ))}
+            </div>
+
+            {rating > 0 && (
+              <span className="text-sm text-muted-foreground">
+                You rated this course {rating} / 5
+              </span>
+            )}
+          </div>
+
+          <Textarea
+            dir="ltr"
+            placeholder="Tell others what you liked or disliked about this course..."
+            className="min-h-28 text-left"
+            value={review}
+            onChange={(event) => setReview(event.target.value)}
+          />
+
+          <Button
+            type="button"
+            className="w-full cursor-pointer"
+            disabled={!rating}
+            onClick={handleSave}
+          >
+            Submit Review
+          </Button>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
 
 const LearningPlayer = () => {
   const [isVideoCompleted, setIsVideoCompleted] = useState(false);
@@ -19,7 +143,9 @@ const LearningPlayer = () => {
   const isCompleteref = useRef();
   console.log("courseId: ", courseId);
   const { data, refetch } = useGet(`course/${courseId}/lectures`);
-  const { data: lectureProgress, refetch:refetchprogress } = useGet(`progress/${courseId}`);
+  const { data: lectureProgress, refetch: refetchprogress } = useGet(
+    `progress/${courseId}`,
+  );
   const { mutate } = useMutation();
   const [playingVideoData, setPlayingVideoData] = useState({
     _id: "",
@@ -27,14 +153,18 @@ const LearningPlayer = () => {
     videoUrl: "",
   });
 
-  const lecture = data?.data?.lecture;
+  const lecture = data?.data?.course;
   const lectures = lecture?.lectures || [];
-  const lectureCount = data?.data?.lectureCount || lectures.length;
+  const lectureCount = data?.data?.course?.lectureCount || lectures.length;
   const lectureProgressData = lectureProgress?.data;
-  const completedLecturesCount = lectureProgressData?.lecturesCompleted.length;
-  const progressPercentage = Math.round(
-    (completedLecturesCount / lectureCount) * 100,
-  );
+  const completedLecturesCount =
+    lectureProgressData?.lecturesCompleted?.length ?? 0;
+  const progressPercentage = lectureCount
+    ? Math.round((completedLecturesCount / lectureCount) * 100)
+    : 0;
+  const reviewUrl =
+    progressPercentage === 100 ? `reviewAndRating/${courseId}` : null;
+  const { data: reviewData } = useGet(reviewUrl);
   useEffect(
     () => console.log("lectureProgress: ", lectureProgress),
     [lectureProgress],
@@ -121,6 +251,10 @@ const LearningPlayer = () => {
     }
   };
 
+  useEffect(() => {
+    console.log("reviewData: ", reviewData);
+  }, [reviewData]);
+
   return (
     <div className="p-6 w-full">
       <h1 className="text-2xl  font-semibold">Learning Player</h1>
@@ -154,7 +288,7 @@ const LearningPlayer = () => {
 
           <div className="border rounded-lg p-3 text-center">
             <p className="text-2xl font-bold text-orange-500">
-              {lectureCount - completedLecturesCount}
+              {lectureCount - (completedLecturesCount ?? 0) ?? 0}
             </p>
             <p className="text-sm text-gray-500">Remaining</p>
           </div>
@@ -170,6 +304,8 @@ const LearningPlayer = () => {
             🎉 Congratulations! You have completed this course.
           </div>
         )}
+
+        <ReviewModel />
       </div>
       {lectures.length ? (
         <div className="grid grid-cols-12 p-5 border rounded-l-2xl mt-2">

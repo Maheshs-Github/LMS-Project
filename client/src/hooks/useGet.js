@@ -7,18 +7,24 @@ export const useGet = (url) => {
   const [error, setError] = useState(null);
 
   const fetchData = async () => {
+    if (!url) return null;
+
     try {
       setLoading(true);
+      setError(null);
       const res = await apiClient(url);
       setData(res);
+      return res;
     } catch (err) {
       setError(err.message);
+      throw err;
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    if (!url) return;
     fetchData();
   }, [url]);
 

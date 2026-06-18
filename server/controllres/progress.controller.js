@@ -69,8 +69,8 @@ const getCourseProgress = asyncHandler(async (req, res) => {
 
   const courseProgress = await Progress.findOne({userId,courseId});
 
-  if(!courseProgress)
-    throw new ApiError(404,"No Course Progress Found");
+  // if(!courseProgress)
+  //   throw new ApiError(404,"No Course Progress Found");
 
   return res.status(200).json(new ApiResponse(200,courseProgress,"Course Progress has been fetched successfully"))
 });

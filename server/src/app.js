@@ -5,6 +5,7 @@ import courseRouter from "../routes/course.route.js"
 import lectureRouter from "../routes/lecture.route.js"
 import progressRouter from "../routes/progress.route.js"
 import dashboardRouter from "../routes/dashboard.route.js"
+import reviewAndRatingRouter from "../routes/review&rating.route.js"
 
 
 
@@ -27,6 +28,7 @@ app.use("/api/v1/course",courseRouter)
 app.use("/api/v1/lecture",lectureRouter)
 app.use("/api/v1/progress",progressRouter)
 app.use("/api/v1/dashboard",dashboardRouter)
+app.use("/api/v1/reviewAndRating",reviewAndRatingRouter)
 
 
 app.use((err,req,res,next)=>{

@@ -71,7 +71,7 @@ const CoursePerformance = ({ courses }) => {
 
                 <TableCell>{course?.lectures}</TableCell>
 
-                <TableCell>{"70%"}</TableCell>
+                <TableCell>{course?.completionRate ?? 0}%</TableCell>
               </TableRow>
             ))}
           </TableBody>

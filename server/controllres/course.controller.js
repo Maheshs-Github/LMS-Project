@@ -1,5 +1,6 @@
 import { Course } from "../models/course.model.js";
 import { Lecture } from "../models/lecture.model.js";
+import { ReviewAndRating } from "../models/review&rating.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -176,7 +177,7 @@ const getCourseLectures = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { lecture: courseLectures, lectureCount: count },
+        { course: courseLectures, lectureCount: count },
         "Course Lectures has been fetched successfully",
       ),
     );
@@ -187,8 +188,50 @@ const getAllCourses = asyncHandler(async (req, res) => {
     "instructor",
     "-__v -updatedAt -createdAt -password",
   );
+
+
+
+  const courseReviewData = await Course.aggregate([
+    {
+      $lookup: {
+        from: "reviewandratings",
+        localField: "_id",
+        foreignField: "courseId",
+        as: "courseReviews",
+      },
+    },
+  ]);
+  // console.log("courseReviewData: ", courseReviewData);
+  const reviewData = courseReviewData.map((d1) => {
+    let ratingtotal = 0;
+    const courserevlen = d1.courseReviews.length;
+
+    // console.log("len: ", courserevlen);
+    // console.log("courseReviews: ",d1.courseReviews)
+    d1?.courseReviews.forEach((d2) => (ratingtotal += Number(d2.rating)));
+    // console.log("ratingtotal: ",ratingtotal)
+    return {
+      courseId: d1._id,
+      avg:courserevlen>0 ? Number(ratingtotal / courserevlen):0,
+      reviewCount: courserevlen,
+    };
+  });
+  // console.log("data: ",data)
   if (!courses) throw new ApiError(404, "No Courses not Found");
-  console.log("courses: ", courses);
+  // console.log("courses: ", courses);
+
+  const ans = courses.map((course) => {
+    const courseReview  = reviewData.find(
+      (d) => d.courseId.toString() === course._id.toString(),
+    );
+    // const reData=data.find( (d) => console.log("d: ",d))
+    return {
+      ...course.toObject(),
+      averageRating: courseReview ?.avg || 0,
+      reviewCount: courseReview ?.reviewCount || 0,
+    };
+  });
+  console.log("ans: ", ans);
   return res
     .status(200)
     .json(new ApiResponse(200, courses, "Courses has been succcessfully"));

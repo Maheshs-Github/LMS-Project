@@ -20,7 +20,7 @@ const InstructorDashboard = () => {
 
   },[data]);
 
-  const courses = data?.data?.courseData || [];
+  const courses = data?.data?.coursesData || [];
 
 
   useEffect(()=>console.log("data: ",data),[data])
@@ -42,7 +42,7 @@ const InstructorDashboard = () => {
         </div>
                 <div className="p-3 shadow-md rounded-lg col-span-1 flex flex-col gap-4 ">
           <div className="text-lg">Course Completion </div>
-          <div className="font-semibold text-blue-600 text-lg">312241</div>
+          <div className="font-semibold text-blue-600 text-lg">{data?.data?.totalCourseCompletionRate ??0}%</div>
         </div>
       </div>
       {/* <div className="grid gap-6 w-full min-w-0 overflow-hidden ">

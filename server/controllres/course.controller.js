@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Course } from "../models/course.model.js";
 import { Lecture } from "../models/lecture.model.js";
 import { ReviewAndRating } from "../models/review&rating.model.js";
@@ -86,15 +87,38 @@ const getCourseById = asyncHandler(async (req, res) => {
   })
     .populate("lectures", "-__v -updatedAt -createdAt -course")
     .populate("instructor", "name");
-  console.log("fetchedCourse: ", fetchedCourse);
+
+  // console.log("fetchedCourse: ", fetchedCourse);
   if (!fetchedCourse) throw new ApiError(404, "Course not found");
 
+  const courseReviewData = await Course.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(courseId),
+      },
+    },
+    {
+      $lookup: {
+        from: "reviewandratings",
+        localField: "_id",
+        foreignField: "courseId",
+        as: "courseReview",
+      },
+    },
+  ]);
+  // console.log("courseReview: ", courseReviewData[0]?.courseReview);
+  let courseRatingSum=0,reviewCount=courseReviewData[0]?.courseReview?.length ??0;
+  (courseReviewData[0]?.courseReview || []).forEach((rData)=>courseRatingSum+=Number(rData.rating))
+
+  // console.log("courseRatingSum: ",courseRatingSum," reviewCount: ",reviewCount, "hello")
+
+  const courseAvgRating=reviewCount>0 ? courseRatingSum/reviewCount:0;
   return res
     .status(200)
     .json(
       new ApiResponse(
         200,
-        fetchedCourse,
+        {fetchedCourse,reviewCount,courseAvgRating},
         "Course Data has been Fetched Successfully",
       ),
     );
@@ -189,8 +213,6 @@ const getAllCourses = asyncHandler(async (req, res) => {
     "-__v -updatedAt -createdAt -password",
   );
 
-
-
   const courseReviewData = await Course.aggregate([
     {
       $lookup: {
@@ -212,7 +234,7 @@ const getAllCourses = asyncHandler(async (req, res) => {
     // console.log("ratingtotal: ",ratingtotal)
     return {
       courseId: d1._id,
-      avg:courserevlen>0 ? Number(ratingtotal / courserevlen):0,
+      avg: courserevlen > 0 ? Number(ratingtotal / courserevlen) : 0,
       reviewCount: courserevlen,
     };
   });
@@ -221,20 +243,20 @@ const getAllCourses = asyncHandler(async (req, res) => {
   // console.log("courses: ", courses);
 
   const ans = courses.map((course) => {
-    const courseReview  = reviewData.find(
+    const courseReview = reviewData.find(
       (d) => d.courseId.toString() === course._id.toString(),
     );
     // const reData=data.find( (d) => console.log("d: ",d))
     return {
       ...course.toObject(),
-      averageRating: courseReview ?.avg || 0,
-      reviewCount: courseReview ?.reviewCount || 0,
+      averageRating: courseReview?.avg || 0,
+      reviewCount: courseReview?.reviewCount || 0,
     };
   });
   console.log("ans: ", ans);
   return res
     .status(200)
-    .json(new ApiResponse(200, courses, "Courses has been succcessfully"));
+    .json(new ApiResponse(200, ans, "Courses has been succcessfully"));
 });
 
 const courseEnroll = asyncHandler(async (req, res) => {

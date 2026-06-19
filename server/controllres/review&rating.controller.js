@@ -50,8 +50,9 @@ const getReviewAndratingByCourUser=asyncHandler(async(req,res)=>{
     throw new ApiError(400,"Course Id is found");
 
   const fetchedReview=await ReviewAndRating.findOne({courseId,userId});
+  console.log("fetchedReview: ",fetchedReview)
 
-  return res.status(200).json(new ApiResponse(200,fetchedReview,"course Review has been fetched "));
+  return res.status(200).json(new ApiResponse(200,fetchedReview,"User Given review  has been fetched "));
 })
 
 export { addReviewAndRating , getReviewAndratingByCourUser};

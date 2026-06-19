@@ -23,7 +23,7 @@ import {
 } from "../ui/dialog";
 import { Textarea } from "../ui/textarea";
 
-const ReviewModel = () => {
+const ReviewModel = ({ userReview }) => {
   const [openReviewPopUp, setOpenReviewPopup] = useState(false);
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
@@ -42,24 +42,37 @@ const ReviewModel = () => {
       console.log("res: ", res);
       toast.success(res.message || "review has been added successfully");
       setRating(0);
-    setReview("");
-    setOpenReviewPopup(false);
-  } catch (error) {
+      setReview("");
+      setOpenReviewPopup(false);
+    } catch (error) {
       console.log("error: ", error);
       toast.error(error.message);
     }
   };
+  console.log("userReview: ", userReview);
+  useEffect(() => {
+    if (userReview) {
+      setRating(userReview?.rating);
+      setReview(userReview.review);
+    }
+  }, [userReview]);
 
+  const timestamp = new Date(review?.createdAt).getTime();
+
+  const days = Number.isNaN(timestamp)
+    ? 0
+    : Math.floor((Date.now() - timestamp) / (1000 * 60 * 60 * 24));
   return (
     <>
       <div className="border rounded-xl p-3 m-3 shadow-sm">
         <div className="flex items-center justify-between">
+          {userReview ? null : (
+            <h2 className="text-lg font-semibold">Rate the Course</h2>
+          )}
           <div>
-            <h2 className="text-lg font-semibold">MERN Stack Development</h2>
-
             <div className="flex items-center gap-2 mt-2">
               <div className="flex">
-                {[1, 2, 3, 4, 5].map((star) => (
+                {Array.from({ length: userReview?.rating || 0 }).map((star) => (
                   <Icons.Star
                     key={star}
                     size={18}
@@ -68,17 +81,19 @@ const ReviewModel = () => {
                 ))}
               </div>
 
-              <span className="font-medium">4.6</span>
-
-              <span className="text-muted-foreground">(128 Reviews)</span>
+              <span className="font-medium">{userReview?.rating}</span>
             </div>
+            <div className="text-muted-foreground">{userReview?.review}</div>
+            {userReview?<div className="text-muted-foreground">
+              {days ?? "NA"} days ago
+            </div>:null}
           </div>
 
           <Button
             className="h-10 px-5 cursor-pointer"
             onClick={() => setOpenReviewPopup(true)}
           >
-            Write Review
+            {userReview ? "Edit Review" : "Write Review"}
           </Button>
         </div>
       </div>
@@ -139,6 +154,7 @@ const ReviewModel = () => {
 
 const LearningPlayer = () => {
   const [isVideoCompleted, setIsVideoCompleted] = useState(false);
+  const [userReview, setUserReview] = useState({});
   const { courseId } = useParams();
   const isCompleteref = useRef();
   console.log("courseId: ", courseId);
@@ -169,6 +185,8 @@ const LearningPlayer = () => {
     () => console.log("lectureProgress: ", lectureProgress),
     [lectureProgress],
   );
+
+  useEffect(() => setUserReview(reviewData?.data), [reviewData]);
   const handleVideoPlay = (lec) => {
     setPlayingVideoData({
       _id: lec?._id,
@@ -305,7 +323,7 @@ const LearningPlayer = () => {
           </div>
         )}
 
-        <ReviewModel />
+        <ReviewModel userReview={userReview} />
       </div>
       {lectures.length ? (
         <div className="grid grid-cols-12 p-5 border rounded-l-2xl mt-2">

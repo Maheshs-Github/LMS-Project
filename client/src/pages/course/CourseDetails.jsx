@@ -7,6 +7,7 @@ import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useMutation } from "@/hooks/useMutation";
 import toast from "react-hot-toast";
+import Icons from "@/utils/Icons";
 
 const CourseDetails = () => {
   const { id } = useParams();
@@ -25,27 +26,32 @@ const CourseDetails = () => {
     thumbnail: "",
     level: "",
     updatedAt: "",
-    lectures: "",
+    lectures: [],
     instructor: "",
+    enrolledStudents: [],
   });
 
   useEffect(() => {
     console.log("data: ", data);
     setCourseData({
-      _id: data?.data?._id ?? "",
-      title: data?.data?.title ?? "",
-      subTitle: data?.data?.subTitle ?? "",
-      category: data?.data?.category ?? "",
-      createdAt: data?.data?.createdAt ?? "",
-      description: data?.data?.description ?? "",
-      price: data?.data?.price ?? "",
-      thumbnail: data?.data?.thumbnail ?? "",
-      level: data?.data?.level ?? "",
-      updatedAt: data?.data?.updatedAt ?? "",
-      lectures: data?.data?.lectures ?? "",
-      instructor: data?.data?.instructor ?? "",
+      _id: data?.data?.fetchedCourse?._id ?? "",
+      title: data?.data?.fetchedCourse?.title ?? "",
+      subTitle: data?.data?.fetchedCourse?.subTitle ?? "",
+      category: data?.data?.fetchedCourse?.category ?? "",
+      createdAt: data?.data?.fetchedCourse?.createdAt ?? "",
+      description: data?.data?.fetchedCourse?.description ?? "",
+      price: data?.data?.fetchedCourse?.price ?? "",
+      thumbnail: data?.data?.fetchedCourse?.thumbnail ?? "",
+      level: data?.data?.fetchedCourse?.level ?? "",
+      updatedAt: data?.data?.fetchedCourse?.updatedAt ?? "",
+      lectures: data?.data?.fetchedCourse?.lectures ?? "",
+      enrolledStudents: data?.data?.fetchedCourse?.enrolledStudents ?? "",
+      instructor: data?.data?.fetchedCourse?.instructor ?? "",
     });
   }, [data]);
+
+  const reviewCount = data?.data?.reviewCount;
+  const courseAvgRating = data?.data?.courseAvgRating;
 
   const handleEnroll = async (cId) => {
     try {
@@ -66,6 +72,15 @@ const CourseDetails = () => {
       <div className="bg-black text-white px-4 py-10 rounded flex flex-col gap-2">
         <h1 className="text-2xl font-semibold ">{courseData.title}</h1>
         <h3 className="text-lg">{courseData.subTitle}</h3>
+        <div className="flex items-center gap-1 text-sm">
+          <Icons.Star size={16} className="fill-yellow-400 text-yellow-400" />
+
+          <span className="font-semibold text-yellow-400">
+            {courseAvgRating?.toFixed(1) || "0.0"}
+          </span>
+
+          <span className="text-gray-400">({reviewCount || 0} Reviews)</span>
+        </div>
         <h3>
           Created By -{" "}
           <span className="text-purple-400 font-semibold underline capitalize">
@@ -83,7 +98,9 @@ const CourseDetails = () => {
             })}
           </span>
         </div>
-        <h4>Students Enrolled: 1 </h4>
+        <h4>
+          Students Enrolled: {courseData?.enrolledStudents?.length ?? "NA"}{" "}
+        </h4>
       </div>
       <div className="grid grid-cols-2 px-4 py-10 gap-20">
         <div className="col-span-1">
@@ -103,9 +120,15 @@ const CourseDetails = () => {
           </div>
         </div>
         <div className="col-span-1 border p-2 rounded">
-          <video src={video} muted autoPlay controls></video>
+          <video
+            src={courseData?.lectures[0]?.videoUrl}
+            muted
+            autoPlay
+            controls
+            className=" aspect-video p-8"
+          ></video>
           <h2 className="font-semibold text-lg my-3">
-            Introduction to Next.js
+            {courseData?.lectures[0]?.title}
           </h2>
           <hr className="font-semibold  text-black" />
           <div className="flex font-semibold items-center my-3">

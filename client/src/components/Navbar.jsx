@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Frieren from "../assets/FrierenSama.jpg";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,10 +14,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 import { Link, useNavigate } from "react-router-dom";
 import Icons from "@/utils/Icons";
+import { useSelector } from "react-redux";
 
 const Navbar = () => {
+  const user = useSelector((state) => state.auth.user);
+  
   const navigate = useNavigate();
   const [mode, setMode] = useState(true);
+  useEffect(()=>console.log("user: ",user),[user])
+
+  const userPicFallBack=user?.name.split(" ").map((name)=>name[0].toUpperCase()).join("")
   return (
     <div className="flex items-center w-full border-b-2 p-2 justify-between px-28">
       <div className="flex gap-3 w-full">
@@ -36,19 +42,20 @@ const Navbar = () => {
               /> */}
                 <Avatar>
                   <AvatarImage
-                    src="https://github.com/shadcn.png"
+                    src={user?.photoUrl}
                     alt="shadcn"
                   />
-                  <AvatarFallback>CN</AvatarFallback>
+                  <AvatarFallback>{userPicFallBack}</AvatarFallback>
+                  {console.log("userPicFallBack: ",userPicFallBack)}
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuGroup>
                 <DropdownMenuLabel>My Profile</DropdownMenuLabel>
-                <DropdownMenuItem><Link to={"/profile"}>Dashboard</Link></DropdownMenuItem>
-                <DropdownMenuItem>My Learning</DropdownMenuItem>
-                <DropdownMenuItem>Edit Profile</DropdownMenuItem>
+                <DropdownMenuItem><Link to={`/${user?.role}/dashboard`}>Dashboard</Link></DropdownMenuItem>
+                <DropdownMenuItem><Link to={"/student/my-learning"}>  My Learning</Link></DropdownMenuItem>
+                <DropdownMenuItem><Link to={"/student/profile"}> Edit Profile</Link></DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>

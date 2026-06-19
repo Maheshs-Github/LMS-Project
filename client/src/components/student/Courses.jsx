@@ -74,6 +74,8 @@ const Courses = () => {
       name: data?.title,
       price: data?.price,
       level: data?.level,
+      averageRating: data?.averageRating,
+      reviewCount: data?.reviewCount,
       instructorName: data?.instructor?.name,
       instructorImg: data?.instructor?.photoUrl,
       enrolledStudents: data?.enrolledStudents,
@@ -94,18 +96,16 @@ const Courses = () => {
     navigate(`/student/course/${id}`);
   };
 
-    const handleContinueLearning=(courseId )=>{
-    console.log("courseId in My Learn: ",courseId);
-    navigate(`/student/learn/${courseId }`)
-  }
+  const handleContinueLearning = (courseId) => {
+    console.log("courseId in My Learn: ", courseId);
+    navigate(`/student/learn/${courseId}`);
+  };
 
-
-  const levelStyles={
-    "Beginner":"bg-green-100 text-green-700 border border-green-200",
-    "Moderate":"bg-yellow-100 text-yellow-700 border border-yellow-200",
-    "Advance":"bg-red-100 text-red-700 border border-red-200",
-
-  }
+  const levelStyles = {
+    Beginner: "bg-green-100 text-green-700 border border-green-200",
+    Moderate: "bg-yellow-100 text-yellow-700 border border-yellow-200",
+    Advance: "bg-red-100 text-red-700 border border-red-200",
+  };
   return (
     <div className="p-8">
       <h3 className="w-full text-center font-bold text-3xl mb-6">
@@ -160,9 +160,26 @@ const Courses = () => {
                         {course?.level}
                       </Badge>
                     </div>
-                    <div className="flex items-center font-bold text-lg gap-2">
-                      <Icons.Rupee size={18} />
-                      {course?.price}
+                    <div className="flex items-center gap-4 font-semibold">
+                      <div className="flex items-center gap-1 text-lg">
+                        <Icons.Rupee size={18} />
+                        {course?.price}
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <Icons.Star
+                          size={16}
+                          className="fill-yellow-400 text-yellow-400"
+                        />
+
+                        <span>
+                          {course?.averageRating?.toFixed(1) || "0.0"}
+                        </span>
+
+                        <span className="text-muted-foreground text-sm">
+                          ({course?.reviewCount || 0})
+                        </span>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardFooter>
@@ -170,7 +187,11 @@ const Courses = () => {
 
                     <Button
                       className="w-full cursor-pointer"
-                      onClick={() =>!isEnrolled? handleEnroll(course?._id): handleContinueLearning(course?._id)}
+                      onClick={() =>
+                        !isEnrolled
+                          ? handleEnroll(course?._id)
+                          : handleContinueLearning(course?._id)
+                      }
                     >
                       {isEnrolled ? "Continue Learning" : "Enroll Now"}
                     </Button>

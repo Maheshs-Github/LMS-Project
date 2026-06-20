@@ -8,4 +8,4 @@ what is a formDtaa, also check frealted things
 8. frotend and backedn dat avalidtaions 
 
 What to check next 
-1. Satrt from the course controller
+1. our redirection are not done and protected routes , instertor that samll doalog box 

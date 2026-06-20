@@ -6,9 +6,9 @@ import { upload } from "../middlewares/multer.middlewares.js";
 const router=Router();
 
 router.post("",verifiedUser, upload.single("thumbnail"),createCourse);
-router.get("",verifiedUser,getAllCourses);
+router.get("",getAllCourses);
 router.get("/myCourses",verifiedUser,getMyCourses);
-router.get("/:courseId",verifiedUser,getCourseById);
+router.get("/:courseId",getCourseById);
 router.post("/:courseId",verifiedUser,courseEnroll);
 router.patch("/:courseId",verifiedUser,upload.single("thumbnail"),updateCourse);
 router.get("/:courseId/lectures",verifiedUser,getCourseLectures);

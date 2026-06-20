@@ -208,6 +208,7 @@ const getCourseLectures = asyncHandler(async (req, res) => {
 });
 
 const getAllCourses = asyncHandler(async (req, res) => {
+  const {searchValue,sortBy,category,page=1,limit=2}=req.params;
   const courses = await Course.find().populate(
     "instructor",
     "-__v -updatedAt -createdAt -password",

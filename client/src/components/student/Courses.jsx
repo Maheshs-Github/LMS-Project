@@ -15,6 +15,15 @@ import CourseSkeleton from "./courseSkeleton";
 import { useGet } from "@/hooks/useGet";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { Input } from "../ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { courseCategories } from "@/resources/Data";
 
 const CourseData = [
   {
@@ -55,6 +64,7 @@ const CourseData = [
 ];
 
 const Courses = () => {
+  const [searchValue,setSearchValue]=useState("");
   const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
   const [courses, setCourses] = useState([
@@ -65,6 +75,8 @@ const Courses = () => {
       price: "",
     },
   ]);
+  const [category, setCategory] = useState("");
+  const [sort, setSort] = useState("");
   const { loading, data } = useGet("course");
   useEffect(() => {
     console.log("Data: ", data);
@@ -93,7 +105,7 @@ const Courses = () => {
       ?.toUpperCase();
   };
   const handleEnroll = (id) => {
-    navigate(`/student/course/${id}`);
+    navigate(user ? `/student/course/${id}` : `course/${id}`);
   };
 
   const handleContinueLearning = (courseId) => {
@@ -106,11 +118,53 @@ const Courses = () => {
     Moderate: "bg-yellow-100 text-yellow-700 border border-yellow-200",
     Advance: "bg-red-100 text-red-700 border border-red-200",
   };
+
+  const handleSearch=(e)=>{
+    setSearchValue(e.target.value);
+    console.log("searchValue: ",searchValue)
+  }
   return (
     <div className="p-8">
       <h3 className="w-full text-center font-bold text-3xl mb-6">
         Our Courses
       </h3>
+
+      <div className="relative ">
+        <Icons.Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+        <Input className=" p-4 pl-10" placeholder="Search courses..." onChange={handleSearch} value={searchValue}/>
+      </div>
+      <div className="flex gap-4">
+        <Select value={category} onValueChange={setCategory}>
+          <SelectTrigger>
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value="All">All</SelectItem>
+            {courseCategories.map((cate) => (
+              <SelectItem value={cate.value}>{cate.label}</SelectItem>
+            ))}
+            {/* <SelectItem value="Web Development">Web Development</SelectItem>
+          <SelectItem value="AI">AI</SelectItem> */}
+          </SelectContent>
+        </Select>
+        <Select value={sort} onValueChange={setSort}>
+          <SelectTrigger>
+            <SelectValue placeholder="Sort By" />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value="newest">Newest</SelectItem>
+
+            <SelectItem value="price-low">Price Low → High</SelectItem>
+
+            <SelectItem value="price-high">Price High → Low</SelectItem>
+
+            <SelectItem value="rating">Highest Rated</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="grid grid-cols-4 gap-10">
         {!loading
           ? courses?.map((course, index) => {

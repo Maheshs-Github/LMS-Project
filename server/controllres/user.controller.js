@@ -8,16 +8,20 @@ import { Course } from "../models/course.model.js";
 
 const registerUser = asyncHandler(async (req, res) => {
   console.log("req.body: ", req.body);
-  const { name, email, password } = req.body;
-  if ([name, email, password].some((field) => !field || field.trim() === ""))
+  const { name, email, password,role } = req.body;
+  if ([name, email, password,role].some((field) => !field || field.trim() === ""))
     throw new ApiError(400, "All Field are required");
 
   const createdUser = await User.create({
     name: name,
     email: email,
     password: password,
+    role
   });
   console.log("createdUser: ", createdUser);
+
+  const FinalUser=createdUser.toObject();
+  delete FinalUser.password;
 
   const Token = await createdUser.generateToken();
 
@@ -40,7 +44,7 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { User: createdUser, Token: Token },
+        { User: FinalUser, Token: Token },
         "User has been Created Successfully",
       ),
     );
@@ -75,13 +79,25 @@ const loginUser = asyncHandler(async (req, res) => {
     secure: true,
   };
 
+  // console.log("loggedInUser: ", loggedInUser);
+  const FinalLoggedUser = {
+    _id: loggedInUser?._id,
+    name: loggedInUser?.name,
+    email: loggedInUser?.email,
+    role: loggedInUser?.role,
+    createdAt: loggedInUser?.createdAt,
+    updatedAt: loggedInUser?.updatedAt,
+  };
+
+  // console.log("FinalLoggedUser: ", FinalLoggedUser);
+
   return res
     .cookie("accessToken", Token, options)
     .status(200)
     .json(
       new ApiResponse(
         200,
-        { "Logged User": loggedInUser, Tokwn: Token },
+        { "User": FinalLoggedUser, Tokwn: Token },
         "User has logged in sucessfully",
       ),
     );
@@ -154,16 +170,25 @@ const updateUser = asyncHandler(async (req, res) => {
     );
 });
 
-const enrolledCourses=asyncHandler(async(req,res)=>{
-  const {userId}=req.params;
-  if(!userId)
-    throw new ApiError(400,"No user Id found");
+const enrolledCourses = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  if (!userId) throw new ApiError(400, "No user Id found");
 
-  const userEnrolledCourses=await Course.find({ enrolledStudents: userId}).populate("instructor","-__v -updatedAt -createdAt -password");
-  if(!userEnrolledCourses.length)
-    throw new ApiError(404,"No Courses of USer Found");
+  const userEnrolledCourses = await Course.find({
+    enrolledStudents: userId,
+  }).populate("instructor", "-__v -updatedAt -createdAt -password");
+  if (!userEnrolledCourses.length)
+    throw new ApiError(404, "No Courses of USer Found");
 
-  return res.status(200).json(new ApiResponse(200,userEnrolledCourses,"My Learning is Successfully Fetched"));
-})
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        userEnrolledCourses,
+        "My Learning is Successfully Fetched",
+      ),
+    );
+});
 
-export { registerUser, loginUser, loggedOut, updateUser ,enrolledCourses};
+export { registerUser, loginUser, loggedOut, updateUser, enrolledCourses };

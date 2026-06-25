@@ -110,17 +110,18 @@ const ReviewModel = ({ userReview }) => {
 
           <div className="flex flex-col items-center gap-2 py-4">
             <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Icons.Star
-                  key={star}
-                  onClick={() => setRating(star)}
-                  className={`cursor-pointer transition-all hover:scale-110 ${
-                    star <= rating
-                      ? "fill-yellow-400 text-yellow-400"
-                      : "fill-gray-300"
-                  }`}
+              {[1, 2, 3, 4, 5].map((star) => {
+                // {console.log("star",star)}
+                return(<Icons.Star
+                key={star}
+                onClick={() => setRating(star)}
+                className={`cursor-pointer transition-all hover:scale-110 ${
+                  star <= rating
+                  ? "fill-yellow-400 text-yellow-400"
+                  : "fill-gray-300"
+                }`}
                 />
-              ))}
+)})}
             </div>
 
             {rating > 0 && (

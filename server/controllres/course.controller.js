@@ -208,13 +208,68 @@ const getCourseLectures = asyncHandler(async (req, res) => {
 });
 
 const getAllCourses = asyncHandler(async (req, res) => {
-  const {searchValue,sortBy,category,page=1,limit=2}=req.params;
-  const courses = await Course.find().populate(
-    "instructor",
-    "-__v -updatedAt -createdAt -password",
-  );
+  const {searchValue,sortBy,category,page=1,limit=2}=req.query;
+  console.log("searchValue: ",searchValue," sortBy: ",sortBy);
+  const filter={};
+  // const courses = await Course.find().populate(
+  //   "instructor",
+  //   "-__v -updatedAt -createdAt -password",
+  // );
 
-  const courseReviewData = await Course.aggregate([
+  // const courseReviewData = await Course.aggregate([
+  //   {
+  //     $lookup: {
+  //       from: "reviewandratings",
+  //       localField: "_id",
+  //       foreignField: "courseId",
+  //       as: "courseReviews",
+  //     },
+  //   },
+  // ]);
+  // // console.log("courseReviewData: ", courseReviewData);
+  // const reviewData = courseReviewData.map((d1) => {
+  //   let ratingtotal = 0;
+  //   const courserevlen = d1.courseReviews.length;
+
+  //   // console.log("len: ", courserevlen);
+  //   // console.log("courseReviews: ",d1.courseReviews)
+  //   d1?.courseReviews.forEach((d2) => (ratingtotal += Number(d2.rating)));
+  //   // console.log("ratingtotal: ",ratingtotal)
+  //   return {
+  //     courseId: d1._id,
+  //     avg: courserevlen > 0 ? Number(ratingtotal / courserevlen) : 0,
+  //     reviewCount: courserevlen,
+  //   };
+  // });
+  // // console.log("data: ",data)
+  // if (!courses) throw new ApiError(404, "No Courses not Found");
+  // // console.log("courses: ", courses);
+
+  // const ans = courses.map((course) => {
+  //   const courseReview = reviewData.find(
+  //     (d) => d.courseId.toString() === course._id.toString(),
+  //   );
+  //   // const reData=data.find( (d) => console.log("d: ",d))
+  //   return {
+  //     ...course.toObject(),
+  //     averageRating: courseReview?.avg || 0,
+  //     reviewCount: courseReview?.reviewCount || 0,
+  //   };
+  // });
+
+  // let's see how we can do more effeciently 
+    const courseReviewData = await Course.aggregate([
+      {
+        $lookup:{
+          from:"users",
+          localField:"instructor",
+          foreignField:"_id",
+          as :"instructor",
+        }
+      },
+        {
+    $unwind: "$instructor",
+  },
     {
       $lookup: {
         from: "reviewandratings",
@@ -222,42 +277,38 @@ const getAllCourses = asyncHandler(async (req, res) => {
         foreignField: "courseId",
         as: "courseReviews",
       },
-    },
+    },{
+      $addFields:{
+        averageRating:{
+          $avg:"$courseReviews.rating"},
+          reviewCount:{
+            $size:"$courseReviews"
+          }
+      }
+    }
+    ,{
+    $project:{
+      _id:1,
+      title:1,
+      price:1,
+      level:1,
+      thumbnail:1,
+      averageRating: 1,
+    reviewCount: 1,
+
+      "instructor._id":1,
+      "instructor.name":1,
+      "instructor.email":1,
+      "instructor.photoUrl":1,
+    }
+  },
   ]);
-  // console.log("courseReviewData: ", courseReviewData);
-  const reviewData = courseReviewData.map((d1) => {
-    let ratingtotal = 0;
-    const courserevlen = d1.courseReviews.length;
 
-    // console.log("len: ", courserevlen);
-    // console.log("courseReviews: ",d1.courseReviews)
-    d1?.courseReviews.forEach((d2) => (ratingtotal += Number(d2.rating)));
-    // console.log("ratingtotal: ",ratingtotal)
-    return {
-      courseId: d1._id,
-      avg: courserevlen > 0 ? Number(ratingtotal / courserevlen) : 0,
-      reviewCount: courserevlen,
-    };
-  });
-  // console.log("data: ",data)
-  if (!courses) throw new ApiError(404, "No Courses not Found");
-  // console.log("courses: ", courses);
-
-  const ans = courses.map((course) => {
-    const courseReview = reviewData.find(
-      (d) => d.courseId.toString() === course._id.toString(),
-    );
-    // const reData=data.find( (d) => console.log("d: ",d))
-    return {
-      ...course.toObject(),
-      averageRating: courseReview?.avg || 0,
-      reviewCount: courseReview?.reviewCount || 0,
-    };
-  });
-  console.log("ans: ", ans);
+  console.log("courseReviewData: ",courseReviewData)
+  // console.log("ans: ", ans);
   return res
     .status(200)
-    .json(new ApiResponse(200, ans, "Courses has been succcessfully"));
+    .json(new ApiResponse(200, courseReviewData, "Courses has been succcessfully"));
 });
 
 const courseEnroll = asyncHandler(async (req, res) => {

@@ -77,7 +77,8 @@ const Courses = () => {
   ]);
   const [category, setCategory] = useState("");
   const [sort, setSort] = useState("");
-  const { loading, data } = useGet("course");
+  const page=1,limit=2;
+  const { loading, data } = useGet(`course?searchValue=${searchValue}&sortBy=${sort}&category=${category}&page=${page}&limit=${limit}`);
   useEffect(() => {
     console.log("Data: ", data);
     const formattedData = (data?.data || [])?.map((data) => ({

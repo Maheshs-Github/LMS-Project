@@ -64,6 +64,7 @@ const CourseData = [
 ];
 
 const Courses = () => {
+  const [search,setSearch]=useState("");
   const [searchValue,setSearchValue]=useState("");
   const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
@@ -78,7 +79,7 @@ const Courses = () => {
   const [category, setCategory] = useState("");
   const [sort, setSort] = useState("");
   const page=1,limit=2;
-  const { loading, data } = useGet(`course?searchValue=${searchValue}&sortBy=${sort}&category=${category}&page=${page}&limit=${limit}`);
+  const { loading, data,refetch } = useGet(`course?searchValue=${searchValue}&sortBy=${sort}&category=${category}&page=${page}&limit=${limit}`);
   useEffect(() => {
     console.log("Data: ", data);
     const formattedData = (data?.data || [])?.map((data) => ({
@@ -98,6 +99,9 @@ const Courses = () => {
   useEffect(() => {
     console.log("courses: ", courses);
   }, [courses]);
+  useEffect(()=>{
+    refetch();
+  },[searchValue])
 
   const initials = (Name) => {
     return Name?.split(" ")
@@ -120,9 +124,11 @@ const Courses = () => {
     Advance: "bg-red-100 text-red-700 border border-red-200",
   };
 
-  const handleSearch=(e)=>{
-    setSearchValue(e.target.value);
-    console.log("searchValue: ",searchValue)
+  const handleSearchChnage=(e)=>{
+    setSearch(e.target.value);
+  }
+  const handleSearch=()=>{
+    setSearchValue(search);
   }
   return (
     <div className="p-8">
@@ -132,7 +138,7 @@ const Courses = () => {
 
       <div className="relative ">
         <Icons.Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-        <Input className=" p-4 pl-10" placeholder="Search courses..." onChange={handleSearch} value={searchValue}/>
+        <Input className=" p-4 pl-10" placeholder="Search courses..." onChange={handleSearchChnage} value={search}/>
       </div>
       <div className="flex gap-4">
         <Select value={category} onValueChange={setCategory}>

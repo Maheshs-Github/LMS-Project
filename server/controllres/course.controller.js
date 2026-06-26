@@ -210,7 +210,52 @@ const getCourseLectures = asyncHandler(async (req, res) => {
 const getAllCourses = asyncHandler(async (req, res) => {
   const {searchValue,sortBy,category,page=1,limit=2}=req.query;
   console.log("searchValue: ",searchValue," sortBy: ",sortBy);
-  const filter={};
+  const matchStage={};
+
+  if(category && category!=="All")
+    matchStage.category=category;
+
+  if(searchValue){
+    matchStage.$or=[
+      {
+        title:{
+          $regex:searchValue,
+          $options:"i",
+
+        }
+      },
+      {
+        description:{
+          $regex:searchValue,
+          $options:"i",
+        }
+      }
+    ]
+  }
+
+  let sortStage={};
+  switch(sortBy){
+    case "price-low":
+      sortStage={price:1}
+      break;
+    
+    case "price-high":
+      sortStage={price:-1}
+      break;
+    
+    case "rating":
+      sortStage={averageRating:-1}
+      break;
+    
+    default:
+      sortStage={createdAt:-1}
+    
+  };
+
+  const currentPage=Number(page);
+  const pageLimit=Number(limit);
+  const skip=(currentPage-1)*pageLimit;
+  
   // const courses = await Course.find().populate(
   //   "instructor",
   //   "-__v -updatedAt -createdAt -password",
@@ -260,6 +305,9 @@ const getAllCourses = asyncHandler(async (req, res) => {
   // let's see how we can do more effeciently 
     const courseReviewData = await Course.aggregate([
       {
+        $match:matchStage,
+      },
+      {
         $lookup:{
           from:"users",
           localField:"instructor",
@@ -302,6 +350,15 @@ const getAllCourses = asyncHandler(async (req, res) => {
       "instructor.photoUrl":1,
     }
   },
+  {
+    $sort:sortStage,
+  },
+  {
+    $skip:skip,
+  },
+  {
+    $limit:pageLimit
+  }
   ]);
 
   console.log("courseReviewData: ",courseReviewData)
@@ -351,3 +408,7 @@ export {
   getAllCourses,
   courseEnroll,
 };
+
+
+
+// Meeting

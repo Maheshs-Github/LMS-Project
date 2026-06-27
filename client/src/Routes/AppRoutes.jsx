@@ -21,6 +21,7 @@ import PublicRoute from "./AuthRoute";
 import ProtectedRoute from "./ProtectedRoute";
 import NotFound from "@/components/common/NotFound";
 import AuthRoute from "./AuthRoute";
+import Courses from "@/components/student/Courses";
 
 const AppRoutes = () => {
   return (
@@ -28,6 +29,7 @@ const AppRoutes = () => {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/course/:id" element={<CourseDetails />} />
+        <Route path="/courses" element={<Courses />} />
       <Route element={<AuthRoute />}>
         <Route path="/auth" element={<LoginSignUp />} />
       </Route>

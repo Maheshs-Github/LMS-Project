@@ -10,7 +10,7 @@ const Home = () => {
     <div>
       <Navbar />
       <Hero />
-      <Courses />
+      <Courses isShow={false}/>
     </div>
   )
 }

@@ -209,7 +209,7 @@ const getCourseLectures = asyncHandler(async (req, res) => {
 
 const getAllCourses = asyncHandler(async (req, res) => {
   const {searchValue,sortBy,category,page=1,limit=2}=req.query;
-  console.log("searchValue: ",searchValue," sortBy: ",sortBy);
+  // console.log("searchValue: ",searchValue," sortBy: ",sortBy);
   const matchStage={};
 
   if(category && category!=="All")
@@ -301,7 +301,8 @@ const getAllCourses = asyncHandler(async (req, res) => {
   //     reviewCount: courseReview?.reviewCount || 0,
   //   };
   // });
-
+  const totalCourses=await Course.find(matchStage).countDocuments();
+  // console.log("totalCourse: ",totalCourses);
   // let's see how we can do more effeciently 
     const courseReviewData = await Course.aggregate([
       {
@@ -365,7 +366,7 @@ const getAllCourses = asyncHandler(async (req, res) => {
   // console.log("ans: ", ans);
   return res
     .status(200)
-    .json(new ApiResponse(200, courseReviewData, "Courses has been succcessfully"));
+    .json(new ApiResponse(200, {courseReviewData,pagination:{totalCourses,totalPages:pageLimit>0 ? Math.ceil(totalCourses/pageLimit):0,currentPage,pageLimit}}, "Courses has been succcessfully"));
 });
 
 const courseEnroll = asyncHandler(async (req, res) => {

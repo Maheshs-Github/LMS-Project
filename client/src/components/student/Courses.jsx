@@ -13,7 +13,7 @@ import Friern from "../../assets/FrierenSama.jpg";
 import Icons from "@/utils/Icons";
 import CourseSkeleton from "./courseSkeleton";
 import { useGet } from "@/hooks/useGet";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Input } from "../ui/input";
 import {
@@ -24,6 +24,12 @@ import {
   SelectValue,
 } from "../ui/select";
 import { courseCategories } from "@/resources/Data";
+import {
+  ArrowLeft,
+  ArrowLeftSquare,
+  ArrowRight,
+  ArrowRightSquare,
+} from "lucide-react";
 
 const CourseData = [
   {
@@ -63,9 +69,21 @@ const CourseData = [
   },
 ];
 
-const Courses = () => {
-  const [search,setSearch]=useState("");
-  const [searchValue,setSearchValue]=useState("");
+const Courses = ({ isShow = true }) => {
+  const location = useLocation();
+  console.log("location: ", location.state);
+  const [filters, setFilters] = useState({
+    search: "",
+    category: "All",
+    sort: "",
+  });
+
+  const [appliedFilters, setAppliedFilters] = useState({
+    search: "",
+    category: "All",
+    sort: "",
+  });
+
   const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
   const [courses, setCourses] = useState([
@@ -76,13 +94,19 @@ const Courses = () => {
       price: "",
     },
   ]);
-  const [category, setCategory] = useState("");
-  const [sort, setSort] = useState("");
-  const page=1,limit=2;
-  const { loading, data,refetch } = useGet(`course?searchValue=${searchValue}&sortBy=${sort}&category=${category}&page=${page}&limit=${limit}`);
+  const page = 1,
+    limit = 3;
+  const [curPage, setCurPage] = useState(1);
+  const { loading, data, refetch } = useGet(
+    `course?searchValue=${appliedFilters.search}&sortBy=${appliedFilters.sort}&category=${appliedFilters.category}&page=${curPage}&limit=${limit}`,
+  );
+  useEffect(() => {
+    if (location?.state?.searchValue)
+      setFilters((prev) => ({ ...prev, search: location?.state?.searchValue }));
+  }, [location?.state?.searchValue]);
   useEffect(() => {
     console.log("Data: ", data);
-    const formattedData = (data?.data || [])?.map((data) => ({
+    const formattedData = (data?.data?.courseReviewData || [])?.map((data) => ({
       _id: data?._id,
       img: data?.thumbnail,
       name: data?.title,
@@ -96,12 +120,12 @@ const Courses = () => {
     }));
     setCourses(formattedData);
   }, [data]);
-  useEffect(() => {
-    console.log("courses: ", courses);
-  }, [courses]);
-  useEffect(()=>{
-    refetch();
-  },[searchValue])
+  // useEffect(() => {
+  //   console.log("courses: ", courses);
+  // }, [courses]);
+  // useEffect(()=>{
+  //   refetch();
+  // },[searchValue])
 
   const initials = (Name) => {
     return Name?.split(" ")
@@ -124,53 +148,112 @@ const Courses = () => {
     Advance: "bg-red-100 text-red-700 border border-red-200",
   };
 
-  const handleSearchChnage=(e)=>{
-    setSearch(e.target.value);
+  const handleChnage = (e) => {
+    // setSearch(e.target.value);
+    setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+  const handleSearch = () => {
+    // setSearchValue(search);
+    // setCategoryValue(category);
+    // setSortValue(sort);
+
+    setAppliedFilters(filters);
+  };
+  const handleReset = () => {
+    setFilters({
+      search: "",
+      category: "",
+      sort: "",
+    });
+
+    setAppliedFilters({
+      search: "",
+      category: "",
+      sort: "",
+    });
+  };
+  const paginationData = data?.data?.pagination;
+
+    const handleExplore=()=>{
+    navigate("/courses")
   }
-  const handleSearch=()=>{
-    setSearchValue(search);
-  }
+
   return (
     <div className="p-8">
-      <h3 className="w-full text-center font-bold text-3xl mb-6">
-        Our Courses
-      </h3>
-
-      <div className="relative ">
-        <Icons.Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-        <Input className=" p-4 pl-10" placeholder="Search courses..." onChange={handleSearchChnage} value={search}/>
+      <div className="flex justify-between gap-4">
+      <h3 className="w-full text-center font-bold text-3xl mb-6">Courses</h3>
+      <button className="bg-black text-white font-semibold py-2 h-fit px-4 rounded-lg whitespace-nowrap cursor-pointer" onClick={handleExplore}>View All</button>
       </div>
-      <div className="flex gap-4">
-        <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger>
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
 
-          <SelectContent>
-            <SelectItem value="All">All</SelectItem>
-            {courseCategories.map((cate) => (
-              <SelectItem value={cate.value}>{cate.label}</SelectItem>
-            ))}
-            {/* <SelectItem value="Web Development">Web Development</SelectItem>
-          <SelectItem value="AI">AI</SelectItem> */}
-          </SelectContent>
-        </Select>
-        <Select value={sort} onValueChange={setSort}>
-          <SelectTrigger>
-            <SelectValue placeholder="Sort By" />
-          </SelectTrigger>
+      {isShow && (
+        <div className="grid grid-cols-12 gap-2 w-full my-6">
+          <div className="relative sm:col-span-6 col-span-12">
+            <Icons.Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              className=" p-4 pl-10"
+              placeholder="Search courses..."
+              onChange={handleChnage}
+              value={filters.search}
+              name="search"
+            />
+          </div>
 
-          <SelectContent>
-            <SelectItem value="newest">Newest</SelectItem>
+          <div className="flex gap-4 sm:col-span-4 col-span-12 w-full">
+            <Select
+              value={filters.category}
+              onValueChange={(value) =>
+                setFilters((prev) => ({ ...prev, category: value }))
+              }
+              className=" w-full"
+            >
+              <SelectTrigger className={"w-full"}>
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
 
-            <SelectItem value="price-low">Price Low → High</SelectItem>
+              <SelectContent>
+                <SelectItem value="All">All</SelectItem>
+                {courseCategories.map((cate) => (
+                  <SelectItem value={cate.value} key={cate.value}>
+                    {cate.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={filters.sort}
+              onValueChange={(value) =>
+                setFilters((prev) => ({ ...prev, sort: value }))
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Sort By" />
+              </SelectTrigger>
 
-            <SelectItem value="price-high">Price High → Low</SelectItem>
+              <SelectContent>
+                <SelectItem value="newest">Newest</SelectItem>
 
-            <SelectItem value="rating">Highest Rated</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+                <SelectItem value="price-low">Price Low → High</SelectItem>
+
+                <SelectItem value="price-high">Price High → Low</SelectItem>
+
+                <SelectItem value="rating">Highest Rated</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <button
+            className="p-1 bg-black text-white font-semibold cursor-pointer  rounded-xl sm:col-span-1 col-span-12"
+            onClick={handleSearch}
+          >
+            Search
+          </button>
+          <button
+            className="p-1 bg-red-700 text-white font-semibold cursor-pointer  rounded-xl sm:col-span-1 col-span-12"
+            onClick={handleReset}
+          >
+            Reset
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-4 gap-10">
         {!loading
@@ -186,7 +269,7 @@ const Courses = () => {
                   {/* {console.log("course: ",course)} */}
                   <div className="absolute inset-0 z-30 aspect-video bg-black/35" />
                   <img
-                    src={course?.img}
+                    src={course?.img ? course.img : undefined}
                     alt="Event cover"
                     className="relative z-20 aspect-video w-full object-cover  dark:brightness-40"
                   />
@@ -262,6 +345,30 @@ const Courses = () => {
             })
           : Array.from({ length: 4 }).map((_, i) => <CourseSkeleton key={i} />)}
       </div>
+      {isShow && (
+        <div className="flex justify-end items-center gap-3 my-6 ">
+          <div>
+            <div className="flex items-center gap-4 my-3">
+              <button
+                className={`bg-black text-white font-semibold p-2 rounded-xl cursor-pointer disabled:bg-gray-200 disabled:cursor-not-allowed`}
+                onClick={() => setCurPage(curPage - 1)}
+                disabled={curPage == 1}
+              >
+                <ArrowLeft />
+              </button>
+              <p className="text-xl">{curPage}</p>
+              <button
+                className={`bg-black text-white font-semibold p-2 rounded-xl cursor-pointer disabled:bg-gray-200 disabled:cursor-not-allowed`}
+                onClick={() => setCurPage(curPage + 1)}
+                disabled={curPage == paginationData?.totalPages}
+              >
+                <ArrowRight />
+              </button>
+            </div>
+            <p>{`Showing ${limit * paginationData?.currentPage - limit + 1} - ${limit * paginationData?.currentPage} out of total ${paginationData?.totalCourses} Courses`}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

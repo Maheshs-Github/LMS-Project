@@ -23,11 +23,11 @@ export const StudentItems = [
     url: "/student/profile",
     icon: Icons.User,
   },
-  {
-    title: "Settings",
-    url: "/student/settings",
-    icon: Icons.Settings,
-  },
+  // {
+  //   title: "Settings",
+  //   url: "/student/settings",
+  //   icon: Icons.Settings,
+  // },
 ];
 
 

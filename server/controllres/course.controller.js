@@ -221,7 +221,6 @@ const getAllCourses = asyncHandler(async (req, res) => {
         title:{
           $regex:searchValue,
           $options:"i",
-
         }
       },
       {
@@ -327,7 +326,7 @@ const getAllCourses = asyncHandler(async (req, res) => {
         as: "courseReviews",
       },
     },{
-      $addFields:{
+      $addFields:{  
         averageRating:{
           $avg:"$courseReviews.rating"},
           reviewCount:{

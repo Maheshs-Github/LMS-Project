@@ -31,44 +31,6 @@ import {
   ArrowRightSquare,
 } from "lucide-react";
 
-const CourseData = [
-  {
-    coverImg: Friern,
-    courseTitle: "Design systems meetup meetup meetup meetupmeetup",
-    courseProviderImg: Friern,
-    courseProviderName: "Friern Sama",
-    coursePrize: 700,
-  },
-  {
-    coverImg: Friern,
-    courseTitle: "Design systems meetup meetup meetup meetupmeetup",
-    courseProviderImg: Friern,
-    courseProviderName: "Friern Sama",
-    coursePrize: 700,
-  },
-  {
-    coverImg: Friern,
-    courseTitle: "Design systems meetup meetup meetup meetupmeetup",
-    courseProviderImg: Friern,
-    courseProviderName: "Friern Sama",
-    coursePrize: 700,
-  },
-  {
-    coverImg: Friern,
-    courseTitle: "Design systems meetup meetup meetup meetupmeetup",
-    courseProviderImg: Friern,
-    courseProviderName: "Friern Sama",
-    coursePrize: 700,
-  },
-  {
-    coverImg: Friern,
-    courseTitle: "Design systems meetup meetup meetup meetupmeetup",
-    courseProviderImg: Friern,
-    courseProviderName: "Friern Sama",
-    coursePrize: 700,
-  },
-];
-
 const Courses = ({ isShow = true }) => {
   const location = useLocation();
   console.log("location: ", location.state);

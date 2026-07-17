@@ -3,6 +3,7 @@ import { Course } from "../models/course.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { Progress } from "../models/Progress.model.js";
 // import { useState } from "react";
 
 const getInstructorDashboard = asyncHandler(async (req, res) => {
@@ -11,59 +12,58 @@ const getInstructorDashboard = asyncHandler(async (req, res) => {
   if (req?.user?.role !== "instructor")
     throw new ApiError(403, "Non Instructor can't fetch on this endpoint");
 
-  const [courseCount, studentCount, lectureCount] =
-    await Promise.all([
-      Course.find({
-        instructor: req?.user?._id,
-      }).countDocuments(),
-      Course.aggregate([
-        {
-          $match: {
-            instructor: new mongoose.Types.ObjectId(req.user?._id),
+  const [courseCount, studentCount, lectureCount] = await Promise.all([
+    Course.find({
+      instructor: req?.user?._id,
+    }).countDocuments(),
+    Course.aggregate([
+      {
+        $match: {
+          instructor: new mongoose.Types.ObjectId(req.user?._id),
+        },
+      },
+      {
+        $project: {
+          enrolledCount: {
+            $size: "$enrolledStudents",
           },
         },
-        {
-          $project: {
-            enrolledCount: {
-              $size: "$enrolledStudents",
-            },
+      },
+      {
+        $group: {
+          _id: null,
+          totalStudents: {
+            $sum: "$enrolledCount",
           },
         },
-        {
-          $group: {
-            _id: null,
-            totalStudents: {
-              $sum: "$enrolledCount",
-            },
+      },
+    ]),
+    Course.aggregate([
+      {
+        $match: {
+          instructor: new mongoose.Types.ObjectId(req?.user?._id),
+        },
+      },
+      {
+        $project: {
+          lecCount: {
+            $size: "$lectures",
           },
         },
-      ]),
-      Course.aggregate([
-        {
-          $match: {
-            instructor: new mongoose.Types.ObjectId(req?.user?._id),
+      },
+      {
+        $group: {
+          _id: null,
+          totalLectures: {
+            $sum: "$lecCount",
           },
         },
-        {
-          $project: {
-            lecCount: {
-              $size: "$lectures",
-            },
-          },
-        },
-        {
-          $group: {
-            _id: null,
-            totalLectures: {
-              $sum: "$lecCount",
-            },
-          },
-        },
-      ]),
-      // Course.find({
-      //   instructor: req?.user?._id,
-      // }),
-    ]);
+      },
+    ]),
+    // Course.find({
+    //   instructor: req?.user?._id,
+    // }),
+  ]);
 
   // const courseCount = await Course.find({
   //   instructor: req?.user?._id,
@@ -153,44 +153,50 @@ const getInstructorDashboard = asyncHandler(async (req, res) => {
       },
     },
     {
-      $lookup:{
-        from:"progresses",
-        localField:"_id",
-        foreignField:"courseId",
+      $lookup: {
+        from: "progresses",
+        localField: "_id",
+        foreignField: "courseId",
         as: "courseProgressDetails",
-      }
+      },
     },
   ]);
 
   // console.dir(perCourseCompletion, { depth: null });
-  let totalCourseEnrollStudents=0, totalCourseCompletedStudents=0;
-  const coursesData=perCourseCompletion.map((courseData)=>{
+  let totalCourseEnrollStudents = 0,
+    totalCourseCompletedStudents = 0;
+  const coursesData = perCourseCompletion.map((courseData) => {
     // console.log("courseData: ",courseData)
-    const courseLen=courseData.lectures.length;    
-    const enrolledStudents=courseData.enrolledStudents.length;
-    totalCourseEnrollStudents+=enrolledStudents;
-    const completedStudents=(courseData.courseProgressDetails.filter((pData)=>
-      
-        (pData.lecturesCompleted.length===courseLen)
-      
-    ).length);
-    totalCourseCompletedStudents+=completedStudents;
-    return(
-      {
-        title:courseData.title,
-        students:enrolledStudents,
-        lectures:courseData.lectures.length,
-        completedStudents:completedStudents,
-        completionRate:enrolledStudents>0 ? (completedStudents/enrolledStudents)*100:0,
-
-      }
-    )
-
-  })
-  console.log("totalCourseEnrollStudents: ",totalCourseEnrollStudents," totalCourseCompletedStudents: ",totalCourseCompletedStudents);
-  const totalCourseCompletionRate=totalCourseEnrollStudents >0 ?totalCourseCompletedStudents/totalCourseEnrollStudents*100:0;
+    const courseLen = courseData.lectures.length;
+    const enrolledStudents = courseData.enrolledStudents.length;
+    totalCourseEnrollStudents += enrolledStudents;
+    const completedStudents = courseData.courseProgressDetails.filter(
+      (pData) => pData.lecturesCompleted.length === courseLen,
+    ).length;
+    totalCourseCompletedStudents += completedStudents;
+    return {
+      title: courseData.title,
+      students: enrolledStudents,
+      lectures: courseData.lectures.length,
+      completedStudents: completedStudents,
+      completionRate:
+        enrolledStudents > 0 ? (completedStudents / enrolledStudents) * 100 : 0,
+    };
+  });
+  console.log(
+    "totalCourseEnrollStudents: ",
+    totalCourseEnrollStudents,
+    " totalCourseCompletedStudents: ",
+    totalCourseCompletedStudents,
+  );
+  const totalCourseCompletionRate =
+    totalCourseEnrollStudents > 0
+      ? Math.round(
+          (totalCourseCompletedStudents / totalCourseEnrollStudents) * 100,
+        )
+      : 0;
   // console.log("perCourseCompletion: ",perCourseCompletion);
-  
+
   // console.log("ans: ",ans);
 
   // const dashCourses = courseData?.map((course) => ({
@@ -208,11 +214,96 @@ const getInstructorDashboard = asyncHandler(async (req, res) => {
         lectureCount: lectureCount[0]?.totalLectures || 0,
         courseCount: courseCount,
         coursesData: coursesData,
-        totalCourseCompletionRate
+        totalCourseCompletionRate,
       },
       "DashBoard Data has been fetched successfully",
     ),
   );
 });
 
-export { getInstructorDashboard };
+const getStudentDashboard = asyncHandler(async (req, res) => {
+  const studentId = req?.user?._id;
+  console.log("req?.user: ", req?.user);
+  if (req?.user?.role !== "student")
+    throw new ApiError(403, "THis is a Student endpoint, u are not authrized");
+  const [courseProgress, enrolledCoursesCount] = await Promise.all([
+    Progress.aggregate([
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(req.user?._id),
+        },
+      },
+      {
+        $lookup: {
+          from: "courses",
+          localField: "courseId",
+          foreignField: "_id",
+          as: "UserCourses",
+        },
+      },
+      {
+        $unwind: "$UserCourses",
+      },
+      {
+        $addFields: {
+          lectureCount: {
+            $size: "$UserCourses.lectures",
+          },
+          completedLectureCount: {
+            $size: "$lecturesCompleted",
+          },
+        },
+      },
+      {
+        $addFields: {
+          progressPercentage: {
+            $cond: {
+              if: { $eq: ["$lectureCount", 0] },
+              then: 0,
+              else: {
+                $round: [
+                  {
+                    $multiply: [
+                      {
+                        $divide: ["$completedLectureCount", "$lectureCount"],
+                      },
+                      100,
+                    ],
+                  },
+                  0,
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          userId: 1,
+          courseId: 1,
+          courseName: "$UserCourses.title",
+          courseSubName: "$UserCourses.subTitle",
+          courseThumbnail: "$UserCourses.thumbnail",
+          lectureCount: 1,
+          completedLectureCount: 1,
+          progressPercentage: 1,
+        },
+      },
+    ]),
+    Course.find({enrolledStudents:studentId}).countDocuments(),
+  ]);
+  console.log("courseProgress: ", courseProgress);
+  // console.dir(courseProgress, { depth: null });
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        courseProgress,
+        enrolledCoursesCount,
+      },
+      "DashBoard Data has been fetched successfully",
+    ),
+  );
+});
+
+export { getInstructorDashboard, getStudentDashboard };

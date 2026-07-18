@@ -25,10 +25,10 @@ const userSchema=mongoose.Schema({
     enum:["student","instructor"],
     default:"student",
   },
-  coursesEnrolledIn:{
+  coursesEnrolledIn:[{
     type:mongoose.Schema.Types.ObjectId,
     ref:"course"
-  },
+  }],
   photoUrl:{
     type:String,
   }

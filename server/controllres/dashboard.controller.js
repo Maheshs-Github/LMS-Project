@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Progress } from "../models/Progress.model.js";
+import { User } from "../models/user.model.js";
 // import { useState } from "react";
 
 const getInstructorDashboard = asyncHandler(async (req, res) => {
@@ -221,85 +222,186 @@ const getInstructorDashboard = asyncHandler(async (req, res) => {
   );
 });
 
+// 
+// Student Dashboard
+
 const getStudentDashboard = asyncHandler(async (req, res) => {
   const studentId = req?.user?._id;
   console.log("req?.user: ", req?.user);
   if (req?.user?.role !== "student")
     throw new ApiError(403, "THis is a Student endpoint, u are not authrized");
-  const [courseProgress, enrolledCoursesCount] = await Promise.all([
-    Progress.aggregate([
-      {
-        $match: {
-          userId: new mongoose.Types.ObjectId(req.user?._id),
-        },
-      },
-      {
-        $lookup: {
-          from: "courses",
-          localField: "courseId",
-          foreignField: "_id",
-          as: "UserCourses",
-        },
-      },
-      {
-        $unwind: "$UserCourses",
-      },
-      {
-        $addFields: {
-          lectureCount: {
-            $size: "$UserCourses.lectures",
-          },
-          completedLectureCount: {
-            $size: "$lecturesCompleted",
+  const [courseProgress, recentEnrolledCourses] =
+    await Promise.all([
+      Progress.aggregate([
+        {
+          $match: {
+            userId: new mongoose.Types.ObjectId(req.user?._id),
           },
         },
-      },
-      {
-        $addFields: {
-          progressPercentage: {
-            $cond: {
-              if: { $eq: ["$lectureCount", 0] },
-              then: 0,
-              else: {
-                $round: [
-                  {
-                    $multiply: [
-                      {
-                        $divide: ["$completedLectureCount", "$lectureCount"],
-                      },
-                      100,
-                    ],
-                  },
-                  0,
-                ],
+        {
+          $lookup: {
+            from: "courses",
+            localField: "courseId",
+            foreignField: "_id",
+            as: "UserCourses",
+          },
+        },
+        {
+          $unwind: "$UserCourses",
+        },
+        {
+          $addFields: {
+            lectureCount: {
+              $size: "$UserCourses.lectures",
+            },
+            completedLectureCount: {
+              $size: "$lecturesCompleted",
+            },
+          },
+        },
+        {
+          $addFields: {
+            progressPercentage: {
+              $cond: {
+                if: { $eq: ["$lectureCount", 0] },
+                then: 0,
+                else: {
+                  $round: [
+                    {
+                      $multiply: [
+                        {
+                          $divide: ["$completedLectureCount", "$lectureCount"],
+                        },
+                        100,
+                      ],
+                    },
+                    0,
+                  ],
+                },
               },
             },
           },
         },
-      },
-      {
-        $project: {
-          userId: 1,
-          courseId: 1,
-          courseName: "$UserCourses.title",
-          courseSubName: "$UserCourses.subTitle",
-          courseThumbnail: "$UserCourses.thumbnail",
-          lectureCount: 1,
-          completedLectureCount: 1,
-          progressPercentage: 1,
+        {
+          $project: {
+            userId: 1,
+            courseId: 1,
+            courseName: "$UserCourses.title",
+            courseSubName: "$UserCourses.subTitle",
+            courseThumbnail: "$UserCourses.thumbnail",
+            lectureCount: 1,
+            completedLectureCount: 1,
+            progressPercentage: 1,
+          },
         },
-      },
-    ]),
-    Course.find({enrolledStudents:studentId}).countDocuments(),
-  ]);
+      ]),
+    ]);
   console.log("courseProgress: ", courseProgress);
   // console.dir(courseProgress, { depth: null });
+  const enrolledCourses = courseProgress?.length;
+  const notStartedCourses = courseProgress?.filter(
+    (progressData) => progressData?.progressPercentage === 0,
+  ).length;
+  const inProgessCourses = courseProgress?.filter(
+    (progressData) =>
+      progressData?.progressPercentage > 0 &&
+      progressData?.progressPercentage < 100,
+  ).length;
+  const completedCourses = courseProgress?.filter(
+    (progressData) => progressData?.progressPercentage === 100,
+  ).length;
+
+
+  // 
+  // Recommended Section 
+
+  // getting User courses Id
+  const userEnrolledCoursesIds=await User.findById(studentId).select("coursesEnrolledIn");
+
+  if(!userEnrolledCoursesIds)
+    throw new ApiError(400,"No User Found");
+
+  // if no courses getting the latest courses posted 
+  if(userEnrolledCoursesIds?.coursesEnrolledIn?.length===0){
+    const recommendedCourses=await Course.aggregate([
+      {
+        $sort:{
+          createdAt:-1,
+        }
+      },{
+        $limit:4,
+      }
+    ])
+    return recommendedCourses;
+  }
+
+  // let's fetch teh categories from teh Course by Id 
+  const userEnrolledCourseCate=await Course.find({_id:{$in:userEnrolledCoursesIds.coursesEnrolledIn}}).select("category");
+  // ?remove duplicate categories 
+  const categories=[... new Set(userEnrolledCourseCate?.map((course)=>course.category))]
+
+  // we have categories then let's get teh recommndation by reviews count and rating 
+  // Recommend Courses
+  const recommendedCourses=await Course.aggregate([
+    {
+      $match:{
+        category:{$in:categories},
+        _id:{$nin:userEnrolledCoursesIds?.coursesEnrolledIn}
+
+      }
+    },
+    {
+      $lookup:{
+        from:"reviewandratings",
+        localField:"_id",
+        foreignField:"courseId",
+         as: "reviews",
+      }
+    },{
+      $addFields:{
+        averageRating:{
+           $ifNull:[{$avg:"$reviews.rating"},0]
+        },
+        reviewCount:{
+          $size:"$reviews"
+        }
+      }
+    },{
+      $sort:{
+        averageRating:-1,
+        reviewCount:-1,
+        createdAt:-1
+      }
+    },
+    {
+    $project: {
+      title: 1,
+      thumbnail: 1,
+      category: 1,
+      price: 1,
+      averageRating: 1,
+      reviewCount: 1,
+    },
+  },
+  {
+    $limit: 4,
+  },
+  ])
+
+
+
+
   return res.status(200).json(
     new ApiResponse(
       200,
       {
         courseProgress,
-        enrolledCoursesCount,
+        recentEnrolledCourses,
+        enrolledCourses,
+        notStartedCourses,
+        inProgessCourses,
+        completedCourses,
+        recommendedCourses,
       },
       "DashBoard Data has been fetched successfully",
     ),

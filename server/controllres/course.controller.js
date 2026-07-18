@@ -7,6 +7,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { Progress } from "../models/Progress.model.js";
 
 const createCourse = asyncHandler(async (req, res) => {
   // console.log("Body: ",req.body);
@@ -107,18 +108,21 @@ const getCourseById = asyncHandler(async (req, res) => {
     },
   ]);
   // console.log("courseReview: ", courseReviewData[0]?.courseReview);
-  let courseRatingSum=0,reviewCount=courseReviewData[0]?.courseReview?.length ??0;
-  (courseReviewData[0]?.courseReview || []).forEach((rData)=>courseRatingSum+=Number(rData.rating))
+  let courseRatingSum = 0,
+    reviewCount = courseReviewData[0]?.courseReview?.length ?? 0;
+  (courseReviewData[0]?.courseReview || []).forEach(
+    (rData) => (courseRatingSum += Number(rData.rating)),
+  );
 
   // console.log("courseRatingSum: ",courseRatingSum," reviewCount: ",reviewCount, "hello")
 
-  const courseAvgRating=reviewCount>0 ? courseRatingSum/reviewCount:0;
+  const courseAvgRating = reviewCount > 0 ? courseRatingSum / reviewCount : 0;
   return res
     .status(200)
     .json(
       new ApiResponse(
         200,
-        {fetchedCourse,reviewCount,courseAvgRating},
+        { fetchedCourse, reviewCount, courseAvgRating },
         "Course Data has been Fetched Successfully",
       ),
     );
@@ -208,53 +212,51 @@ const getCourseLectures = asyncHandler(async (req, res) => {
 });
 
 const getAllCourses = asyncHandler(async (req, res) => {
-  const {searchValue,sortBy,category,page=1,limit=2}=req.query;
+  const { searchValue, sortBy, category, page = 1, limit = 2 } = req.query;
   // console.log("searchValue: ",searchValue," sortBy: ",sortBy);
-  const matchStage={};
+  const matchStage = {};
 
-  if(category && category!=="All")
-    matchStage.category=category;
+  if (category && category !== "All") matchStage.category = category;
 
-  if(searchValue){
-    matchStage.$or=[
+  if (searchValue) {
+    matchStage.$or = [
       {
-        title:{
-          $regex:searchValue,
-          $options:"i",
-        }
+        title: {
+          $regex: searchValue,
+          $options: "i",
+        },
       },
       {
-        description:{
-          $regex:searchValue,
-          $options:"i",
-        }
-      }
-    ]
+        description: {
+          $regex: searchValue,
+          $options: "i",
+        },
+      },
+    ];
   }
 
-  let sortStage={};
-  switch(sortBy){
+  let sortStage = {};
+  switch (sortBy) {
     case "price-low":
-      sortStage={price:1}
+      sortStage = { price: 1 };
       break;
-    
-    case "price-high":
-      sortStage={price:-1}
-      break;
-    
-    case "rating":
-      sortStage={averageRating:-1}
-      break;
-    
-    default:
-      sortStage={createdAt:-1}
-    
-  };
 
-  const currentPage=Number(page);
-  const pageLimit=Number(limit);
-  const skip=(currentPage-1)*pageLimit;
-  
+    case "price-high":
+      sortStage = { price: -1 };
+      break;
+
+    case "rating":
+      sortStage = { averageRating: -1 };
+      break;
+
+    default:
+      sortStage = { createdAt: -1 };
+  }
+
+  const currentPage = Number(page);
+  const pageLimit = Number(limit);
+  const skip = (currentPage - 1) * pageLimit;
+
   // const courses = await Course.find().populate(
   //   "instructor",
   //   "-__v -updatedAt -createdAt -password",
@@ -300,24 +302,24 @@ const getAllCourses = asyncHandler(async (req, res) => {
   //     reviewCount: courseReview?.reviewCount || 0,
   //   };
   // });
-  const totalCourses=await Course.find(matchStage).countDocuments();
+  const totalCourses = await Course.find(matchStage).countDocuments();
   // console.log("totalCourse: ",totalCourses);
-  // let's see how we can do more effeciently 
-    const courseReviewData = await Course.aggregate([
-      {
-        $match:matchStage,
+  // let's see how we can do more effeciently
+  const courseReviewData = await Course.aggregate([
+    {
+      $match: matchStage,
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "instructor",
+        foreignField: "_id",
+        as: "instructor",
       },
-      {
-        $lookup:{
-          from:"users",
-          localField:"instructor",
-          foreignField:"_id",
-          as :"instructor",
-        }
-      },
-        {
-    $unwind: "$instructor",
-  },
+    },
+    {
+      $unwind: "$instructor",
+    },
     {
       $lookup: {
         from: "reviewandratings",
@@ -325,47 +327,62 @@ const getAllCourses = asyncHandler(async (req, res) => {
         foreignField: "courseId",
         as: "courseReviews",
       },
-    },{
-      $addFields:{  
-        averageRating:{
-          $avg:"$courseReviews.rating"},
-          reviewCount:{
-            $size:"$courseReviews"
-          }
-      }
-    }
-    ,{
-    $project:{
-      _id:1,
-      title:1,
-      price:1,
-      level:1,
-      thumbnail:1,
-      averageRating: 1,
-    reviewCount: 1,
+    },
+    {
+      $addFields: {
+        averageRating: {
+          $avg: "$courseReviews.rating",
+        },
+        reviewCount: {
+          $size: "$courseReviews",
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        title: 1,
+        price: 1,
+        level: 1,
+        thumbnail: 1,
+        averageRating: 1,
+        reviewCount: 1,
+        enrolledStudents: 1,
 
-      "instructor._id":1,
-      "instructor.name":1,
-      "instructor.email":1,
-      "instructor.photoUrl":1,
-    }
-  },
-  {
-    $sort:sortStage,
-  },
-  {
-    $skip:skip,
-  },
-  {
-    $limit:pageLimit
-  }
+        "instructor._id": 1,
+        "instructor.name": 1,
+        "instructor.email": 1,
+        "instructor.photoUrl": 1,
+      },
+    },
+    {
+      $sort: sortStage,
+    },
+    {
+      $skip: skip,
+    },
+    {
+      $limit: pageLimit,
+    },
   ]);
 
-  console.log("courseReviewData: ",courseReviewData)
+  console.log("courseReviewData: ", courseReviewData);
   // console.log("ans: ", ans);
-  return res
-    .status(200)
-    .json(new ApiResponse(200, {courseReviewData,pagination:{totalCourses,totalPages:pageLimit>0 ? Math.ceil(totalCourses/pageLimit):0,currentPage,pageLimit}}, "Courses has been succcessfully"));
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        courseReviewData,
+        pagination: {
+          totalCourses,
+          totalPages: pageLimit > 0 ? Math.ceil(totalCourses / pageLimit) : 0,
+          currentPage,
+          pageLimit,
+        },
+      },
+      "Courses has been succcessfully",
+    ),
+  );
 });
 
 const courseEnroll = asyncHandler(async (req, res) => {
@@ -378,7 +395,7 @@ const courseEnroll = asyncHandler(async (req, res) => {
   // const updatedCourse=await Course.findByIdAndUpdate(courseId,{$addToSet:{enrolledStudents:userId}},{new:true});
   // const updateuser=await User.findByIdAndUpdate(userId,{$addToSet:{coursesEnrolledIn:courseId}},{new :true});
 
-  const [updatedCourse, updateuser] = await Promise.all([
+  const [updatedCourse, updateuser,updateProgress] = await Promise.all([
     Course.findByIdAndUpdate(
       courseId,
       { $addToSet: { enrolledStudents: userId } },
@@ -389,9 +406,27 @@ const courseEnroll = asyncHandler(async (req, res) => {
       { $addToSet: { coursesEnrolledIn: courseId } },
       { new: true },
     ),
+    Progress.findOneAndUpdate(
+      {
+        userId,
+        courseId,
+      },
+      {
+        $setOnInsert: {
+          userId,
+          courseId,
+          lecturesCompleted: [],
+        },
+      },
+      {
+        upsert: true,
+        new: true,
+      },
+    ),
   ]);
   if (!updatedCourse) throw new ApiError(404, "Course not found ");
   if (!updateuser) throw new ApiError(401, "User Not Found");
+  if (!updateProgress) throw new ApiError(401, "Progess not tracked");
   return res
     .status(200)
     .json(
@@ -408,7 +443,5 @@ export {
   getAllCourses,
   courseEnroll,
 };
-
-
 
 // Meeting

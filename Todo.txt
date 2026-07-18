@@ -12,3 +12,4 @@ What to check next
 2. start revision from 18 Jun , Review And rating , when u get teh Time 
 3. Instructor -> Log OUt and Edit Profile in Instructor
 4. Student -> Setting remove, nthg in dasboard
+5. let's revise the student dashboard controler 

@@ -222,9 +222,9 @@ const getInstructorDashboard = asyncHandler(async (req, res) => {
   );
 });
 
+
 // 
 // Student Dashboard
-
 const getStudentDashboard = asyncHandler(async (req, res) => {
   const studentId = req?.user?._id;
   console.log("req?.user: ", req?.user);
@@ -299,17 +299,29 @@ const getStudentDashboard = asyncHandler(async (req, res) => {
   console.log("courseProgress: ", courseProgress);
   // console.dir(courseProgress, { depth: null });
   const enrolledCourses = courseProgress?.length;
-  const notStartedCourses = courseProgress?.filter(
-    (progressData) => progressData?.progressPercentage === 0,
-  ).length;
-  const inProgessCourses = courseProgress?.filter(
-    (progressData) =>
-      progressData?.progressPercentage > 0 &&
-      progressData?.progressPercentage < 100,
-  ).length;
-  const completedCourses = courseProgress?.filter(
-    (progressData) => progressData?.progressPercentage === 100,
-  ).length;
+  // const notStartedCourses = courseProgress?.filter(
+  //   (progressData) => progressData?.progressPercentage === 0,
+  // ).length;
+  // const inProgessCourses = courseProgress?.filter(
+  //   (progressData) =>
+  //     progressData?.progressPercentage > 0 &&
+  //     progressData?.progressPercentage < 100,
+  // ).length;
+  // const completedCourses = courseProgress?.filter(
+  //   (progressData) => progressData?.progressPercentage === 100,
+  // ).length;
+
+  let notStartedCourses=0,inProgessCourses=0,completedCourses=0;
+  courseProgress?.forEach((progressData)=>{
+    const cPercnt=progressData?.progressPercentage
+    if(cPercnt===0)
+      notStartedCourses++;
+    else if(cPercnt===100)
+      completedCourses++;
+    else if(cPercnt>0 && cPercnt<100)
+      inProgessCourses++;
+
+    })
 
 
   // 

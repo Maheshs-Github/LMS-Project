@@ -13,3 +13,4 @@ What to check next
 3. Instructor -> Log OUt and Edit Profile in Instructor
 4. Student -> Setting remove, nthg in dasboard
 5. let's revise the student dashboard controler 
+6. user is reminaing persistant with redux 

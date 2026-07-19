@@ -70,7 +70,8 @@ const Navbar = () => {
                   <Avatar>
                     <AvatarImage src={user?.photoUrl} alt="shadcn" />
                     <AvatarFallback>{userPicFallBack}</AvatarFallback>
-                    {/* {console.log("userPicFallBack: ", userPicFallBack)} */}
+                    {console.log("userPicFallBack: ", userPicFallBack)}
+                    {console.log("user: ", user)}
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>

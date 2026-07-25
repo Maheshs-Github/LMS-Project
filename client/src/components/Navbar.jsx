@@ -54,7 +54,7 @@ const Navbar = () => {
     <div className="flex items-center w-full border-b-2 p-2 justify-between px-28">
       <button className="flex gap-3 w-full" onClick={() => navigate("/")}>
         <Icons.School size={30} />
-        <h1 className="font-bold text-2xl">E-Learning</h1>
+        <Link className="font-bold text-2xl" to={"/"}>E-Learning</Link>
       </button>
       <div className="flex w-full gap-3 items-center justify-end">
         {user ? (
@@ -70,8 +70,6 @@ const Navbar = () => {
                   <Avatar>
                     <AvatarImage src={user?.photoUrl} alt="shadcn" />
                     <AvatarFallback>{userPicFallBack}</AvatarFallback>
-                    {console.log("userPicFallBack: ", userPicFallBack)}
-                    {console.log("user: ", user)}
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
@@ -81,12 +79,12 @@ const Navbar = () => {
                   <DropdownMenuItem>
                     <Link to={`/${user?.role}/dashboard`}>Dashboard</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  {user?.role==="student"? <><DropdownMenuItem>
                     <Link to={"/student/my-learning"}> My Learning</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Link to={"/student/profile"}> Edit Profile</Link>
-                  </DropdownMenuItem>
+                  </DropdownMenuItem></>:null}
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>

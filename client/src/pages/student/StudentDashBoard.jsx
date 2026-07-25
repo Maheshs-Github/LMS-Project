@@ -12,20 +12,20 @@ import { Badge } from "@/components/ui/badge";
 import Icons from "@/utils/Icons";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useSelector } from "react-redux";
 
 const StudentDashBoard = () => {
   const { data } = useGet("dashboard/student");
   const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.user);
   const [continueLearningData, setContinueLearningData] = useState([]);
-  const [recentCourseEnrolled, setRecentCourseEnrolled] = useState([]);
+  const [recommededCourses, setRecommendedCourses] = useState([]);
   useEffect(() => {
     setContinueLearningData(data?.data?.courseProgress);
-    setRecentCourseEnrolled(data?.data?.recentEnrolledCourses);
+    setRecommendedCourses(data?.data?.recommendedCourses);
   }, [data]);
-  useEffect(
-    () => console.log("continueLearningData: ", continueLearningData),
-    [continueLearningData],
-  );
+
+  useEffect(() => console.log("user: ", user), [user]);
 
   const enrolledCourse = data?.data?.enrolledCourses;
   const notStartedCourses = data?.data?.notStartedCourses;
@@ -39,9 +39,12 @@ const StudentDashBoard = () => {
     <div>
       <section className="flex flex-col gap-8 p-6">
         <div>
-          <h2 className="text-3xl font-bold mb-4">👋 Welcome back, Mahesh</h2>
+          <h2 className="text-3xl font-bold mb-4">
+            👋 Welcome back, <span className="capitalize">{user?.name}</span>
+          </h2>
+          {console.log("name: ", user?.name)}
 
-          <p className="text-muted-foreground mt-1">
+          <p className="text-muted-foreground text-lg italic mt-2">
             Continue where you left off
           </p>
         </div>
@@ -131,11 +134,14 @@ const StudentDashBoard = () => {
         </div>
 
         <div>
-          <h3 className="font-semibold text-lg mb-2">Recently Enrolled</h3>
+          <h3 className="font-semibold text-lg mb-2">Recommended Courses</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {(recentCourseEnrolled || [])?.map((data, index) => {
+            {(recommededCourses || [])?.map((data, index) => {
               return (
-                <Card className="relative mx-auto w-full max-w-sm pt-0 col-span-1">
+                <Card
+                  className="relative mx-auto w-full max-w-sm pt-0 col-span-1"
+                  key={index}
+                >
                   {/* {console.log("course: ",course)} */}
                   <div className="absolute inset-0 z-30 aspect-video bg-black/35" />
                   <img
@@ -154,6 +160,25 @@ const StudentDashBoard = () => {
                     >
                       {data?.subTitle}
                     </CardTitle>
+                    <div className="flex items-center gap-4 font-semibold">
+                      <div className="flex items-center gap-1 text-lg">
+                        <Icons.Rupee size={18} />
+                        {data?.price}
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <Icons.Star
+                          size={16}
+                          className="fill-yellow-400 text-yellow-400"
+                        />
+
+                        <span>{data?.averageRating?.toFixed(1) || "0.0"}</span>
+
+                        <span className="text-muted-foreground text-sm">
+                          ({data?.reviewCount || 0})
+                        </span>
+                      </div>
+                    </div>
                   </CardHeader>
                   <CardFooter>
                     <Button

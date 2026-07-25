@@ -1,27 +1,31 @@
 import React, { useEffect } from "react";
-import Login from "./pages/LoginSignUp";
 import { Toaster } from "react-hot-toast";
-import { Route, Routes } from "react-router-dom";
-import { SignUp } from "./pages/SignUp";
-import Home from "./pages/Home";
-import Profile from "./components/student/Profile";
-import { useDispatch } from "react-redux";
-import { setUser } from "../redux/AuthSlice";
+import { useNavigate } from "react-router-dom";
+
+import { useDispatch, useSelector } from "react-redux";
+import { logout, setUser } from "../redux/AuthSlice";
 import { useGet } from "./hooks/useGet";
 import AppRoutes from "./Routes/AppRoutes";
 
 const App = () => {
-  const dispatch=useDispatch();
-const { data } = useGet("user/me");
+  const user = useSelector((state) => state.auth.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { data, error } = useGet(user ? "user/me" : null);
 
-useEffect(() => {
-  if(data?.data?.User){
-    dispatch(setUser(data?.data?.User));
-  }
-}, [data]);
-useEffect(()=>{
-  console.log("data: ",data)
-},[data])
+  useEffect(() => {
+    if (data?.data?.User) {
+      dispatch(setUser(data?.data?.User));
+    }
+    if (error?.status === 401 && user) {
+      dispatch(logout());
+      persistor.purge();
+      navigate("/auth");
+    }
+  }, [data, error, user]);
+  useEffect(() => {
+    console.log("data: ", data);
+  }, [data]);
 
   return (
     <div>

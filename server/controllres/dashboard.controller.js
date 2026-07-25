@@ -181,7 +181,7 @@ const getInstructorDashboard = asyncHandler(async (req, res) => {
       lectures: courseData.lectures.length,
       completedStudents: completedStudents,
       completionRate:
-        enrolledStudents > 0 ? (completedStudents / enrolledStudents) * 100 : 0,
+        enrolledStudents > 0 ? Math.round((completedStudents / enrolledStudents) * 100) : 0,
     };
   });
   console.log(

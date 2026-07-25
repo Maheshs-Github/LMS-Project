@@ -5,12 +5,9 @@ what is a formDtaa, also check frealted things
 5. it is giving failed to fetch for backedn error , whati sgood paractice 
 6. is it okay not use the try catch here 
 7. is it okay to pass crateer like tais
-8. frotend and backedn dat avalidtaions 
+8. frotend and backedn data avalidtaions 
 
 What to check next 
-1/ Browe Course, mostly done just frontend some part 
-2. start revision from 18 Jun , Review And rating , when u get teh Time 
-3. Instructor -> Log OUt and Edit Profile in Instructor
-4. Student -> Setting remove, nthg in dasboard
-5. let's revise the student dashboard controler 
-6. user is reminaing persistant with redux 
+
+3. Instructor -> Log OUt and Edit Profile in Instructor 
+1. publish and unpublish fun and , show courses based on taht , alos instructor dashboard , instructor side

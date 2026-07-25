@@ -16,8 +16,8 @@ export const useGet = (url) => {
       setData(res);
       return res;
     } catch (err) {
-      setError(err.message);
-      throw err;
+      setError(err);
+      // throw err;
     } finally {
       setLoading(false);
     }

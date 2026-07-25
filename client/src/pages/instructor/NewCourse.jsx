@@ -250,12 +250,12 @@ const NewCourse = () => {
             <h4 className="font-semibold">Basic Information </h4>
           </div>
           <div className="flex gap-6">
-            <button className="p-2 px-4 rounded text-black shadow-md border cursor-pointer bg-white">
+            {id?<button className="p-2 px-4 rounded text-black shadow-md border cursor-pointer bg-white">
               Unpublish
-            </button>
-            <button className="p-2 bg-black text-white rounded cursor-pointer">
+            </button>:null}
+            {/* <button className="p-2 bg-black text-white rounded cursor-pointer">
               Remove Course
-            </button>
+            </button> */}
           </div>
         </div>
         <InputField
@@ -520,7 +520,7 @@ const NewCourse = () => {
             className="text-white font-semibold bg-black rounded p-2 px-8 cursor-pointer"
             onClick={handleSubmit}
           >
-            {!id ? "Submit" : "Edit"}
+            {!id ? "Submit Course" : "Edit Course"}
             {}
           </button>
         </div>

@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import { useMutation } from "@/hooks/useMutation";
 import toast from "react-hot-toast";
 import Icons from "@/utils/Icons";
+import loadRazorpay from "@/utils/loadRazorpay";
 
 const CourseDetails = () => {
   const { id } = useParams();
@@ -67,6 +68,70 @@ const CourseDetails = () => {
       toast.error(error?.message);
     }
   };
+
+const handleBuy = async (cId) => {
+  const isLoaded = await loadRazorpay();
+
+  if (!isLoaded) {
+    toast.error("Failed to load Razorpay");
+    return;
+  }
+
+  try {
+    const res = await mutate({
+      url: "payment/create-order",
+      body: { courseId: cId },
+      method: "POST",
+    });
+
+    console.log(res);
+
+    toast.success(res.message || "Order created successfully");
+
+    const options = {
+      key: res.data.key,
+      amount: res.data.amount,
+      currency: res.data.currency,
+      order_id: res.data.orderId,
+
+      name: "Infinity LMS",
+      description: "Course Purchase",
+
+      // Optional but recommended
+      prefill: {
+        name: user?.fullName,
+        email: user?.email,
+      },
+
+      theme: {
+        color: "#2563eb",
+      },
+
+      modal: {
+        ondismiss: function () {
+          toast.info("Payment cancelled");
+        },
+      },
+
+      handler: async function (response) {
+        console.log("Payment Success");
+
+        console.log(response);
+
+        // We will call verify API here next
+      },
+    };
+
+    const paymentObject = new window.Razorpay(options);
+
+    paymentObject.open();
+
+  } catch (error) {
+    console.log(error);
+
+    toast.error(error.message || "Failed to create order");
+  }
+};
   return (
     <div className="">
       <div className="bg-black text-white px-4 py-10 rounded flex flex-col gap-2">
@@ -135,11 +200,17 @@ const CourseDetails = () => {
             <h2 className="font-semibold text-2xl">{courseData.price} </h2>
             <IndianRupee size={16} strokeWidth={3} />
           </div>
-          <button
+          {/* <button
             className="rounded bg-green-600 hover:bg-green-700 text-white py-2 px-6 cursor-pointer flex items-center justify-center w-full"
             onClick={() => handleEnroll(courseData?._id)}
           >
             Enroll Now
+          </button> */}
+                    <button
+            className="rounded bg-green-600 hover:bg-green-700 text-white py-2 px-6 cursor-pointer flex items-center justify-center w-full"
+            onClick={() => handleBuy(courseData?._id)}
+          >
+            Buy Now
           </button>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Camera, Home, BookOpen, User, Settings,SquarePen,LogOut,Moon ,School,SunMedium,CheckIcon,ChevronRightIcon,XIcon,PanelLeftIcon,ReceiptIndianRupee,Star, UserRoundCog, GraduationCap, Search} from 'lucide-react';
+import { Camera, Home, BookOpen, User, Settings,SquarePen,LogOut,Moon ,School,SunMedium,CheckIcon,ChevronRightIcon,XIcon,PanelLeftIcon,ReceiptIndianRupee,Star, UserRoundCog, GraduationCap, Search,Circle,Plus} from 'lucide-react';
 
 
 const Icons ={
@@ -21,7 +21,9 @@ const Icons ={
   Star,
   UserRoundCog,
   GraduationCap,
-  Search
+  Search,
+  Circle,
+  Plus,
 };
 
 export default Icons;

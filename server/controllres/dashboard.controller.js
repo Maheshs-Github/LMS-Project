@@ -223,7 +223,7 @@ const getInstructorDashboard = asyncHandler(async (req, res) => {
 });
 
 
-// 
+
 // Student Dashboard
 const getStudentDashboard = asyncHandler(async (req, res) => {
   const studentId = req?.user?._id;
@@ -235,7 +235,7 @@ const getStudentDashboard = asyncHandler(async (req, res) => {
       Progress.aggregate([
         {
           $match: {
-            userId: new mongoose.Types.ObjectId(req.user?._id),
+            userId: new mongoose.Types.ObjectId(req.user?._id), isPublished:true
           },
         },
         {

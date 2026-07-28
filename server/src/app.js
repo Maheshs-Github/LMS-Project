@@ -6,6 +6,7 @@ import lectureRouter from "../routes/lecture.route.js"
 import progressRouter from "../routes/progress.route.js"
 import dashboardRouter from "../routes/dashboard.route.js"
 import reviewAndRatingRouter from "../routes/review&rating.route.js"
+import paymentRouter from "../routes/payment.route.js"
 
 
 
@@ -29,9 +30,12 @@ app.use("/api/v1/lecture",lectureRouter)
 app.use("/api/v1/progress",progressRouter)
 app.use("/api/v1/dashboard",dashboardRouter)
 app.use("/api/v1/reviewAndRating",reviewAndRatingRouter)
+app.use("/api/v1/payment",paymentRouter)
+
 
 
 app.use((err,req,res,next)=>{
+  console.log("err: ",err)
   res.status(err.statusCode ||500).json({
     message: err.message || "Something Went Wrong",
     error:err.errors,

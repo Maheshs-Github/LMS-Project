@@ -12,9 +12,8 @@ import {
 import { courseCategories } from "@/resources/Data";
 import { useMutation } from "@/hooks/useMutation";
 import toast from "react-hot-toast";
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useGet } from "@/hooks/useGet";
-import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { Card, CardContent } from "@/components/ui/card";
+import Icons from "@/utils/Icons";
 
 const NewCourse = () => {
   // const lectureState = useSelector((state) => state.lectures.lectures);
@@ -51,7 +51,7 @@ const NewCourse = () => {
   // useEffect(() => console.log("id: ", id), [id]);
   const { id } = useParams();
   // const { data } = useGet(id ? `course/${id}` : null);
-    const {
+  const {
     data,
     refetch,
     loading: loadingLec,
@@ -73,6 +73,7 @@ const NewCourse = () => {
       level: data?.data?.course?.level ?? "",
       price: data?.data?.course?.price ?? "",
       thumbnail: data?.data?.course?.thumbnail ?? "",
+      isPublished: data?.data?.course?.isPublished ?? "",
     });
     setDescription(data?.data?.course?.description ?? "");
   }, [data]);
@@ -91,8 +92,6 @@ const NewCourse = () => {
   //   console.log("rea: ", res);
   // }, [lectureState]);
 
-
-
   // useEffect(() => console.log("lectures: ", lectures), [lectures]);
 
   const handleSubmit = async () => {
@@ -108,7 +107,7 @@ const NewCourse = () => {
     if (courseData.thumbnail instanceof File)
       formData.append("thumbnail", courseData.thumbnail);
     try {
-      console.log("idL ",id)
+      console.log("idL ", id);
       const res = await mutate({
         url: !id ? `course/` : `course/${courseData?._id}`,
         method: !id ? "post" : "PATCH",
@@ -237,6 +236,23 @@ const NewCourse = () => {
     });
   };
 
+  const handlePublish = async (cId) => {
+    try {
+      console.log("!courseData.isPublished: ", !courseData.isPublished);
+      const res = await mutate({
+        url: `course/${cId}/publish`,
+        body: { isPublished: !courseData.isPublished },
+        method: "patch",
+      });
+      console.log("res: ", res);
+      toast.success(res.message || "Course Publish Status has been updated");
+      refetch()
+    } catch (error) {
+      console.log("Error: ", error);
+      toast.error(error.message || "Error while updateing the status");
+    }
+  };
+
   return (
     <div className="p-6 ">
       <h2 className="text-lg font-semibold mb-4">
@@ -246,16 +262,25 @@ const NewCourse = () => {
       </h2>
       <div className="p-5 border rounded-lg flex flex-col gap-5">
         <div className="flex justify-between">
-          <div>
-            <h4 className="font-semibold">Basic Information </h4>
-          </div>
-          <div className="flex gap-6">
-            {id?<button className="p-2 px-4 rounded text-black shadow-md border cursor-pointer bg-white">
-              Unpublish
-            </button>:null}
-            {/* <button className="p-2 bg-black text-white rounded cursor-pointer">
-              Remove Course
-            </button> */}
+          <h4 className="font-semibold">Basic Information </h4>
+          <div className="flex items-center">
+            {courseData?.isPublished ? (
+              <div className="flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700 border border-emerald-200">
+                <Icons.Circle
+                  size={18}
+                  className="bg-green-600 rounded-full text-white font-semibold"
+                />
+                <span>Published</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 rounded-full bg-red-100 px-4 py-2 text-sm font-semibold text-red-700 border border-red-200">
+                <Icons.Circle
+                  size={24}
+                  className="bg-red-600  rounded-full text-white font-semibold"
+                />
+                <span>Unpublished</span>
+              </div>
+            )}
           </div>
         </div>
         <InputField
@@ -385,143 +410,145 @@ const NewCourse = () => {
         </div>
 
         {/* Add Lecture */}
-        {id?
-        <div className=" my-2 p-10!">
-          {!loadingLec ? (
-            data?.data?.course?.lectures?.length ? (
-              data?.data?.course?.lectures?.map((lecture) => {
-                return (
-                  <Card className={"my-2 p-1.5!"}>
-                    <CardContent className="flex items-center justify-between ">
-                      <p className="text-lg font-medium italic">
-                        {lecture.title ?? "Not avaliable"}
-                      </p>
+        {id ? (
+          <div className=" my-2 p-10!">
+            {!loadingLec ? (
+              data?.data?.course?.lectures?.length ? (
+                data?.data?.course?.lectures?.map((lecture) => {
+                  return (
+                    <Card className={"my-2 p-1.5!"}>
+                      <CardContent className="flex items-center justify-between ">
+                        <p className="text-lg font-medium italic">
+                          {lecture.title ?? "Not avaliable"}
+                        </p>
 
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline "
-                          className={
-                            "text-lg font-semibold p-5 bg-gray-400 hover:bg-gray-500 cursor-pointer"
-                          }
-                          onClick={() => handleLectureEditOpen(lecture)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          className={
-                            "text-lg font-semibold p-5  bg-red-100 hover:bg-red-300 cursor-pointer"
-                          }
-                          onClick={() => handleDelete(lecture?._id)}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline "
+                            className={
+                              "text-lg font-semibold p-5 bg-gray-400 hover:bg-gray-500 cursor-pointer"
+                            }
+                            onClick={() => handleLectureEditOpen(lecture)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            className={
+                              "text-lg font-semibold p-5  bg-red-100 hover:bg-red-300 cursor-pointer"
+                            }
+                            onClick={() => handleDelete(lecture?._id)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              ) : (
+                <div>No lectures Found</div>
+              )
             ) : (
-              <div>No lectures Found</div>
-            )
-          ) : (
-            <div>Loading...</div>
-          )}
-          {/* basic flow from tutorial  */}
-          {/* i haven't decide on the time line for DSA , but i will revise least 2 problme amd solve 2  */}
+              <div>Loading...</div>
+            )}
+            {/* basic flow from tutorial  */}
+            {/* i haven't decide on the time line for DSA , but i will revise least 2 problme amd solve 2  */}
 
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button
-                className={
-                  "flex gap-4 cursor-pointer py-6 px-4 font-semibold text-lg bg-transparent text-black "
-                }
-                onClick={() => {
-                  setVideoEdit(false);
-                  setLectureData({
-                    title: "",
-                    video: "",
-                    _id: "",
-                  });
-                }}
-              >
-                <Plus />
-                <span>Add Lecture</span>
-              </Button>
-            </DialogTrigger>
-
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle></DialogTitle>
-              </DialogHeader>
-
-              <InputField
-                name={"title"}
-                label={" Title"}
-                placeholder={"Enter Lecture Title"}
-                onChange={handleLectureInputChange}
-                value={lectureData.title}
-              />
-
-              <div className="">
-                <h3 className="font-medium mb-2"> Lecture Video</h3>
-
-                <label
-                  htmlFor="video"
-                  className="border-dashed border-2 max-w-xl h-28 border-black hover:border-gray-500 rounded flex  flex-col justify-center items-center cursor-pointer"
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                >
-                  <h4 className="text-lg">Drag & Drop </h4>
-                  <div className="font-semibold">or</div>
-                  <h4 className="text-blue-600 font-semibold">
-                    Click to Browse
-                  </h4>
-                </label>
-                <input
-                  type="file"
-                  id="video"
-                  className="hidden"
-                  onChange={(e) => {
-                    setLectureData((prev) => ({
-
-                      ...prev,
-                      video: e.target.files[0],
-                    }));
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  className={
+                    "flex gap-4 cursor-pointer py-6 px-4 font-semibold text-lg bg-transparent text-black "
+                  }
+                  onClick={() => {
+                    setVideoEdit(false);
+                    setLectureData({
+                      title: "",
+                      video: "",
+                      _id: "",
+                    });
                   }}
-                />
-                {lectureData.video && (
-                  <div className="mt-3 rounded-md bg-background px-3 py-2  font-medium text-muted-foreground truncate max-w-xs">
-                    {lectureData.video.name ?? lectureData.video}
-                  </div>
-                )}
-              </div>
-              <Button
-                onClick={videoEdit ? handleLectureEdit : handleAddVideo}
-                className={`cursor-pointer `}
-                disabled={loading}
-              >
-                {loading
-                  ? "Plz.. wait In Progress"
-                  : videoEdit
-                    ? "Edit Video"
-                    : "Add Video"}
-              </Button>
+                >
+                  <Icons.Plus />
+                  <span>Add Lecture</span>
+                </Button>
+              </DialogTrigger>
 
-              {/* Form Fields */}
-            </DialogContent>
-          </Dialog>
-        </div>:null}
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle></DialogTitle>
+                </DialogHeader>
+
+                <InputField
+                  name={"title"}
+                  label={" Title"}
+                  placeholder={"Enter Lecture Title"}
+                  onChange={handleLectureInputChange}
+                  value={lectureData.title}
+                />
+
+                <div className="">
+                  <h3 className="font-medium mb-2"> Lecture Video</h3>
+
+                  <label
+                    htmlFor="video"
+                    className="border-dashed border-2 max-w-xl h-28 border-black hover:border-gray-500 rounded flex  flex-col justify-center items-center cursor-pointer"
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                  >
+                    <h4 className="text-lg">Drag & Drop </h4>
+                    <div className="font-semibold">or</div>
+                    <h4 className="text-blue-600 font-semibold">
+                      Click to Browse
+                    </h4>
+                  </label>
+                  <input
+                    type="file"
+                    id="video"
+                    className="hidden"
+                    onChange={(e) => {
+                      setLectureData((prev) => ({
+                        ...prev,
+                        video: e.target.files[0],
+                      }));
+                    }}
+                  />
+                  {lectureData.video && (
+                    <div className="mt-3 rounded-md bg-background px-3 py-2  font-medium text-muted-foreground truncate max-w-xs">
+                      {lectureData.video.name ?? lectureData.video}
+                    </div>
+                  )}
+                </div>
+                <Button
+                  onClick={videoEdit ? handleLectureEdit : handleAddVideo}
+                  className={`cursor-pointer `}
+                  disabled={loading}
+                >
+                  {loading
+                    ? "Plz.. wait In Progress"
+                    : videoEdit
+                      ? "Edit Video"
+                      : "Add Video"}
+                </Button>
+
+                {/* Form Fields */}
+              </DialogContent>
+            </Dialog>
+          </div>
+        ) : null}
         <div className="flex gap-4 mt-3">
-          <button className="border rounded font-semibold p-2 px-8 cursor-pointer">
-            Cancel
-          </button>
           <button
             className="text-white font-semibold bg-black rounded p-2 px-8 cursor-pointer"
             onClick={handleSubmit}
           >
             {!id ? "Submit Course" : "Edit Course"}
-            {}
+          </button>
+          <button
+            className="border rounded font-semibold p-2 px-8 cursor-pointer"
+            onClick={() => handlePublish(id)}
+          >
+            {!courseData?.isPublished ? "Publish" : "UnPublish"}
           </button>
         </div>
       </div>
@@ -536,8 +563,3 @@ export default NewCourse;
 // what can we do for the hair fall, any thing about t otake care of it
 // let's see the personalty development any good courses or videos about it , gita , being mindfula nd peaceful , less overthinking
 // shrimat Bhagvad Gita, mobile no use
-
-
-
-
-

@@ -215,6 +215,7 @@ const getAllCourses = asyncHandler(async (req, res) => {
   const { searchValue, sortBy, category, page = 1, limit = 2 } = req.query;
   // console.log("searchValue: ",searchValue," sortBy: ",sortBy);
   const matchStage = {};
+  matchStage.isPublished= true;
 
   if (category && category !== "All") matchStage.category = category;
 
@@ -307,7 +308,7 @@ const getAllCourses = asyncHandler(async (req, res) => {
   // let's see how we can do more effeciently
   const courseReviewData = await Course.aggregate([
     {
-      $match: matchStage,
+      $match: matchStage
     },
     {
       $lookup: {
@@ -395,7 +396,7 @@ const courseEnroll = asyncHandler(async (req, res) => {
   // const updatedCourse=await Course.findByIdAndUpdate(courseId,{$addToSet:{enrolledStudents:userId}},{new:true});
   // const updateuser=await User.findByIdAndUpdate(userId,{$addToSet:{coursesEnrolledIn:courseId}},{new :true});
 
-  const [updatedCourse, updateuser,updateProgress] = await Promise.all([
+  const [updatedCourse, updateuser, updateProgress] = await Promise.all([
     Course.findByIdAndUpdate(
       courseId,
       { $addToSet: { enrolledStudents: userId } },
@@ -434,6 +435,74 @@ const courseEnroll = asyncHandler(async (req, res) => {
     );
 });
 
+const updateCourseStatus = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+  const { isPublished } = req.body;
+
+  if(typeof isPublished !== "boolean")
+    throw new ApiError(400,"Invlaid Pusblish Status")
+
+const course = await Course.findOne({
+  _id: courseId,
+  instructor: req.user.id,
+}).populate("lectures");
+
+  if (!course) throw new ApiError(404, "No Course Found");
+
+  if (isPublished) {
+  const errors = [];
+
+  if (!course.title) errors.push("Title");
+  if (!course.description) errors.push("Description");
+  if (!course.thumbnail) errors.push("Thumbnail");
+  if (!course.category) errors.push("Category");
+  if (!course.level) errors.push("Level");
+  if (course.price <= 0) errors.push("Price");
+  if (course.lectures.length === 0)
+    errors.push("At least one lecture");
+
+  if (errors.length > 0) {
+    throw new ApiError(
+      400,
+      `Complete the following before publishing: ${errors.join(", ")}`
+    );
+  }
+}
+
+  const updatedCourse = await Course.findOneAndUpdate(
+    {
+      _id: courseId,
+      instructor: req.user.id,
+    },
+    {
+      $set: {
+        isPublished,
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+ if (!updatedCourse) {
+    throw new ApiError(
+      404,
+      "Course not found or you are not authorized to update it."
+    );
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      updatedCourse,
+      isPublished
+        ? "Course published successfully."
+        : "Course unpublished successfully."
+    )
+  );
+});
+
 export {
   createCourse,
   getMyCourses,
@@ -442,6 +511,5 @@ export {
   getCourseLectures,
   getAllCourses,
   courseEnroll,
+  updateCourseStatus,
 };
-
-// Meeting

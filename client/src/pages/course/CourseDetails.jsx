@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import video from "../../assets/video/file_example_MP4_480_1_5MG.mp4";
 import { useGet } from "@/hooks/useGet";
 import parse from "html-react-parser";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useMutation } from "@/hooks/useMutation";
 import toast from "react-hot-toast";
@@ -12,6 +12,7 @@ import loadRazorpay from "@/utils/loadRazorpay";
 
 const CourseDetails = () => {
   const { id } = useParams();
+  const navigate=useNavigate();
   const { data, refetch } = useGet(id ? `course/${id}` : null);
   const user = useSelector((state) => state.auth.user);
   const { mutate } = useMutation();
@@ -99,7 +100,7 @@ const handleBuy = async (cId) => {
 
       // Optional but recommended
       prefill: {
-        name: user?.fullName,
+        name: "Mahesh",
         email: user?.email,
       },
 
@@ -109,7 +110,7 @@ const handleBuy = async (cId) => {
 
       modal: {
         ondismiss: function () {
-          toast.info("Payment cancelled");
+          toast.log("Payment cancelled");
         },
       },
 
@@ -118,11 +119,37 @@ const handleBuy = async (cId) => {
 
         console.log(response);
 
-        // We will call verify API here next
+       await  handleVerifyPayment(response,cId);
       },
     };
 
     const paymentObject = new window.Razorpay(options);
+
+    paymentObject.on("payment.failed", async function (response) {
+  console.log("Payment Failed");
+  console.log(response.error);
+
+  try {
+    await mutate({
+      url: "payment/failure",
+      method: "POST",
+      body: {
+        orderId: response.error.metadata.order_id,
+        code: response.error.code,
+        description: response.error.description,
+        reason: response.error.reason,
+        source: response.error.source,
+        step: response.error.step,
+      },
+    });
+
+    toast.error(response.error.description || "Payment Failed");
+  } catch (error) {
+    console.log(error);
+
+    toast.error("Failed to record payment failure");
+  }
+});
 
     paymentObject.open();
 
@@ -132,6 +159,36 @@ const handleBuy = async (cId) => {
     toast.error(error.message || "Failed to create order");
   }
 };
+
+const handleVerifyPayment=async(response,cId)=>{
+  try {
+    console.log("Payment Success");
+    console.log(response);
+
+    const verifyRes = await mutate({
+      url: "payment/verify",
+      method: "POST",
+      body: {
+        courseId: cId,
+        ...response,
+      },
+    });
+
+    toast.success(verifyRes.message || "Payment is verified");
+
+    console.log("final res: ",verifyRes);
+    console.log("hello ans here ")
+
+    // Navigate to My Courses or Course Player
+    navigate("/student/my-learning");
+
+  } catch (error) {
+    console.log(error);
+
+    toast.error(error.message || "Payment verification failed");
+  }
+
+}
   return (
     <div className="">
       <div className="bg-black text-white px-4 py-10 rounded flex flex-col gap-2">

@@ -51,7 +51,14 @@ const paymentSchema = new mongoose.Schema(
       default: "upi",
     },
     failureReason: {
-      type: String,
+      code: String,
+      description: String,
+      reason: String,
+      source: String,
+      step: String,
+      paymentFailedAt: {
+        type: Date,
+      },
     },
 
     receipt: {

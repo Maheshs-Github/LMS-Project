@@ -64,7 +64,7 @@ const MyLearning = () => {
 
       <div className="grid grid-cols-4 gap-10">
         {!loading
-          ? courses?.slice(0, 4)?.map((course, index) => {
+          ? courses?.map((course, index) => {
               return (
                 <Card
                   className="relative mx-auto w-full max-w-sm pt-0 col-span-1"

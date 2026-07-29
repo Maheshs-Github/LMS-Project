@@ -13,4 +13,8 @@ What to check next
 1. publish and unpublish fun and , show courses based on taht , alos instructor dashboard , instructor side
 2. Check about how we are clering the redux state of user and all when token expires 
 3. what is the thing with the index in models
-4. why we use the new at creating the schema , but nota t model
+4. why we use the new at creating the schema , but nota t model 
+5. Revise the paymnet flow and certifaction thing tooo
+
+
+Card No : 5267 3181 8797 5449

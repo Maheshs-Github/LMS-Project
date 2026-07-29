@@ -7,6 +7,7 @@ import progressRouter from "../routes/progress.route.js"
 import dashboardRouter from "../routes/dashboard.route.js"
 import reviewAndRatingRouter from "../routes/review&rating.route.js"
 import paymentRouter from "../routes/payment.route.js"
+import certificateRouter from "../routes/certificate.route.js"
 
 
 
@@ -31,6 +32,7 @@ app.use("/api/v1/progress",progressRouter)
 app.use("/api/v1/dashboard",dashboardRouter)
 app.use("/api/v1/reviewAndRating",reviewAndRatingRouter)
 app.use("/api/v1/payment",paymentRouter)
+app.use("/api/v1/certificate",certificateRouter)
 
 
 

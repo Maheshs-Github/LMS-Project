@@ -15,6 +15,9 @@ What to check next
 3. what is the thing with the index in models
 4. why we use the new at creating the schema , but nota t model 
 5. Revise the paymnet flow and certifaction thing tooo
-
+6. Let's see abput how we are downoding teh pdf by frontend , also how we show the images by url too
+7. i do not understad where we use the $ in aggregation and where not 
+8. Why we use the useMemo, Admindashboard check the analytics fun and how we transform data there 
+9. Check about what admin can have more 
 
 Card No : 5267 3181 8797 5449

@@ -18,6 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/AuthSlice";
 import { useMutation } from "@/hooks/useMutation";
 import toast from "react-hot-toast";
+import { persistor } from "../../store";
 
 const Navbar = () => {
   const { mutate } = useMutation();
@@ -33,15 +34,16 @@ const Navbar = () => {
     .map((name) => name[0].toUpperCase())
     .join("");
 
-  const handleLogOut = () => {
+  const handleLogOut = async() => {
     try {
-      const res = mutate({
+      const res = await mutate({
         url: `user/logout`,
         method: "post",
       });
+      persistor.purge();
       toast.success(res?.message || "Logged Out Successfully");
       Dispatch(logout());
-      navigate("/");
+      navigate("/auth");
     } catch (error) {
       console.log("error: ", error);
       toast.error(error.message || "Error while Logging Out");

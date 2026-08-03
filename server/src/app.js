@@ -8,6 +8,7 @@ import dashboardRouter from "../routes/dashboard.route.js"
 import reviewAndRatingRouter from "../routes/review&rating.route.js"
 import paymentRouter from "../routes/payment.route.js"
 import certificateRouter from "../routes/certificate.route.js"
+import adminRouter from "../routes/admin.route.js"
 
 
 
@@ -33,6 +34,7 @@ app.use("/api/v1/dashboard",dashboardRouter)
 app.use("/api/v1/reviewAndRating",reviewAndRatingRouter)
 app.use("/api/v1/payment",paymentRouter)
 app.use("/api/v1/certificate",certificateRouter)
+app.use("/api/v1/admin",adminRouter)
 
 
 

@@ -22,6 +22,8 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { Textarea } from "../ui/textarea";
+import axios from "axios";
+import BASE_URL from "@/utils/BASE_URL";
 
 const ReviewModel = ({ userReview }) => {
   const [openReviewPopUp, setOpenReviewPopup] = useState(false);
@@ -84,9 +86,11 @@ const ReviewModel = ({ userReview }) => {
               <span className="font-medium">{userReview?.rating}</span>
             </div>
             <div className="text-muted-foreground">{userReview?.review}</div>
-            {userReview?<div className="text-muted-foreground">
-              {days ?? "NA"} days ago
-            </div>:null}
+            {userReview ? (
+              <div className="text-muted-foreground">
+                {days ?? "NA"} days ago
+              </div>
+            ) : null}
           </div>
 
           <Button
@@ -112,16 +116,18 @@ const ReviewModel = ({ userReview }) => {
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((star) => {
                 // {console.log("star",star)}
-                return(<Icons.Star
-                key={star}
-                onClick={() => setRating(star)}
-                className={`cursor-pointer transition-all hover:scale-110 ${
-                  star <= rating
-                  ? "fill-yellow-400 text-yellow-400"
-                  : "fill-gray-300"
-                }`}
-                />
-)})}
+                return (
+                  <Icons.Star
+                    key={star}
+                    onClick={() => setRating(star)}
+                    className={`cursor-pointer transition-all hover:scale-110 ${
+                      star <= rating
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "fill-gray-300"
+                    }`}
+                  />
+                );
+              })}
             </div>
 
             {rating > 0 && (
@@ -163,6 +169,10 @@ const LearningPlayer = () => {
   const { data: lectureProgress, refetch: refetchprogress } = useGet(
     `progress/${courseId}`,
   );
+  const { data: certificateData, refetch: refetchCertificate } = useGet(
+    `certificate/${courseId}`,
+  );
+
   const { mutate } = useMutation();
   const [playingVideoData, setPlayingVideoData] = useState({
     _id: "",
@@ -183,8 +193,8 @@ const LearningPlayer = () => {
     progressPercentage === 100 ? `reviewAndRating/${courseId}` : null;
   const { data: reviewData } = useGet(reviewUrl);
   useEffect(
-    () => console.log("lectureProgress: ", lectureProgress),
-    [lectureProgress],
+    () => console.log("certificateData: ", certificateData),
+    [certificateData],
   );
 
   useEffect(() => setUserReview(reviewData?.data), [reviewData]);
@@ -270,9 +280,35 @@ const LearningPlayer = () => {
     }
   };
 
-  useEffect(() => {
-    console.log("reviewData: ", reviewData);
-  }, [reviewData]);
+  const handleCertificateDownload = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}certificate/${courseId}`, {
+        responseType: "blob",
+        withCredentials: true,
+      });
+
+      const url = window.URL.createObjectURL(
+        new Blob([response.data], { type: "application/pdf" }),
+      );
+
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = "certificate.pdf";
+
+      document.body.appendChild(link);
+      link.click();
+
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // useEffect(() => {
+  //   console.log("reviewData: ", reviewData);
+  // }, [reviewData]);
 
   return (
     <div className="p-6 w-full">
@@ -319,8 +355,17 @@ const LearningPlayer = () => {
         </div>
 
         {progressPercentage === 100 && (
-          <div className="mt-4 rounded-lg bg-green-100 border border-green-300 p-3 text-center">
-            🎉 Congratulations! You have completed this course.
+          <div className="flex gap-2 w-full items-center my-5">
+            <div className=" rounded-lg w-full bg-green-100 border border-green-300 p-3 text-center">
+              🎉 Congratulations! You have completed this course.
+            </div>
+            <Button
+              type="button"
+              className=" cursor-pointer  p-4 py-6 font-semibold text-lg"
+              onClick={handleCertificateDownload}
+            >
+              Download Certificate
+            </Button>
           </div>
         )}
 

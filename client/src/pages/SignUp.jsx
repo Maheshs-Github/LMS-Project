@@ -56,7 +56,7 @@ export function SignUp() {
         email: "",
         role: "",
       });
-            Navigate(`/${user.role}/dashboard`);
+            Navigate(`/${user?.role}/dashboard`);
     } catch (error) {
       console.log("Error: ", error);
       toast.error(error.message || "Error while registring ");

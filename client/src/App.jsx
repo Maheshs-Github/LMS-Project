@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout, setUser } from "../redux/AuthSlice";
 import { useGet } from "./hooks/useGet";
 import AppRoutes from "./Routes/AppRoutes";
+import { persistor } from "../store";
 
 const App = () => {
   const user = useSelector((state) => state.auth.user);
@@ -13,16 +14,31 @@ const App = () => {
   const navigate = useNavigate();
   const { data, error } = useGet(user ? "user/me" : null);
 
+  // useEffect(() => {
+  //   if (data?.data?.User) {
+  //     dispatch(setUser(data?.data?.User));
+  //   }
+  //   if (error?.status === 401 && user) {
+  //     dispatch(logout());
+  //     persistor.purge();
+  //     navigate("/auth");
+  //   }
+  // }, [data, error, user]);
+
   useEffect(() => {
-    if (data?.data?.User) {
-      dispatch(setUser(data?.data?.User));
-    }
-    if (error?.status === 401 && user) {
-      dispatch(logout());
-      persistor.purge();
-      navigate("/auth");
-    }
-  }, [data, error, user]);
+  if (user && data?.data?.User) {
+    dispatch(setUser(data.data.User));
+  }
+}, [data, dispatch]);
+
+useEffect(() => {
+  if (error?.status === 401) {
+    dispatch(logout());
+    persistor.purge();
+    navigate("/auth", { replace: true });
+  }
+}, [error, dispatch, navigate]);
+
   useEffect(() => {
     console.log("data: ", data);
   }, [data]);

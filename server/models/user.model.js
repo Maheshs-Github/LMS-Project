@@ -34,6 +34,23 @@ const userSchema = mongoose.Schema(
     photoUrl: {
       type: String,
     },
+    isBlocked:{
+      type:Boolean,
+      default:false,
+    },
+    blockReason:{
+      type:String,
+      default:"",
+    },
+    blockedAt:
+    {
+      type:Date
+    },
+    blockedBy:{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"User"
+    },
+
   },
   { timestamps: true },
 );

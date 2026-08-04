@@ -399,4 +399,105 @@ const getRecentActivity = asyncHandler(async (req, res) => {
     ),
   );
 });
-export { getAdminDashboard, getRecentActivity };
+
+const getUsers = asyncHandler(async (req, res) => {
+  const {
+    page = 1,
+    limit = 2,
+    searchValue,
+    role = "All",
+    status = "All",
+    sortBy = "latest",
+  } = req.query;
+  let matchStage = {},
+    sortStage = {};
+
+  if (status && status !== "All") matchStage.status = status;
+
+  if (role && role !== "All") matchStage.role = role;
+
+  matchStage.role = { $ne: "admin" };
+
+  if (searchValue) {
+    matchStage.$or = [
+      {
+        name: {
+          $regex: searchValue,
+          $options: "i",
+        },
+      },
+      {
+        email: {
+          $regex: searchValue,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  switch (sortBy) {
+    case "oldest": {
+      sortStage = { createdAt: 1 };
+      break;
+    }
+
+    default:
+      sortStage = { createdAt: -1 };
+  }
+
+  const currentPage = Number(page);
+  const pageLimit = Number(limit);
+  const skip = (currentPage - 1) * pageLimit;
+
+  const result = await User.aggregate([
+    {
+      $match: matchStage,
+    },
+    {
+      $facet: {
+        users: [
+          {
+            $sort: sortStage,
+          },
+          {
+            $skip: skip,
+          },
+          {
+            $limit: pageLimit,
+          },
+          {
+            $project: {
+              name: 1,
+              email: 1,
+              role: 1,
+              isBlocked: 1,
+              createdAt: 1,
+            },
+          },
+        ],
+        totalUsers: [
+          {
+            $count: "count",
+          },
+        ],
+      },
+    },
+  ]);
+  // console.log(
+  //   "Users: ",
+  //   result[0].users,
+  //   " totalUsers: ",
+  //   result[0].totalUsers[0].count,
+  // );
+
+  return res.status(200).json(new ApiResponse(200,{
+    Users:result[0]?.users,
+    pagination:{
+      currentPage,
+      pageLimit,
+      totalUsers:result[0]?.totalUsers[0].count,
+      totalPages:Math.ceil(result[0]?.totalUsers[0].count/ pageLimit)
+    }
+  }))
+});
+export { getAdminDashboard, getRecentActivity, getUsers };

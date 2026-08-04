@@ -19,5 +19,6 @@ What to check next
 7. i do not understad where we use the $ in aggregation and where not 
 8. Why we use the useMemo, Admindashboard check the analytics fun and how we transform data there 
 9. Check about what admin can have more 
+10.let's see about the facet 
 
 Card No : 5267 3181 8797 5449

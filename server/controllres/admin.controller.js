@@ -412,7 +412,13 @@ const getUsers = asyncHandler(async (req, res) => {
   let matchStage = {},
     sortStage = {};
 
-  if (status && status !== "All") matchStage.status = status;
+if (status === "Active") {
+  matchStage.isBlocked = false;
+}
+
+if (status === "Blocked") {
+  matchStage.isBlocked = true;
+}
 
   if (role && role !== "All") matchStage.role = role;
 
@@ -498,6 +504,6 @@ const getUsers = asyncHandler(async (req, res) => {
       totalUsers:result[0]?.totalUsers[0].count,
       totalPages:Math.ceil(result[0]?.totalUsers[0].count/ pageLimit)
     }
-  }))
+  },"User Data has been Fetched Successfully"))
 });
 export { getAdminDashboard, getRecentActivity, getUsers };

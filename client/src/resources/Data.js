@@ -38,9 +38,9 @@ export const AdminItems = [
     icon: Icons.Home ,
   },
   {
-    title: "Courses",
-    url: "/admin/courses",
-    icon: Icons.BookOpen,
+    title: "User Management",
+    url: "/admin/user-management",
+    icon: Icons.User,
   },
   {
     title: "Profile",

@@ -21,4 +21,10 @@ What to check next
 9. Check about what admin can have more 
 10.let's see about the facet 
 
+
 Card No : 5267 3181 8797 5449
+
+
+Things to take for next :
+1. Why select is not wroking 
+2. check those actions 

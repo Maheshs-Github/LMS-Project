@@ -22,6 +22,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import NotFound from "@/components/common/NotFound";
 import AuthRoute from "./AuthRoute";
 import Courses from "@/components/student/Courses";
+import UserManagement from "@/pages/admin/UserManagement";
 
 const AppRoutes = () => {
   return (
@@ -57,7 +58,7 @@ const AppRoutes = () => {
       <Route element={<ProtectedRoute allowedRole="admin" />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="courses" element={<AddCourse />} />
+          <Route path="user-management" element={<UserManagement />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />

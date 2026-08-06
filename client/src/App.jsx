@@ -39,10 +39,6 @@ useEffect(() => {
   }
 }, [error, dispatch, navigate]);
 
-  useEffect(() => {
-    console.log("data: ", data);
-  }, [data]);
-
   return (
     <div>
       <Toaster

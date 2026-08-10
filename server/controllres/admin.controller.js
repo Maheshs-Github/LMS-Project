@@ -1,6 +1,8 @@
+import mongoose from "mongoose";
 import { Course } from "../models/course.model.js";
 import { Payment } from "../models/payment.model.js";
 import { User } from "../models/user.model.js";
+import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
@@ -409,20 +411,24 @@ const getUsers = asyncHandler(async (req, res) => {
     status = "All",
     sortBy = "latest",
   } = req.query;
+
+  console.log("role: ", role);
   let matchStage = {},
     sortStage = {};
 
-if (status === "Active") {
-  matchStage.isBlocked = false;
-}
+  if (status === "active") {
+    matchStage.isBlocked = false;
+  }
 
-if (status === "Blocked") {
-  matchStage.isBlocked = true;
-}
+  if (status === "blocked") {
+    matchStage.isBlocked = true;
+  }
 
-  if (role && role !== "All") matchStage.role = role;
-
-  matchStage.role = { $ne: "admin" };
+  if (role && role !== "All") {
+    matchStage.role = role;
+  } else {
+    matchStage.role = { $ne: "admin" };
+  }
 
   if (searchValue) {
     matchStage.$or = [
@@ -440,6 +446,7 @@ if (status === "Blocked") {
       },
     ];
   }
+  console.log("match: ", matchStage);
 
   switch (sortBy) {
     case "oldest": {
@@ -496,14 +503,358 @@ if (status === "Blocked") {
   //   result[0].totalUsers[0].count,
   // );
 
-  return res.status(200).json(new ApiResponse(200,{
-    Users:result[0]?.users,
-    pagination:{
-      currentPage,
-      pageLimit,
-      totalUsers:result[0]?.totalUsers[0].count,
-      totalPages:Math.ceil(result[0]?.totalUsers[0].count/ pageLimit)
-    }
-  },"User Data has been Fetched Successfully"))
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        Users: result[0]?.users,
+        pagination: {
+          currentPage,
+          pageLimit,
+          totalUsers: result[0]?.totalUsers[0].count ?? 0,
+          totalPages:
+            Math.ceil(result[0]?.totalUsers[0].count / pageLimit) ?? 0,
+        },
+      },
+      "User Data has been Fetched Successfully",
+    ),
+  );
 });
-export { getAdminDashboard, getRecentActivity, getUsers };
+
+const getUser = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  if (!userId) throw new ApiError(400, "User Id is not Found");
+
+  const user = await User.findById(userId).select("role");
+
+  console.log("user: ", user);
+
+  if (!user) throw new ApiError(400, "User  not Found");
+
+  let userData;
+  if (user.role === "student") {
+    userData = await User.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(userId),
+        },
+      },
+      {
+        $lookup: {
+          from: "payments",
+          localField: "_id",
+          foreignField: "userId",
+          as: "payments",
+        },
+      },
+      {
+        $unwind: "$payments",
+      },
+      {
+        $lookup: {
+          from: "courses",
+          localField: "payments.courseId",
+          foreignField: "_id",
+          as: "courses",
+        },
+      },
+      {
+        $unwind: "$courses",
+      },
+
+      // 2nd
+      {
+        $lookup: {
+          from: "progresses",
+
+          let: {
+            userId: "$_id",
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$userId", "$$userId"],
+                },
+              },
+            },
+            {
+              $lookup: {
+                from: "courses",
+                localField: "courseId",
+                foreignField: "_id",
+                as: "course",
+              },
+            },
+            {
+              $unwind: "$course",
+            },
+            {
+              $lookup: {
+                from: "certificates",
+                let: {
+                  studentId: "$userId",
+                  courseId: "$course._id",
+                },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          { $eq: ["$student", "$$studentId"] },
+                          { $eq: ["$courseId", "$$courseId"] },
+                        ],
+                      },
+                    },
+                  },
+                ],
+                as: "certificate",
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+
+                courseName: "$course.title",
+
+                courseLectureCount: {
+                  $size: "$course.lectures",
+                },
+
+                completedLectureCount: {
+                  $size: "$lecturesCompleted",
+                },
+
+                completionPerc: {
+                  $cond: [
+                    { $gt: [{ $size: "$course.lectures" }, 0] },
+                    {
+                      $multiply: [
+                        {
+                          $divide: [
+                            { $size: "$lecturesCompleted" },
+                            { $size: "$course.lectures" },
+                          ],
+                        },
+                        100,
+                      ],
+                    },
+                    0,
+                  ],
+                },
+                certificateAvailable: {
+                  $gt: [{ $size: "$certificate" }, 0],
+                },
+              },
+            },
+          ],
+          as: "progress",
+        },
+      },
+
+      {
+        $group: {
+          _id: "$_id",
+
+          name: { $first: "$name" },
+          email: { $first: "$email" },
+          role: { $first: "$role" },
+
+          isBlocked: { $first: "$isBlocked" },
+          blockReason: { $first: "$blockReason" },
+          blockedAt: { $first: "$blockedAt" },
+          blockedBy: { $first: "$blockedBy" },
+          createdAt: { $first: "$createdAt" },
+
+          payments: {
+            $push: {
+              amount: "$payments.amount",
+              status: "$payments.status",
+              createdAt: "$payments.createdAt",
+              courseName: "$courses.title",
+            },
+          },
+          progress: {
+            $first: "$progress",
+          },
+        },
+      },
+      {
+        $project: {
+          name: 1,
+          email: 1,
+          role: 1,
+          isBlocked: 1,
+          blockReason: 1,
+          blockedAt: 1,
+          blockedBy: 1,
+          createdAt: 1,
+          payment: "$payments",
+          progress: "$progress",
+        },
+      },
+    ]);
+  }
+  if (user.role === "instructor") {
+    userData = await User.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(userId),
+        },
+      },
+      {
+        $lookup: {
+          from: "courses",
+          localField: "_id",
+          foreignField: "instructor",
+          as: "course",
+        },
+      },
+
+      {
+        $project: {
+          name: 1,
+          email: 1,
+          role: 1,
+          isBlocked: 1,
+          blockReason: 1,
+          blockedAt: 1,
+          blockedBy: 1,
+          createdAt: 1,
+          // course: "$course",
+          coursesCount: {
+            $size: "$course",
+          },
+          studentsCount: {
+            $sum: {
+              $map: {
+                input: "$course",
+                as: "course",
+                in: {
+                  $size: "$$course.enrolledStudents",
+                },
+              },
+            },
+          },
+          revenue: {
+            $sum: {
+              $map: {
+                input: "$course",
+                as: "course",
+                in: {
+                  $multiply: [
+                    { $size: "$$course.enrolledStudents" },
+                    "$$course.price",
+                  ],
+                },
+              },
+            },
+          },
+          published: {
+            $size: {
+              $filter: {
+                input: "$course",
+                as: "course",
+                cond: {
+                  $eq: ["$$course.isPublished", true],
+                },
+              },
+            },
+          },
+          course: {
+            $map: {
+              input: "$course",
+              as: "course",
+              in: {
+                _id: "$$course._id",
+                title: "$$course.title",
+                price: "$$course.price",
+                students: {
+                  $size: "$$course.enrolledStudents",
+                },
+                isPublished: "$$course.isPublished",
+              },
+            },
+          },
+          courseRevenue: {
+            $map: {
+              input: "$course",
+              as: "course",
+              in: {
+                courseName: "$$course.title",
+                revenue: {
+                  $multiply: [
+                    { $size: "$$course.enrolledStudents" },
+                    "$$course.price",
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+    ]);
+  }
+
+  console.log("user: ", userData);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, userData, "User data fetched successfully"));
+});
+
+const toggleBlockStatus = asyncHandler(async (req, res) => {
+  const { userId, blockStatus, blockReason } = req.body;
+  if (!userId) {
+    throw new ApiError(400, "User ID is required");
+  }
+
+  if (typeof blockStatus !== "boolean") {
+    throw new ApiError(400, "Invalid block status");
+  }
+
+  if (blockStatus && (!blockReason || blockReason.trim() === ""))
+    throw new ApiError(400, "Block Reaseon is required");
+
+  const updateData = {};
+  updateData.isBlocked = blockStatus;
+  if (blockStatus) {
+    updateData.blockReason = blockReason;
+    updateData.blockedBy = req.user?.id;
+    updateData.blockedAt = new Date();
+  } else {
+    updateData.blockReason = null;
+    updateData.blockedBy = null;
+    updateData.blockedAt = null;
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    {
+      $set: updateData,
+    },
+    { new: true },
+  );
+
+  if (!updatedUser)
+    throw new ApiError(
+      404,
+      "User not found or could not able to Update teh Status",
+    );
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        updatedUser,
+        "User Bloack Staus has been updated successfully",
+      ),
+    );
+});
+export {
+  getAdminDashboard,
+  getRecentActivity,
+  getUsers,
+  getUser,
+  toggleBlockStatus,
+};

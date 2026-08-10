@@ -8,11 +8,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useGet } from "@/hooks/useGet";
+import { useMutation } from "@/hooks/useMutation";
 import Icons from "@/utils/Icons";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const UserManagement = () => {
+  const navigate = useNavigate();
   const [cPage, setCPage] = useState(1);
   const [filters, setFilters] = useState({
     searchValue: "",
@@ -27,9 +31,10 @@ const UserManagement = () => {
     sortBy: "latest",
   });
   const LIMIT = 1;
-  const { data } = useGet(
+  const { data, loading, refetch } = useGet(
     `admin/users?page=${cPage}&searchValue=${appliedFilters.searchValue}&role=${appliedFilters.role}&status=${appliedFilters.status}&sortBy=${appliedFilters.sortBy}`,
   );
+  const { mutate } = useMutation();
   useEffect(() => console.log("data: ", data), [data]);
   const userData = data?.data?.Users;
   const pagination = data?.data?.pagination;
@@ -38,6 +43,7 @@ const UserManagement = () => {
 
   const handleSearch = () => {
     setAppliedFilters(filters);
+    refetch();
   };
 
   const handleChnage = (e) => {
@@ -58,6 +64,37 @@ const UserManagement = () => {
       status: "All",
       sortBy: "latest",
     });
+  };
+
+  const handleView = (id) => {
+    navigate("/admin/user-management/user-details", {
+      state: {
+        id: id,
+      },
+    });
+  };
+
+  const handleBlockUnblock = async (user) => {
+    try {
+      const payload = {};
+      payload.userId = user.id;
+      payload.blockStatus = user.status;
+      if (user.status) {
+        payload.blockReason = user.reason;
+      }
+      let res = await mutate({
+        method: "patch",
+        url: "admin/toggle-block",
+        body: payload,
+      });
+      console.log("res: ", res);
+      toast.success(res?.message);
+       setIsOpen(false);
+      await refetch();
+    } catch (error) {
+      console.log("error: ", error);
+      toast.error(error?.message);
+    }
   };
   return (
     <div>
@@ -119,24 +156,31 @@ const UserManagement = () => {
 
             <SelectContent>
               <SelectItem value="newest">Newest</SelectItem>
-              <SelectItem value="rating">Oldest</SelectItem>
+              <SelectItem value="oldest">Oldest</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <button
           className="p-1 bg-black text-white font-semibold cursor-pointer  rounded-xl sm:col-span-1 col-span-12"
           onClick={handleSearch}
+          disabled={loading}
         >
           Search
         </button>
         <button
           className="p-1 bg-red-700 text-white font-semibold cursor-pointer  rounded-xl sm:col-span-1 col-span-12"
           onClick={handleReset}
+          disabled={loading}
         >
           Reset
         </button>
       </div>
-      <UserTable data={userData} />
+      <UserTable
+        data={userData}
+        handleView={handleView}
+        loading={loading}
+        handleBlockUnblock={handleBlockUnblock}
+      />
       <div className="flex justify-between items-center">
         <div>
           Showing{" "}

@@ -23,6 +23,7 @@ import NotFound from "@/components/common/NotFound";
 import AuthRoute from "./AuthRoute";
 import Courses from "@/components/student/Courses";
 import UserManagement from "@/pages/admin/UserManagement";
+import UserDetails from "@/components/admin/UserDetails";
 
 const AppRoutes = () => {
   return (
@@ -59,6 +60,7 @@ const AppRoutes = () => {
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="user-management" element={<UserManagement />} />
+          <Route path="user-management/user-details" element={<UserDetails />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />

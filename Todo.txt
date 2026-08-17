@@ -28,3 +28,6 @@ Card No : 5267 3181 8797 5449
 Things to take for next :
 1.Let's see how pipleline can be done for our needed data 
 2. check those actions 
+3. Let's revise before moving to the Course Management
+
+Some questions of the aggregation

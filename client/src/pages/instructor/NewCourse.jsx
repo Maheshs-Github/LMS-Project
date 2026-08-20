@@ -253,8 +253,29 @@ const NewCourse = () => {
     }
   };
 
-  const handleApproval=()=>{
-    
+  const handleApproval=async(cId)=>{
+    try {
+      const res=await mutate({
+        url:`course/${cId}/submit`,
+        // body:{},
+        method:"patch"
+      })
+      console.log("res: ",res);
+      toast.success(res?.message || "Send for Admin Approval Successfully");
+       setCourseData({
+        title: "",
+        subTitle: "",
+        category: "",
+        level: "",
+        price: "",
+        thumbnail: "",
+      });
+      setDescription("");
+      setLectureData({});
+    } catch (error) {
+            console.log("Error: ", error);
+      toast.error(error.message || "Error while updateing the status");
+    }
   }
 
   return (
@@ -550,7 +571,7 @@ const NewCourse = () => {
           </button>
           <button
             className="border rounded font-semibold p-2 px-8 cursor-pointer"
-            onClick={courseData?.status === "active"?()=>handleApproval(id):() => handlePublish(id)}
+            onClick={courseData?.status === "approved"?()=>handlePublish(id):() => handleApproval(id)}
           >
             {courseData?.status === "active"
               ? !courseData?.isPublished

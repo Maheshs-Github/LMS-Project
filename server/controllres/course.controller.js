@@ -215,7 +215,7 @@ const getAllCourses = asyncHandler(async (req, res) => {
   const { searchValue, sortBy, category, page = 1, limit = 2 } = req.query;
   // console.log("searchValue: ",searchValue," sortBy: ",sortBy);
   const matchStage = {};
-  matchStage.isPublished= true;
+  matchStage.isPublished = true;
 
   if (category && category !== "All") matchStage.category = category;
 
@@ -308,7 +308,7 @@ const getAllCourses = asyncHandler(async (req, res) => {
   // let's see how we can do more effeciently
   const courseReviewData = await Course.aggregate([
     {
-      $match: matchStage
+      $match: matchStage,
     },
     {
       $lookup: {
@@ -439,35 +439,34 @@ const updateCourseStatus = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
   const { isPublished } = req.body;
 
-  if(typeof isPublished !== "boolean")
-    throw new ApiError(400,"Invlaid Pusblish Status")
+  if (typeof isPublished !== "boolean")
+    throw new ApiError(400, "Invlaid Pusblish Status");
 
-const course = await Course.findOne({
-  _id: courseId,
-  instructor: req.user.id,
-}).populate("lectures");
+  const course = await Course.findOne({
+    _id: courseId,
+    instructor: req.user.id,
+  }).populate("lectures");
 
   if (!course) throw new ApiError(404, "No Course Found");
 
   if (isPublished) {
-  const errors = [];
+    const errors = [];
 
-  if (!course.title) errors.push("Title");
-  if (!course.description) errors.push("Description");
-  if (!course.thumbnail) errors.push("Thumbnail");
-  if (!course.category) errors.push("Category");
-  if (!course.level) errors.push("Level");
-  if (course.price <= 0) errors.push("Price");
-  if (course.lectures.length === 0)
-    errors.push("At least one lecture");
+    if (!course.title) errors.push("Title");
+    if (!course.description) errors.push("Description");
+    if (!course.thumbnail) errors.push("Thumbnail");
+    if (!course.category) errors.push("Category");
+    if (!course.level) errors.push("Level");
+    if (course.price <= 0) errors.push("Price");
+    if (course.lectures.length === 0) errors.push("At least one lecture");
 
-  if (errors.length > 0) {
-    throw new ApiError(
-      400,
-      `Complete the following before publishing: ${errors.join(", ")}`
-    );
+    if (errors.length > 0) {
+      throw new ApiError(
+        400,
+        `Complete the following before publishing: ${errors.join(", ")}`,
+      );
+    }
   }
-}
 
   const updatedCourse = await Course.findOneAndUpdate(
     {
@@ -482,25 +481,78 @@ const course = await Course.findOne({
     {
       new: true,
       runValidators: true,
-    }
+    },
   );
 
- if (!updatedCourse) {
+  if (!updatedCourse) {
     throw new ApiError(
       404,
-      "Course not found or you are not authorized to update it."
+      "Course not found or you are not authorized to update it.",
     );
   }
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      updatedCourse,
-      isPublished
-        ? "Course published successfully."
-        : "Course unpublished successfully."
-    )
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        updatedCourse,
+        isPublished
+          ? "Course published successfully."
+          : "Course unpublished successfully.",
+      ),
+    );
+});
+
+const submitCourse = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+  if (!courseId) throw new ApiError(400, "Course Id required");
+
+  const course = await Course.findOne({
+    _id: courseId,
+    instructor: req.user?.id,
+    status: { $in: ["draft", "rejected"] },
+  }).populate("lectures");
+
+  if (!course) throw new ApiError(404, "Course not found");
+
+  let errors = [];
+  if (!course.title) errors.push("title");
+  if (!course.subTitle) errors.push("subTitle");
+  if (!course.description) errors.push("description");
+  if (course.price == null || course.price <= 0) errors.push("price");
+  if (!course.level) errors.push("level");
+  if (!course.thumbnail) errors.push("thumbnail");
+  if (course?.lectures.length <= 0) errors.push("at least 1 lecture ");
+
+  if (errors.length > 0)
+    throw new ApiError(
+      400,
+      `Follwing Fields are required to filled: ${errors.join(",")}`,
+    );
+
+  const submittedCourse = await Course.findOneAndUpdate(
+    {
+      _id: courseId,
+      instructor: req.user.id,
+      status: { $in: ["draft", "rejected"] },
+    },
+    {
+      $set: {
+        status: "pending",
+        rejectionReason: null,
+      },
+    },
+    { new: true },
   );
+
+  if (!submittedCourse) throw new ApiError(404, "Course not found ");
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, {}, "Course Sent for Admin Approval Successfully"),
+    );
 });
 
 export {
@@ -512,4 +564,5 @@ export {
   getAllCourses,
   courseEnroll,
   updateCourseStatus,
+  submitCourse,
 };

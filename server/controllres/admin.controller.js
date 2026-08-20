@@ -851,10 +851,93 @@ const toggleBlockStatus = asyncHandler(async (req, res) => {
       ),
     );
 });
+
+const getAllCourses = asyncHandler(async (req, res) => {
+  const {
+    searchValue,
+    sort,
+    category,
+    status = "all",
+    page = 1,
+    limit = 5,
+  } = req.query;
+  let matchStage = {};
+  if (searchValue) {
+    matchStage.$or = [
+      {
+        title: {
+          $regex: searchValue,
+          $options: "i",
+        },
+      },
+      {
+        description: {
+          $regex: searchValue,
+          $options: "i",
+        },
+      },
+    ];
+  }
+  let sortStage = {};
+  switch (sort) {
+    case "newest":
+      sortStage = { createdAt: -1 };
+      break;
+    case "oldest":
+      sortStage = { createdAt: 1 };
+      break;
+
+    default:
+      sortStage = { createdAt: -1 };
+  }
+
+  if (status && status !== "all") {
+    matchStage.status = status;
+  }
+  if (category && category !== "all") {
+    matchStage.category = category;
+  }
+
+  const currentPage = Number(page);
+  const pageLimit = Number(limit);
+  const skip = (currentPage - 1) * pageLimit;
+
+  const courseData = await Course.aggregate([
+    {
+      $match: matchStage,
+    },
+    {
+      $project: {
+        _id: 1,
+        title: 1,
+      },
+    },
+    {
+      $sort: sortStage,
+    },
+    {
+      $skip: skip,
+    },
+    {
+      $limit: pageLimit,
+    },
+  ]);
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        courseData,
+        "Course Data has been fetched Successfully",
+      ),
+    );
+});
 export {
   getAdminDashboard,
   getRecentActivity,
   getUsers,
   getUser,
   toggleBlockStatus,
+  getAllCourses,
 };

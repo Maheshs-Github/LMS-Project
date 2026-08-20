@@ -1,14 +1,12 @@
 import Icons from "@/utils/Icons";
 
-
-
 export const StudentItems = [
   {
     title: "Dashboard",
     url: "/student/dashboard",
-    icon: Icons.Home ,
+    icon: Icons.Home,
   },
-    {
+  {
     title: "Browse Courses",
     url: "/student/courses",
     icon: Icons.BookOpen,
@@ -30,12 +28,11 @@ export const StudentItems = [
   // },
 ];
 
-
 export const AdminItems = [
   {
     title: "Dashboard",
     url: "/admin/dashboard",
-    icon: Icons.Home ,
+    icon: Icons.Home,
   },
   {
     title: "User Management",
@@ -58,33 +55,26 @@ export const InstructorItems = [
   {
     title: "Dashboard",
     url: "/instructor/dashboard",
-    icon: Icons.Home ,
+    icon: Icons.Home,
   },
   {
     title: "My Courses",
     url: "/instructor/my-courses",
     icon: Icons.BookOpen,
   },
-    {
+  {
     title: "New Course",
     url: "/instructor/new-course",
     icon: Icons.BookOpen,
   },
-]
+];
 
 // data/chartData.js
 
 export const studentAnalytics = {
   title: "Student Growth",
 
-  categories: [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-  ],
+  categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
 
   series: [
     {
@@ -97,14 +87,7 @@ export const studentAnalytics = {
 export const revenueAnalytics = {
   title: "Revenue Analytics",
 
-  categories: [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-  ],
+  categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
 
   series: [
     {
@@ -129,8 +112,6 @@ export const MONTHS = [
   "Nov",
   "Dec",
 ];
-
-
 
 // data/courseTableData.js
 
@@ -157,7 +138,6 @@ export const courses = [
     students: 200,
   },
 ];
-
 
 export const courseCategories = [
   {
@@ -227,5 +207,13 @@ export const courseCategories = [
   {
     value: "career-development",
     label: "Career Development",
+  },
+  {
+    value: "history-culture",
+    label: "History & Culture",
+  },
+    {
+    value: "general-knowledge",
+    label: "General Knowledge",
   },
 ];

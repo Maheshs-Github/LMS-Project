@@ -246,12 +246,16 @@ const NewCourse = () => {
       });
       console.log("res: ", res);
       toast.success(res.message || "Course Publish Status has been updated");
-      refetch()
+      refetch();
     } catch (error) {
       console.log("Error: ", error);
       toast.error(error.message || "Error while updateing the status");
     }
   };
+
+  const handleApproval=()=>{
+    
+  }
 
   return (
     <div className="p-6 ">
@@ -542,13 +546,17 @@ const NewCourse = () => {
             className="text-white font-semibold bg-black rounded p-2 px-8 cursor-pointer"
             onClick={handleSubmit}
           >
-            {!id ? "Submit Course" : "Edit Course"}
+            {!id ? "Create Course" : "Edit Course"}
           </button>
           <button
             className="border rounded font-semibold p-2 px-8 cursor-pointer"
-            onClick={() => handlePublish(id)}
+            onClick={courseData?.status === "active"?()=>handleApproval(id):() => handlePublish(id)}
           >
-            {!courseData?.isPublished ? "Publish" : "UnPublish"}
+            {courseData?.status === "active"
+              ? !courseData?.isPublished
+                ? "Publish"
+                : "UnPublish"
+              : "Submit For Approval"}
           </button>
         </div>
       </div>

@@ -907,9 +907,27 @@ const getAllCourses = asyncHandler(async (req, res) => {
       $match: matchStage,
     },
     {
+      $lookup:{
+        from:"users",
+        localField:"instructor",
+        foreignField:"_id",
+        as:"instructor"
+      }
+    },
+    {
+      $unwind:"$instructor"
+    },
+    {
       $project: {
         _id: 1,
         title: 1,
+        category:1,
+        price:1,
+        status:1,
+        instructor:"$instructor.name",
+        students:{
+          $size:"$enrolledStudents"
+        }
       },
     },
     {

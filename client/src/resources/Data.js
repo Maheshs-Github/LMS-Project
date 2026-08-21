@@ -39,6 +39,11 @@ export const AdminItems = [
     url: "/admin/user-management",
     icon: Icons.User,
   },
+    {
+    title: "Course Management",
+    url: "/admin/course-management",
+    icon: Icons.BookOpen,
+  },
   {
     title: "Profile",
     url: "/admin/profile",

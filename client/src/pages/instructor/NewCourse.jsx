@@ -38,6 +38,7 @@ const NewCourse = () => {
     level: "",
     price: "",
     thumbnail: "",
+    status: "",
   });
 
   const [lectureData, setLectureData] = useState({
@@ -74,6 +75,8 @@ const NewCourse = () => {
       price: data?.data?.course?.price ?? "",
       thumbnail: data?.data?.course?.thumbnail ?? "",
       isPublished: data?.data?.course?.isPublished ?? "",
+      status: data?.data?.course?.status ?? "",
+
     });
     setDescription(data?.data?.course?.description ?? "");
   }, [data]);
@@ -569,11 +572,12 @@ const NewCourse = () => {
           >
             {!id ? "Create Course" : "Edit Course"}
           </button>
+          {console.log("courseData?.status: ",courseData?.status)}
           <button
             className="border rounded font-semibold p-2 px-8 cursor-pointer"
             onClick={courseData?.status === "approved"?()=>handlePublish(id):() => handleApproval(id)}
           >
-            {courseData?.status === "active"
+            {courseData?.status === "approved"
               ? !courseData?.isPublished
                 ? "Publish"
                 : "UnPublish"

@@ -36,3 +36,7 @@ Some questions of the aggregation
 Changes of adding new data -
 Student Dashboard NO Data and 0 
 Course Dashboard- No Data 
+
+
+Course Managemnet- Table not showing all the data 
+what is projection update status of admin 

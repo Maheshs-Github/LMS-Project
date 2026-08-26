@@ -79,49 +79,59 @@ const CourseTable = ({
 
         <TableBody>
           {!loading ? (
-            data.map((course) => {
-              return (
-                <TableRow key={course._id}>
-                  <TableCell className="font-medium capitalize">
-                    <span className="block w-55 truncate">{course.title}</span>
-                  </TableCell>
+            !data.length > 1 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-10">
+                  NO Data Found
+                </TableCell>
+              </TableRow>
+            ) : (
+              (data || [])?.map((course) => {
+                return (
+                  <TableRow key={course._id}>
+                    <TableCell className="font-medium capitalize">
+                      <span className="block w-55 truncate">
+                        {course.title}
+                      </span>
+                    </TableCell>
 
-                  <TableCell>{course.instructor}</TableCell>
+                    <TableCell>{course.instructor}</TableCell>
 
-                  <TableCell>
-                    <span className="capitalize">
-                      {getLabel(course.category)}
-                    </span>
-                  </TableCell>
-                  <TableCell>{course.price}</TableCell>
+                    <TableCell>
+                      <span className="capitalize">
+                        {getLabel(course.category)}
+                      </span>
+                    </TableCell>
+                    <TableCell>{course.price}</TableCell>
 
-                  <TableCell>{course.students}</TableCell>
+                    <TableCell>{course.students}</TableCell>
 
-                  <TableCell>
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${
-                        STATUS_STYLES[course?.status].text
-                      } ${STATUS_STYLES[course?.status].bg}`}
-                    >
-                      {course?.status}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        size="lg"
-                        variant="outline"
-                        onClick={() => handleView(course._id)}
-                        className="p-2! text-base cursor-pointer"
+                    <TableCell>
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${
+                          STATUS_STYLES[course?.status].text
+                        } ${STATUS_STYLES[course?.status].bg}`}
                       >
-                        <Icons.Eye className="size-4 mr-1" />
-                        View
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })
+                        {course?.status}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          size="lg"
+                          variant="outline"
+                          onClick={() => handleView(course._id)}
+                          className="p-2! text-base cursor-pointer"
+                        >
+                          <Icons.Eye className="size-4 mr-1" />
+                          View
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )
           ) : (
             <TableRow>
               <TableCell colSpan={6} className="text-center py-10">

@@ -26,6 +26,7 @@ import UserManagement from "@/pages/admin/UserManagement";
 
 import UserDetails from "@/components/admin/UserDetails";
 import CourseManagement from "@/pages/admin/courseManagement";
+import AdminCourseDetails from "@/components/admin/AdminCourseDetails";
 
 const AppRoutes = () => {
   return (
@@ -62,8 +63,10 @@ const AppRoutes = () => {
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="user-management" element={<UserManagement />} />
-          <Route path="course-management" element={<CourseManagement />} />
           <Route path="user-management/user-details" element={<UserDetails />} />
+          <Route path="course-management" element={<CourseManagement />} />
+          <Route path="course-management/course-details" element={<AdminCourseDetails />} />
+
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />

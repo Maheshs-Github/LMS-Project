@@ -61,7 +61,7 @@ const createCourse = asyncHandler(async (req, res) => {
 const getMyCourses = asyncHandler(async (req, res) => {
   const instructorCourses = await Course.find({
     instructor: req.user?.id,
-  }).select("title price isPublished");
+  }).select("title price isPublished status");
   // console.log("instructorCourses: ",instructorCourses);
   if (instructorCourses.length === 0)
     throw new ApiError(404, "NO Courses Found ");
@@ -235,6 +235,7 @@ const getAllCourses = asyncHandler(async (req, res) => {
       },
     ];
   }
+  // matchStage.status="approved";
 
   let sortStage = {};
   switch (sortBy) {

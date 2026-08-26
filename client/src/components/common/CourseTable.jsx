@@ -23,6 +23,7 @@ const CourseTable = ({ data, handleEdit }) => {
             <TableHead>Price</TableHead>
 
             <TableHead>Status</TableHead>
+            <TableHead>Published</TableHead>
 
             <TableHead>Students</TableHead>
 
@@ -36,16 +37,18 @@ const CourseTable = ({ data, handleEdit }) => {
               <TableCell className="font-medium">{course.name}</TableCell>
 
               <TableCell>₹{course.price}</TableCell>
+              <TableCell>{course.status}</TableCell>
+
 
               <TableCell>
                 <span
                   className={`px-3 py-1 rounded-full text-sm ${
-                    course.status === "Published"
+                    course.Published === "Published"
                       ? "bg-green-100 text-green-700"
                       : "bg-yellow-100 text-yellow-700"
                   }`}
                 >
-                  {course.status}
+                  {course.Published}
                 </span>
               </TableCell>
 

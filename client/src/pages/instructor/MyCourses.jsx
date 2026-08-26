@@ -14,7 +14,8 @@ const MyCourses = () => {
     _id: data?._id,
     name: data?.title,
     price: data?.price,
-    status: `${data?.isPublished ? "Published" : "Draft"}`,
+    status:data?.status,
+    Published: `${data?.isPublished ? "Published" : "Draft"}`,
   }));
   console.log("courseData: ", courseData);
 

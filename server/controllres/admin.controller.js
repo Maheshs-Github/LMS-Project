@@ -859,7 +859,7 @@ const getAllCourses = asyncHandler(async (req, res) => {
     category,
     status = "all",
     page = 1,
-    limit = 5,
+    limit = 2,
   } = req.query;
   let matchStage = {};
   if (searchValue) {
@@ -907,50 +907,169 @@ const getAllCourses = asyncHandler(async (req, res) => {
       $match: matchStage,
     },
     {
-      $lookup:{
-        from:"users",
-        localField:"instructor",
-        foreignField:"_id",
-        as:"instructor"
-      }
+      $facet: {
+        courses: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "instructor",
+              foreignField: "_id",
+              as: "instructor",
+            },
+          },
+          {
+            $unwind: "$instructor",
+          },
+          {
+            $project: {
+              _id: 1,
+              title: 1,
+              category: 1,
+              price: 1,
+              status: 1,
+              instructor: "$instructor.name",
+              students: {
+                $size: "$enrolledStudents",
+              },
+            },
+          },
+          {
+            $sort: sortStage,
+          },
+          {
+            $skip: skip,
+          },
+          {
+            $limit: pageLimit,
+          },
+        ],
+        totalCourses: [
+          {
+            $count: "count",
+          },
+        ],
+      },
     },
+  ]);
+  // console.log("courseData: ",courseData)
+  const totalCourses = courseData[0]?.totalCourses[0]?.count ?? 0;
+  const totalPages = pageLimit > 0 ? Math.ceil(totalCourses / pageLimit) : 0;
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        data: courseData[0]?.courses ?? [],
+        pagination: {
+          currentPage,
+          pageLimit,
+          totalCourses,
+          totalPages,
+        },
+      },
+      "Course Data has been fetched Successfully",
+    ),
+  );
+});
+
+const getCourseDetails = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+  if (!courseId) throw new ApiError(400, "Course Id id missing");
+  const course = await Course.aggregate([
     {
-      $unwind:"$instructor"
-    },
-    {
-      $project: {
-        _id: 1,
-        title: 1,
-        category:1,
-        price:1,
-        status:1,
-        instructor:"$instructor.name",
-        students:{
-          $size:"$enrolledStudents"
-        }
+      $match: {
+        _id: new mongoose.Types.ObjectId(courseId),
       },
     },
     {
-      $sort: sortStage,
+      $lookup: {
+        from: "lectures",
+        localField: "lectures",
+        foreignField: "_id",
+        as: "lectures",
+      },
     },
     {
-      $skip: skip,
+      $lookup: {
+        from: "users",
+        localField: "instructor",
+        foreignField: "_id",
+        as: "instructor",
+      },
     },
     {
-      $limit: pageLimit,
+      $unwind: "$instructor",
+    },
+    {
+      $project: {
+        title: 1,
+        subTitle: 1,
+        description: 1,
+        category: 1,
+        price: 1,
+        level: 1,
+        thumbnail: 1,
+        enrolledStudents: {
+          $size: "$enrolledStudents",
+        },
+        status: 1,
+        lectures: 1,
+        rejectionReason: 1,
+        instructor: 1,
+      },
     },
   ]);
 
   return res
     .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        courseData,
-        "Course Data has been fetched Successfully",
-      ),
-    );
+    .json(new ApiResponse(200, course, "Course Fetched Successfully"));
 });
+
+const updateCourseStatus=asyncHandler(async(req,res)=>{
+  const {status,rejectedReason=null}=req.body;
+  const {courseId}=req.params;
+  if(!courseId)
+    throw new ApiError(400,"Course Id is missing");
+  if(!["approved","rejected"].includes(status.toLowerCase()))
+    throw new ApiError(400,"Invalid Status ");
+  const normalizedStatus=status?.toLowerCase();
+  if(normalizedStatus==="rejected"&& !rejectedReason)
+    throw new ApiError(400,"rejected reason is required for the same status");
+  const course=await Course.findById(courseId);
+  if(!(["approved","rejected","pending"].includes(course?.status)))
+    throw new ApiError(400,"course is not submitted , could not update the status of the course");
+
+  // old logic 
+  // const updateStatusData={
+  //   status,rejectionReason:rejectedReason
+  // };
+  // const updatedCourse=await Course.findByIdAndUpdate(courseId,updateStatusData,{new:true});\
+
+  // more effecient 
+  const updatedCourse=await Course.findOneAndUpdate({
+    _id:courseId,
+    status:{$in:["approved","rejected","pending"]}
+  },{
+    $set:{
+      status:normalizedStatus,
+      rejectionReason:normalizedStatus==="rejected"?rejectedReason:null,
+    }},{
+      new:true,
+      projection:{
+        _id:1,
+        status:1,
+        rejectionReason:1,
+      }
+    }
+  )
+  if(!updatedCourse)
+    throw new ApiError(404,"Course not found");
+
+  return res.status(200).json(new ApiResponse(200,updatedCourse,`Course have been ${updatedCourse?.status} successfully `));
+
+})
+
+
 export {
   getAdminDashboard,
   getRecentActivity,
@@ -958,4 +1077,6 @@ export {
   getUser,
   toggleBlockStatus,
   getAllCourses,
+  getCourseDetails,
+  updateCourseStatus
 };

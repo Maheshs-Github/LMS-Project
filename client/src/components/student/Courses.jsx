@@ -33,7 +33,6 @@ import {
 
 const Courses = ({ isShow = true }) => {
   const location = useLocation();
-  console.log("location: ", location.state);
   const [filters, setFilters] = useState({
     search: "",
     category: "All",
@@ -67,7 +66,6 @@ const Courses = ({ isShow = true }) => {
       setFilters((prev) => ({ ...prev, search: location?.state?.searchValue }));
   }, [location?.state?.searchValue]);
   useEffect(() => {
-    console.log("Data: ", data);
     const formattedData = (data?.data?.courseReviewData || [])?.map((data) => ({
       _id: data?._id,
       img: data?.thumbnail,
@@ -100,7 +98,6 @@ const Courses = ({ isShow = true }) => {
   };
 
   const handleContinueLearning = (courseId) => {
-    console.log("courseId in My Learn: ", courseId);
     navigate(`/student/learn/${courseId}`);
   };
 
@@ -228,7 +225,6 @@ const Courses = ({ isShow = true }) => {
                   className="relative mx-auto w-full max-w-sm pt-0 col-span-1"
                   key={index}
                 >
-                  {/* {console.log("course: ",course)} */}
                   <div className="absolute inset-0 z-30 aspect-video bg-black/35" />
                   <img
                     src={course?.img ? course.img : undefined}
@@ -262,7 +258,6 @@ const Courses = ({ isShow = true }) => {
                         variant="secondary"
                         className={`${levelStyles[course?.level]} p-3 text-sm `}
                       >
-                        {/* {console.log("course?.level: ",course?.level)} */}
                         {course?.level}
                       </Badge>
                     </div>
@@ -289,7 +284,6 @@ const Courses = ({ isShow = true }) => {
                     </div>
                   </CardHeader>
                   <CardFooter>
-                    {/* {console.log("id: ", course?._id)} */}
 
                     <Button
                       className="w-full cursor-pointer"

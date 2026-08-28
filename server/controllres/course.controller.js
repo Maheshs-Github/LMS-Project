@@ -368,7 +368,7 @@ const getAllCourses = asyncHandler(async (req, res) => {
     },
   ]);
 
-  console.log("courseReviewData: ", courseReviewData);
+  // console.log("courseReviewData: ", courseReviewData);
   // console.log("ans: ", ans);
   return res.status(200).json(
     new ApiResponse(

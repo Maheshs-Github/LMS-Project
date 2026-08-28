@@ -35,7 +35,8 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: true,
+    // secure: true,
+     secure: process.env.NODE_ENV === "production",
   };
 
   return res
@@ -44,7 +45,9 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { User: FinalUser, Token: Token },
+        { User: FinalUser,
+          //  Token: Token 
+          },
         "User has been Created Successfully",
       ),
     );
@@ -76,7 +79,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: true,
+    // secure: true,
+     secure: process.env.NODE_ENV === "production",
   };
 
   // console.log("loggedInUser: ", loggedInUser);
@@ -97,7 +101,9 @@ const loginUser = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { "User": FinalLoggedUser, Tokwn: Token },
+        { "User": FinalLoggedUser
+          // , Tokwn: Token 
+        },
         "User has logged in sucessfully",
       ),
     );
@@ -115,7 +121,8 @@ const loggedOut = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: true,
+    // secure: true,
+     secure: process.env.NODE_ENV === "production",
   };
 
   return res

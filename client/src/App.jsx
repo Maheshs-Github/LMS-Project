@@ -7,6 +7,7 @@ import { logout, setUser } from "../redux/AuthSlice";
 import { useGet } from "./hooks/useGet";
 import AppRoutes from "./Routes/AppRoutes";
 import { persistor } from "../store";
+import socket from "./socket/socket.js"
 
 const App = () => {
   const user = useSelector((state) => state.auth.user);
@@ -48,21 +49,6 @@ useEffect(() => {
         }}
         // reverseOrder={false}
       />
-      {/* <h1 className='text-cyan-400 font-bold bg-amber-800'>Hello There , this is a LMS Projcet</h1>
-      <Button>Let's go damn 🕊️</Button> */}
-
-      {/* <Routes>
-        <Route path="/" element={<Home />} />
-        <Route
-          path="/auth"
-          element={
-            <div className="h-screen flex mt-10 justify-center px-4">
-              <Login />
-            </div>
-          }
-        />
-        <Route path="/profile" element={<Profile />} />
-      </Routes> */}
 
       <AppRoutes />
     </div>

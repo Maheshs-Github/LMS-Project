@@ -33,6 +33,7 @@ import {
   ShieldCheck,
   ShieldAlert,
   Ban,
+  Bell
 } from "lucide-react";
 
 const Icons = {
@@ -69,6 +70,7 @@ const Icons = {
   ShieldCheck,
   ShieldAlert,
   Ban,
+  Bell
 };
 
 export default Icons;

@@ -27,6 +27,7 @@ import UserManagement from "@/pages/admin/UserManagement";
 import UserDetails from "@/components/admin/UserDetails";
 import CourseManagement from "@/pages/admin/courseManagement";
 import AdminCourseDetails from "@/components/admin/AdminCourseDetails";
+import Notifications from "@/components/common/Notifications";
 
 const AppRoutes = () => {
   return (
@@ -46,6 +47,7 @@ const AppRoutes = () => {
           <Route path="my-courses" element={<MyCourses />} />
           <Route path="new-course" element={<NewCourse />} />
           <Route path="edit-course/:id" element={<NewCourse />} />
+          <Route path="notifications" element={<Notifications />} />
         </Route>
       </Route>
 

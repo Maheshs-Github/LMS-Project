@@ -14,7 +14,6 @@ export const useMutation = () => {
   
   try {
     
-    console.log("method: ",method);
     setLoading(true);
     setError(null);
 

@@ -72,6 +72,11 @@ export const InstructorItems = [
     url: "/instructor/new-course",
     icon: Icons.BookOpen,
   },
+    {
+    title: "Notifications",
+    url: "/instructor/notifications",
+    icon: Icons.Bell,
+  },
 ];
 
 // data/chartData.js

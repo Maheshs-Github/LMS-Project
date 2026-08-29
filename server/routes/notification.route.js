@@ -7,7 +7,7 @@ const router=Router();
 router.use(verifiedUser)
 
 router.get("/",getMyNotifications);
-router.patch("mark-as-read",markAsRead);
+router.patch("/mark-as-read/:notificationId",markAsRead);
 router.patch("/mark-all-as-read",markAllAsRead)
 
 export default router;

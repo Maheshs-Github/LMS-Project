@@ -23,18 +23,30 @@ import { persistor } from "../../store";
 const Navbar = () => {
   const { mutate } = useMutation();
   const user = useSelector((state) => state.auth.user);
+  const notifications = useSelector(
+    (state) => state.notification.notifications,
+  );
   const Dispatch = useDispatch();
 
   const navigate = useNavigate();
   const [mode, setMode] = useState(true);
-  // useEffect(() => console.log("user: ", user), [user]);
+  useEffect(
+    () => console.log("notifications: ", notifications),
+    [notifications],
+  );
+
+  const unReadCount = (notifications || []).filter(
+    (notification) => notification?.isRead === false,
+  ).length;
+
+  console.log("unReadCount: ", unReadCount);
 
   const userPicFallBack = user?.name
     .split(" ")
     .map((name) => name[0].toUpperCase())
     .join("");
 
-  const handleLogOut = async() => {
+  const handleLogOut = async () => {
     try {
       const res = await mutate({
         url: `user/logout`,
@@ -56,9 +68,19 @@ const Navbar = () => {
     <div className="flex items-center w-full border-b-2 p-2 justify-between px-28">
       <button className="flex gap-3 w-full" onClick={() => navigate("/")}>
         <Icons.School size={30} />
-        <Link className="font-bold text-2xl" to={"/"}>E-Learning</Link>
+        <Link className="font-bold text-2xl" to={"/"}>
+          E-Learning
+        </Link>
       </button>
-      <div className="flex w-full gap-3 items-center justify-end">
+      <div className="flex w-full gap-3 sm:gap-4 items-center justify-end">
+        <Link className="relative inline-block" to={`/${user?.role}/notifications`}>
+          <Icons.Bell className=" text-gray-500" />
+          {unReadCount > 0 && (
+            <div className=" absolute -right-1 -top-1 bg-primary flex justify-center items-center p-0.5 text-[8px] text-white rounded-full min-w-4 h-4 ">
+              {unReadCount}
+            </div>
+          )}
+        </Link>
         {user ? (
           <div>
             <DropdownMenu>
@@ -81,12 +103,16 @@ const Navbar = () => {
                   <DropdownMenuItem>
                     <Link to={`/${user?.role}/dashboard`}>Dashboard</Link>
                   </DropdownMenuItem>
-                  {user?.role==="student"? <><DropdownMenuItem>
-                    <Link to={"/student/my-learning"}> My Learning</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to={"/student/profile"}> Edit Profile</Link>
-                  </DropdownMenuItem></>:null}
+                  {user?.role === "student" ? (
+                    <>
+                      <DropdownMenuItem>
+                        <Link to={"/student/my-learning"}> My Learning</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Link to={"/student/profile"}> Edit Profile</Link>
+                      </DropdownMenuItem>
+                    </>
+                  ) : null}
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>

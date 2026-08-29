@@ -138,7 +138,7 @@ export function SignUp() {
               />
             </div>
             <div className="grid gap-2">
-              <div className="flex items-center">
+              {/* <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
                 <a
                   href="#"
@@ -146,7 +146,9 @@ export function SignUp() {
                 >
                   Forgot your password?
                 </a>
-              </div>
+              </div> */}
+              <Label htmlFor="password">Password</Label>
+
               <Input
                 id="password"
                 type="password"
@@ -163,9 +165,9 @@ export function SignUp() {
         <Button type="submit" className="w-full" onClick={handleSignUpSubmit}>
           Sign Up
         </Button>
-        <Button variant="outline" className="w-full">
+        {/* <Button variant="outline" className="w-full">
           Login with Google
-        </Button>
+        </Button> */}
       </CardFooter>
     </Card>
   );

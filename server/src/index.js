@@ -27,14 +27,14 @@ connDB()
     io.use(async (socket, next) => {
       try {
         console.log("Socket Authentication has been Started");
-        const cookie = socket.handshake.headers.cookie;
+        const cookie = socket?.handshake?.headers?.cookie;
         console.log("Socket Cookie: ", cookie);
         const accessToken = cookie
-          .split(";")
-          .find((item) => item.trim().startsWith("accessToken="))
-          .split("=")[1];
+          ?.split(";")
+          ?.find((item) => item?.trim()?.startsWith("accessToken="))
+          ?.split("=")[1];
         console.log("accessToken: ", accessToken);
-        if (!accessToken) throw new ApiError("Unauthrized User");
+        if (!accessToken) throw new ApiError(401,"Unauthrized User");
 
         const decodedToken = await jwt.verify(
           accessToken,
@@ -47,8 +47,16 @@ connDB()
           "-password -createdAt -updatedAt -__v",
         );
         socket.user = user;
+            console.log(
+      "✅ Socket authenticated:",
+      user._id
+    );
         next();
       } catch (error) {
+        console.log(
+      "❌ Socket authentication error:",
+      error
+    );
         next(error);
       }
     });

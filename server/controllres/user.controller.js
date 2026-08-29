@@ -37,6 +37,9 @@ const registerUser = asyncHandler(async (req, res) => {
     httpOnly: true,
     // secure: true,
      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production"
+    ? "none"
+    : "lax",
   };
 
   return res
@@ -81,6 +84,9 @@ const loginUser = asyncHandler(async (req, res) => {
     httpOnly: true,
     // secure: true,
      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production"
+    ? "none"
+    : "lax",
   };
 
   // console.log("loggedInUser: ", loggedInUser);
@@ -123,6 +129,9 @@ const loggedOut = asyncHandler(async (req, res) => {
     httpOnly: true,
     // secure: true,
      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production"
+    ? "none"
+    : "lax",
   };
 
   return res

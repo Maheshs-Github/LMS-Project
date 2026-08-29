@@ -9,7 +9,7 @@ import { User } from "../models/user.model.js";
 
 const getInstructorDashboard = asyncHandler(async (req, res) => {
   const instructorid = req?.user._id;
-  console.log("req?.role: ", req?.user.role, " req?._id: ", req?.user._id);
+  // console.log("req?.role: ", req?.user.role, " req?._id: ", req?.user._id);
   if (req?.user?.role !== "instructor")
     throw new ApiError(403, "Non Instructor can't fetch on this endpoint");
 
@@ -142,10 +142,6 @@ const getInstructorDashboard = asyncHandler(async (req, res) => {
   //   instructor: req?.user?._id,
   // });
 
-  console.log("studentCount: ", studentCount);
-  console.log("courseCount: ", courseCount);
-  console.log("lectureCount: ", lectureCount);
-  // console.log("courseData: ",courseData);
 
   const perCourseCompletion = await Course.aggregate([
     {
@@ -184,12 +180,6 @@ const getInstructorDashboard = asyncHandler(async (req, res) => {
         enrolledStudents > 0 ? Math.round((completedStudents / enrolledStudents) * 100) : 0,
     };
   });
-  console.log(
-    "totalCourseEnrollStudents: ",
-    totalCourseEnrollStudents,
-    " totalCourseCompletedStudents: ",
-    totalCourseCompletedStudents,
-  );
   const totalCourseCompletionRate =
     totalCourseEnrollStudents > 0
       ? Math.round(
@@ -227,7 +217,6 @@ const getInstructorDashboard = asyncHandler(async (req, res) => {
 // Student Dashboard
 const getStudentDashboard = asyncHandler(async (req, res) => {
   const studentId = req?.user?._id;
-  console.log("req?.user: ", req?.user);
   if (req?.user?.role !== "student")
     throw new ApiError(403, "THis is a Student endpoint, u are not authrized");
   const [courseProgress, recentEnrolledCourses] =
@@ -296,7 +285,6 @@ const getStudentDashboard = asyncHandler(async (req, res) => {
         },
       ]),
     ]);
-  console.log("courseProgress: ", courseProgress);
   // console.dir(courseProgress, { depth: null });
   const enrolledCourses = courseProgress?.length;
   // const notStartedCourses = courseProgress?.filter(

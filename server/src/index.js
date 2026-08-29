@@ -7,6 +7,8 @@ import { Server } from "socket.io";
 import { ApiError } from "../utils/ApiError.js";
 import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
+import { initializeSocket } from "../socket/index.js";
+import createNotification from "../services/notification.service.js";
 
 connDB()
   .then(() => {
@@ -19,6 +21,8 @@ connDB()
         credentials: true,
       },
     });
+
+    initializeSocket(io);
 
     io.use(async (socket, next) => {
       try {
@@ -53,16 +57,15 @@ connDB()
       console.log("Conncetion Established Successfuly", socket.id);
       console.log("Connected User:", socket?.user);
 
-      const userRoom=`user:${socket?.user?._id}`;
+      const userRoom = `user:${socket?.user?._id}`;
       socket.join(userRoom);
-      console.log("New Room: ",userRoom);
-      socket.on("testRoom",()=>{
-        const userRoom=`user:${socket?.user?._id}`;
-        io.to(userRoom).emit("userRoomMessage",{
-        message:`Hello ${socket?.user?.name}`,
-        
-      })
-    })
+      console.log("New Room: ", userRoom);
+      socket.on("testRoom", () => {
+        const userRoom = `user:${socket?.user?._id}`;
+        io.to(userRoom).emit("userRoomMessage", {
+          message: `Hello ${socket?.user?.name}`,
+        });
+      });
 
       socket.on("hello", (data) => {
         console.log("Message from Client is a : ", data);
@@ -79,6 +82,28 @@ connDB()
         io.to(`test:${socket.id}`).emit("roomMessage", {
           message: "Hello from your Room",
         });
+      });
+
+      socket.on("testAck", (callback) => {
+        console.log("testAck received");
+        callback({
+          success: true,
+          message: "Hello from Server",
+        });
+      });
+
+      socket.on("notification:test", async () => {
+        try {
+            console.log("🔥 notification:test received");
+          await createNotification({
+            recipient: socket.user._id,
+            type: "general",
+            title: "Test Notification",
+            message: "Socket.IO notification is working!",
+          });
+        } catch (err) {
+          console.log("Test Notication error: ",err);
+        }
       });
     });
 

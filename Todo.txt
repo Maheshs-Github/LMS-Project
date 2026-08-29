@@ -40,3 +40,6 @@ Course Dashboard- No Data
 
 Course Managemnet- Table not showing all the data 
 what is projection update status of admin 
+
+Notification- 
+What is a index , can we sort and all on find , what is lean()

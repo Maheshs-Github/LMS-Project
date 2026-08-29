@@ -11,6 +11,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "../redux/AuthSlice";
 import lectureReducer from "../redux/LectureSlice"
+import notificationReducer from "../redux/NotificationSlice"
 
 import storage from "redux-persist/es/storage";
 
@@ -32,7 +33,8 @@ const persistedReducer = persistReducer(
 export const store = configureStore({
   reducer: {
     auth: persistedReducer,
-    lectures: lectureReducer
+    lectures: lectureReducer,
+    notification:notificationReducer
   },
 
   middleware: (getDefaultMiddleware) =>

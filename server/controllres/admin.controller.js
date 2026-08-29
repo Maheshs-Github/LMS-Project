@@ -5,6 +5,7 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import createNotification from "../services/notification.service.js";
 
 const getAdminDashboard = asyncHandler(async (req, res) => {
   const [
@@ -1025,50 +1026,81 @@ const getCourseDetails = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, course, "Course Fetched Successfully"));
 });
 
-const updateCourseStatus=asyncHandler(async(req,res)=>{
-  const {status,rejectedReason=null}=req.body;
-  const {courseId}=req.params;
-  if(!courseId)
-    throw new ApiError(400,"Course Id is missing");
-  if(!["approved","rejected"].includes(status.toLowerCase()))
-    throw new ApiError(400,"Invalid Status ");
-  const normalizedStatus=status?.toLowerCase();
-  if(normalizedStatus==="rejected"&& !rejectedReason)
-    throw new ApiError(400,"rejected reason is required for the same status");
-  const course=await Course.findById(courseId);
-  if(!(["approved","rejected","pending"].includes(course?.status)))
-    throw new ApiError(400,"course is not submitted , could not update the status of the course");
+const updateCourseStatus = asyncHandler(async (req, res) => {
+  const { status, rejectedReason = null } = req.body;
+  const { courseId } = req.params;
+  if (!courseId) throw new ApiError(400, "Course Id is missing");
+  if (!["approved", "rejected"].includes(status.toLowerCase()))
+    throw new ApiError(400, "Invalid Status ");
+  const normalizedStatus = status?.toLowerCase();
+  if (normalizedStatus === "rejected" && !rejectedReason)
+    throw new ApiError(400, "rejected reason is required for the same status");
+  const course = await Course.findById(courseId);
+  if (!["approved", "rejected", "pending"].includes(course?.status))
+    throw new ApiError(
+      400,
+      "course is not submitted , could not update the status of the course",
+    );
 
-  // old logic 
+  // old logic
   // const updateStatusData={
   //   status,rejectionReason:rejectedReason
   // };
   // const updatedCourse=await Course.findByIdAndUpdate(courseId,updateStatusData,{new:true});\
 
-  // more effecient 
-  const updatedCourse=await Course.findOneAndUpdate({
-    _id:courseId,
-    status:{$in:["approved","rejected","pending"]}
-  },{
-    $set:{
-      status:normalizedStatus,
-      rejectionReason:normalizedStatus==="rejected"?rejectedReason:null,
-    }},{
-      new:true,
-      projection:{
-        _id:1,
-        status:1,
-        rejectionReason:1,
-      }
-    }
-  )
-  if(!updatedCourse)
-    throw new ApiError(404,"Course not found");
+  // more effecient
+  const updatedCourse = await Course.findOneAndUpdate(
+    {
+      _id: courseId,
+      status: { $in: ["approved", "rejected", "pending"] },
+    },
+    {
+      $set: {
+        status: normalizedStatus,
+        rejectionReason:
+          normalizedStatus === "rejected" ? rejectedReason : null,
+      },
+    },
+    {
+      new: true,
+      // projection: {
+      //   _id: 1,
+      //   status: 1,
+      //   rejectionReason: 1,
+      // },
+    },
+  );
 
-  return res.status(200).json(new ApiResponse(200,updatedCourse,`Course have been ${updatedCourse?.status} successfully `));
+  console.log("updatedCourse: ", updatedCourse);
+  if (!updatedCourse) throw new ApiError(404, "Course not found");
 
-})
+  await createNotification({
+    recipient: updatedCourse?.instructor,
+    type:
+      updatedCourse?.status === "rejected"
+        ? "course_rejected"
+        : "course_approved",
+    title:
+      updatedCourse?.status === "rejected"
+        ? "Course Rejected"
+        : "Course Approved",
+    message:
+      updatedCourse?.status === "rejected"
+        ? `Your Course ${updatedCourse?.title} has been Rejected , Reason: ${updatedCourse?.rejectionReason}`
+        : `Your Course ${updatedCourse?.title} has been Approved`,
+    relatedCourse: updatedCourse?._id,
+  });
 
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        updatedCourse,
+        `Course have been ${updatedCourse?.status} successfully `,
+      ),
+    );
+});
 
 export {
   getAdminDashboard,
@@ -1078,5 +1110,5 @@ export {
   toggleBlockStatus,
   getAllCourses,
   getCourseDetails,
-  updateCourseStatus
+  updateCourseStatus,
 };

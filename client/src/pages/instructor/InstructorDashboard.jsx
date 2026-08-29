@@ -3,6 +3,7 @@ import { revenueAnalytics, studentAnalytics } from '@/resources/Data'
 import React, { useEffect, useState } from 'react'
 import CoursePerformance from './CoursePerformance'
 import { useGet } from '@/hooks/useGet'
+import socket from '@/socket/socket'
 
 const InstructorDashboard = () => {
   const {data}=useGet("dashboard/instructor");
@@ -24,6 +25,12 @@ const InstructorDashboard = () => {
 
 
   useEffect(()=>console.log("data: ",data),[data])
+const handleNotificationTest=()=>{
+  console.log("Socket connected:", socket.connected);
+  console.log("Socket ID:", socket.id);
+
+  socket.emit("notification:test");
+}
   return (
 
     <div className="w-full flex flex-col gap-6 p-6">
@@ -62,6 +69,9 @@ const InstructorDashboard = () => {
     </div> */}
 
     <CoursePerformance courses={courses}/>
+    <button onClick={handleNotificationTest}>
+      Click for Notification
+    </button>
     </div>
 
 

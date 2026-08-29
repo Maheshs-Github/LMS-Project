@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 
 
-const socket=io(import.meta.env.VITE_BASE_BACKEND_URL,{withCredentials:true})
+const socket=io(import.meta.env.VITE_BASE_BACKEND_URL,{autoConnect:false},{withCredentials:true})
 // const socket=io(`http://localhost:8000`)
 
 socket.emit("hello","konnichiwa Frontend desu, yorishiku");
@@ -17,5 +17,13 @@ socket.on("userRoomMessage",(data)=>{
   console.log("UserRoom data: ",data)
 })
 socket.emit("testRoom")
+
+socket.emit("testAck",(res)=>{
+  console.log("Resposne is a: ",res);
+})
+
+socket.on("notification:new",(notification)=>{
+  console.log("New notification from Testing 💫: ",notification)
+})
 
 export default socket;

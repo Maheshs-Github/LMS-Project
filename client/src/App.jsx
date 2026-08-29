@@ -8,6 +8,7 @@ import { useGet } from "./hooks/useGet";
 import AppRoutes from "./Routes/AppRoutes";
 import { persistor } from "../store";
 import socket from "./socket/socket.js"
+import { addNotifications } from "../redux/NotificationSlice";
 
 const App = () => {
   const user = useSelector((state) => state.auth.user);
@@ -39,6 +40,31 @@ useEffect(() => {
     navigate("/auth", { replace: true });
   }
 }, [error, dispatch, navigate]);
+
+useEffect(()=>{
+  if(!user)
+  {
+    socket.disconnect();
+    return;
+  }
+  socket.connect();
+
+  return()=>{
+    socket.disconnect();
+  }
+},[user])
+
+useEffect(() => {
+  const handleNotification = (notification) => {
+    dispatch(addNotifications(notification));
+  };
+
+  socket.on("notification:new", handleNotification);
+
+  return () => {
+    socket.off("notification:new", handleNotification);
+  };
+}, [dispatch]);
 
   return (
     <div>

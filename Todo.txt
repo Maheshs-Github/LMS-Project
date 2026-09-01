@@ -44,3 +44,7 @@ what is projection update status of admin
 Notification- 
 What is a index , can we sort and all on find , what is lean()
 Let's see the full socket.io flow for the notifications 
+
+
+If session of the user is expired , it should not show there , FIX IT 
+Shouldn't the store and redux , should go in the src

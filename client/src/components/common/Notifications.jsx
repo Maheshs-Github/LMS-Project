@@ -2,7 +2,7 @@ import { useMutation } from "@/hooks/useMutation";
 import React, { useEffect } from "react";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
-import { markNotificationRead } from "../../../redux/NotificationSlice";
+import { markAllNotificationsRead, markNotificationRead } from "../../../redux/NotificationSlice";
 
 const Notifications = () => {
   const notifications = useSelector(
@@ -34,6 +34,7 @@ const Notifications = () => {
         method:"patch",
       });
       console.log("res: ",res);
+      dispatch(markAllNotificationsRead());
       toast.success(res?.message || "All Marked As Read Successfully");
     } catch (error) {
             console.log("error: ",error)

@@ -109,34 +109,35 @@ const StudentDashBoard = () => {
             <div className="p-5 shadow-md rounded-lg col-span-1 flex flex-col gap-4 ">
               <div className="text-lg">Enrolled</div>
               <div className="font-semibold text-blue-600 text-lg">
-                {enrolledCourse}
+                {enrolledCourse ?? 0}
               </div>
             </div>
             <div className="p-3 shadow-md rounded-lg col-span-1 flex flex-col gap-4 ">
               <div className="text-lg">Not Started</div>
               <div className="font-semibold text-blue-600 text-lg">
-                {notStartedCourses}
+                {notStartedCourses?? 0}
               </div>
             </div>
             <div className="p-3 shadow-md rounded-lg col-span-1 flex flex-col gap-4 ">
               <div className="text-lg">In Progress</div>
               <div className="font-semibold text-blue-600 text-lg">
-                {inProgessCourses}
+                {inProgessCourses?? 0}
               </div>
             </div>
             <div className="p-3 shadow-md rounded-lg col-span-1 flex flex-col gap-4 ">
               <div className="text-lg">Completed </div>
               <div className="font-semibold text-blue-600 text-lg">
-                {completedCourses}
+                {completedCourses ?? 0}
               </div>
             </div>
           </div>
         </div>
 
         <div>
-          <h3 className="font-semibold text-lg mb-2">Recommended Courses</h3>
+          <h3 className="font-semibold text-xl mb-2">Recommended Courses</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {(recommededCourses || [])?.map((data, index) => {
+            {!recommededCourses?.length <1?
+            (recommededCourses || [])?.map((data, index) => {
               return (
                 <Card
                   className="relative mx-auto w-full max-w-sm pt-0 col-span-1"
@@ -190,7 +191,10 @@ const StudentDashBoard = () => {
                   </CardFooter>
                 </Card>
               );
-            })}
+            }):
+            <div className="flex justify-center items-center py-10 font-semibold text-lg w-full italic lg:col-span-4 text-gray-500">
+              Nothing Here to Show
+            </div> }
           </div>
         </div>
       </section>

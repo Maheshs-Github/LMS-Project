@@ -8,6 +8,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import crypto from "crypto";
+import createNotification from "../services/notification.service.js";
 
 const createOrder = asyncHandler(async (req, res) => {
   const { courseId } = req.body;
@@ -156,6 +157,15 @@ const verifyPayment = asyncHandler(async (req, res) => {
 
     await session.commitTransaction();
     session.endSession();
+
+    await createNotification({
+      recipient:course?.instructor,
+      type:"enrolledment_successful",
+      title:"New Student Enrollment",
+      message:`${user?.name} enrolled to your course: ${course?.title}`,
+      relatedCourse:course?._id,
+    })
+
 
     return res
       .status(200)

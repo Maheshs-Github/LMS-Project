@@ -14,6 +14,7 @@ const notificationSchema = new mongoose.Schema({
       "course_rejected",
       "course_submitted",
       "enrolledment_successful",
+      "course_completed",
       "general",
     ],
   },

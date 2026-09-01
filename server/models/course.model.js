@@ -28,7 +28,7 @@ const courseSchama = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["draft", "pending", "active", "rejected"],
+      enum: ["draft", "pending", "approved", "rejected"],
       default: "draft",
     },
     rejectionReason: {

@@ -15,10 +15,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Link, useNavigate } from "react-router-dom";
 import Icons from "@/utils/Icons";
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../../redux/AuthSlice";
+import { logout } from "../redux/AuthSlice";
 import { useMutation } from "@/hooks/useMutation";
 import toast from "react-hot-toast";
-import { persistor } from "../../store";
+import { persistor } from "../store";
 
 const Navbar = () => {
   const { mutate } = useMutation();
@@ -73,7 +73,10 @@ const Navbar = () => {
         </Link>
       </button>
       <div className="flex w-full gap-3 sm:gap-4 items-center justify-end">
-        <Link className="relative inline-block" to={`/${user?.role}/notifications`}>
+        <Link
+          className="relative inline-block"
+          to={`/${user?.role}/notifications`}
+        >
           <Icons.Bell className=" text-gray-500" />
           {unReadCount > 0 && (
             <div className=" absolute -right-1 -top-1 bg-primary flex justify-center items-center p-0.5 text-[8px] text-white rounded-full min-w-4 h-4 ">

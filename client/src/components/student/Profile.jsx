@@ -7,18 +7,17 @@ import InputField from "../common/InputField";
 import { useMutation } from "@/hooks/useMutation";
 import toast from "react-hot-toast";
 import { useGet } from "@/hooks/useGet";
-import { setUser } from "../../../redux/AuthSlice";
+import { setUser } from "../../redux/AuthSlice";
 
 const Profile = () => {
-  const {mutate}=useMutation();
-  const dispatch=useDispatch();
+  const { mutate } = useMutation();
+  const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
   const [editProfile, setEditProfile] = useState(false);
   const [profileData, setProfileData] = useState({
     name: user?.name || "",
     email: user?.email || "",
-    photoUrl: user?.photoUrl || "", 
-     
+    photoUrl: user?.photoUrl || "",
   });
   const [previewImage, setPreviewImage] = useState(user?.photoUrl || "");
 
@@ -30,7 +29,7 @@ const Profile = () => {
       setPreviewImage(URL.createObjectURL(file));
     } else setProfileData((prev) => ({ ...prev, [name]: value }));
   };
-  const handleUpdate = async() => {
+  const handleUpdate = async () => {
     console.log("Data: ", profileData);
     // const formData=new FormData();
     // formData.append("name",profileData?.name);
@@ -39,60 +38,41 @@ const Profile = () => {
 
     const formData = new FormData();
 
-if (
-  profileData.name !== user.name
-) {
-  formData.append(
-    "name",
-    profileData.name
-  );
-}
-
-if (
-  profileData.email !== user.email
-) {
-  formData.append(
-    "email",
-    profileData.email
-  );
-}
-
-if (
-  profileData.photoUrl instanceof File
-) {
-  formData.append(
-    "photoUrl",
-    profileData.photoUrl
-  );
-}
-console.log("DFat 2:")
-for (const pair of formData.entries()) {
-  console.log(pair);
-}
-    try {
-          const res=await mutate({
-      url:"user/profile",
-      method:"PATCH",
-      body:formData,
-    })
-    console.log("res: ",res)
-    dispatch(setUser(res?.data));
-    toast.success(res?.message);
-    setEditProfile(false);
-    } catch (error) {
-      toast.error(error?.message);
-    setEditProfile(false);
+    if (profileData.name !== user.name) {
+      formData.append("name", profileData.name);
     }
 
+    if (profileData.email !== user.email) {
+      formData.append("email", profileData.email);
+    }
 
+    if (profileData.photoUrl instanceof File) {
+      formData.append("photoUrl", profileData.photoUrl);
+    }
+    console.log("DFat 2:");
+    for (const pair of formData.entries()) {
+      console.log(pair);
+    }
+    try {
+      const res = await mutate({
+        url: "user/profile",
+        method: "PATCH",
+        body: formData,
+      });
+      console.log("res: ", res);
+      dispatch(setUser(res?.data));
+      toast.success(res?.message);
+      setEditProfile(false);
+    } catch (error) {
+      toast.error(error?.message);
+      setEditProfile(false);
+    }
   };
   console.log("User: ", user);
   const profilePicName = user?.name
     ?.split(" ", 2)
     .map((name) => name.charAt(0)?.toUpperCase());
   // console.log("profilePicName: " + profilePicName);
-
-  
 
   return (
     <div className="p-8">
@@ -156,7 +136,6 @@ for (const pair of formData.entries()) {
             type="file"
             id="profilePic"
             className="hidden"
-
             name="photoUrl"
             onChange={handleInputChange}
           />

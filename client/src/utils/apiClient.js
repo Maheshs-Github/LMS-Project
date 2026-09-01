@@ -1,7 +1,5 @@
 // import BASE_URL from "./BASE_URL";
 
-
-
 // export const apiClient = async (url, options = {}) => {
 //   console.log("Method:", options.method);
 //   const res = await fetch(`${BASE_URL}${url}`, {
@@ -40,15 +38,11 @@
 //   };
 // }
 
-
-
 //   return data;
 // };
 
-
-
-import { logout } from "../../redux/AuthSlice";
-import { store } from "../../store";
+import { logout } from "../redux/AuthSlice";
+import { store } from "../store";
 import BASE_URL from "./BASE_URL";
 export const apiClient = async (url, options = {}) => {
   const res = await fetch(`${BASE_URL}${url}`, {
@@ -72,13 +66,13 @@ export const apiClient = async (url, options = {}) => {
     data = null;
   }
 
-if (!res.ok) {
-  throw {
-    status: res.status,
-    message: data?.message,
-    data,
-  };
-}
+  if (!res.ok) {
+    throw {
+      status: res.status,
+      message: data?.message,
+      data,
+    };
+  }
 
   return data;
 };

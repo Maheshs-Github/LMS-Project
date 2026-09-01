@@ -16,10 +16,10 @@ import BASE_URL from "@/utils/BASE_URL";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { setUser } from "../../redux/AuthSlice";
+import { setUser } from "../redux/AuthSlice";
 
 export function Login() {
-  const user=useSelector((state)=>state.auth.user)
+  const user = useSelector((state) => state.auth.user);
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
@@ -60,7 +60,6 @@ export function Login() {
         <CardDescription>
           Enter your email below to login to your account
         </CardDescription>
-
       </CardHeader>
       <CardContent>
         <form>
@@ -87,19 +86,18 @@ export function Login() {
                   Forgot your password?
                 </a>
               </div> */}
-                          <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={loginData.password}
-                onChange={handleLoginDataChnage}
-              />
+              <div className="grid gap-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  value={loginData.password}
+                  onChange={handleLoginDataChnage}
+                />
+              </div>
             </div>
-            </div>
-
           </div>
         </form>
       </CardContent>

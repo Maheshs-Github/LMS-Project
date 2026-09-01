@@ -16,17 +16,16 @@ import BASE_URL from "@/utils/BASE_URL";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { setUser } from "../../redux/AuthSlice";
+import { setUser } from "../redux/AuthSlice";
 import Icons from "@/utils/Icons";
 
-
 export function SignUp() {
-  const user=useSelector((state)=>state.auth.user)
+  const user = useSelector((state) => state.auth.user);
   const [signUpData, setSignUpData] = useState({
     name: "",
     email: "",
     password: "",
-    role:"",
+    role: "",
   });
   const { mutate } = useMutation();
   const Dispatch = useDispatch();
@@ -56,7 +55,7 @@ export function SignUp() {
         email: "",
         role: "",
       });
-            Navigate(`/${user?.role}/dashboard`);
+      Navigate(`/${user?.role}/dashboard`);
     } catch (error) {
       console.log("Error: ", error);
       toast.error(error.message || "Error while registring ");
@@ -69,45 +68,44 @@ export function SignUp() {
         <CardDescription className={" w-full"}>
           Provide necessary information to create your account
         </CardDescription>
-                <div className="space-y-4">
+        <div className="space-y-4">
           <Label className={"py-2 font-semibold"}>Sign Up as</Label>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() =>
-              setSignUpData((prev) => ({ ...prev, role: "student" }))
-            }
-            className={`rounded-lg border p-3 transition-all cursor-pointer ${
-              signUpData.role === "student"
-                ? "border-purple-500 bg-purple-50 text-purple-700"
-                : "border-gray-300 hover:border-purple-300"
-            }`}
-          >
-            <div className="flex flex-col items-center gap-1">
-              <Icons.GraduationCap size={22} />
-              <span className="font-medium">Student</span>
-            </div>
-          </button>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() =>
+                setSignUpData((prev) => ({ ...prev, role: "student" }))
+              }
+              className={`rounded-lg border p-3 transition-all cursor-pointer ${
+                signUpData.role === "student"
+                  ? "border-purple-500 bg-purple-50 text-purple-700"
+                  : "border-gray-300 hover:border-purple-300"
+              }`}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <Icons.GraduationCap size={22} />
+                <span className="font-medium">Student</span>
+              </div>
+            </button>
 
-          <button
-            type="button"
-            onClick={() =>
-              setSignUpData((prev) => ({ ...prev, role: "instructor" }))
-            }
-            className={`rounded-lg border p-3 transition-all cursor-pointer ${
-              signUpData.role === "instructor"
-                ? "border-purple-500 bg-purple-50 text-purple-700"
-                : "border-gray-300 hover:border-purple-300"
-            }`}
-          >
-            <div className="flex flex-col items-center gap-1">
-              <Icons.UserRoundCog size={22} />
-              <span className="font-medium">Instructor</span>
-            </div>
-          </button>
+            <button
+              type="button"
+              onClick={() =>
+                setSignUpData((prev) => ({ ...prev, role: "instructor" }))
+              }
+              className={`rounded-lg border p-3 transition-all cursor-pointer ${
+                signUpData.role === "instructor"
+                  ? "border-purple-500 bg-purple-50 text-purple-700"
+                  : "border-gray-300 hover:border-purple-300"
+              }`}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <Icons.UserRoundCog size={22} />
+                <span className="font-medium">Instructor</span>
+              </div>
+            </button>
+          </div>
         </div>
-        </div>
-
       </CardHeader>
       <CardContent>
         <form>

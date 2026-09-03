@@ -10,6 +10,7 @@ import paymentRouter from "../routes/payment.route.js"
 import certificateRouter from "../routes/certificate.route.js"
 import adminRouter from "../routes/admin.route.js"
 import notificationRouter from "../routes/notification.route.js"
+import messageRouter from "../routes/message.route.js"
 
 
 
@@ -37,6 +38,7 @@ app.use("/api/v1/payment",paymentRouter)
 app.use("/api/v1/certificate",certificateRouter)
 app.use("/api/v1/admin",adminRouter)
 app.use("/api/v1/notification",notificationRouter)
+app.use("/api/v1/message",messageRouter)
 
 
 

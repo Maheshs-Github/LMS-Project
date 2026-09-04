@@ -30,16 +30,11 @@ const Navbar = () => {
 
   const navigate = useNavigate();
   const [mode, setMode] = useState(true);
-  useEffect(
-    () => console.log("notifications: ", notifications),
-    [notifications],
-  );
 
   const unReadCount = (notifications || []).filter(
     (notification) => notification?.isRead === false,
   ).length;
 
-  console.log("unReadCount: ", unReadCount);
 
   const userPicFallBack = user?.name
     .split(" ")

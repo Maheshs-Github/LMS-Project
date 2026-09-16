@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Icons from "@/utils/Icons";
 
-const CourseTable = ({ data, handleEdit }) => {
+const CourseTable = ({ data, handleEdit, handleDiscuss }) => {
   return (
     <div className="rounded-xl border bg-white overflow-x-auto">
       <Table className={"text-lg"}>
@@ -39,7 +39,6 @@ const CourseTable = ({ data, handleEdit }) => {
               <TableCell>₹{course.price}</TableCell>
               <TableCell>{course.status}</TableCell>
 
-
               <TableCell>
                 <span
                   className={`px-3 py-1 rounded-full text-sm ${
@@ -63,6 +62,13 @@ const CourseTable = ({ data, handleEdit }) => {
                   onClick={() => handleEdit(course._id)}
                 >
                   <Icons.SquarePen className="w-5 h-5 mr-1" /> <span>Edit</span>
+                </Button>
+                <Button
+                  size="sm"
+                  className={"cursor-pointer p-4"}
+                  onClick={() => handleDiscuss(course._id)}
+                >
+                  <Icons.MessageCircle className="w-5 h-5 mr-1" /> <span>Discuss</span>
                 </Button>
               </TableCell>
             </TableRow>

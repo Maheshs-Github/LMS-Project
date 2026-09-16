@@ -3,12 +3,12 @@ import { courses } from "@/resources/Data";
 import { Button } from "@/components/ui/button";
 import { useGet } from "@/hooks/useGet";
 import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const MyCourses = () => {
   const navigate=useNavigate()
+  const location=useLocation();
   const { data } = useGet("course/myCourses");
-  useEffect(() => console.log("data: ", data), [data]);
 
   const courseData = (data?.data || []).map((data) => ({
     _id: data?._id,
@@ -17,13 +17,13 @@ const MyCourses = () => {
     status:data?.status,
     Published: `${data?.isPublished ? "Published" : "Draft"}`,
   }));
-  console.log("courseData: ", courseData);
 
   const handleEdit=(id)=>{
-    // console.log("Hello There");
-    // console.log("id: ",id);
     navigate(`/instructor/edit-course/${id}`)
 
+  }
+  const handleDiscuss=(courseId)=>{
+  navigate(`/instructor/discuss/${courseId}`)
   }
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -33,7 +33,7 @@ const MyCourses = () => {
           Launch New Course
         </Button></Link>
       </div>
-      <CourseTable data={courseData} handleEdit={handleEdit} />
+      <CourseTable data={courseData} handleEdit={handleEdit} handleDiscuss={handleDiscuss}/>
     </div>
   );
 };

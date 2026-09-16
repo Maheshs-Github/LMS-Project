@@ -23,14 +23,6 @@ const InstructorDashboard = () => {
 
   const courses = data?.data?.coursesData || [];
 
-
-  useEffect(()=>console.log("data: ",data),[data])
-const handleNotificationTest=()=>{
-  console.log("Socket connected:", socket.connected);
-  console.log("Socket ID:", socket.id);
-
-  socket.emit("notification:test");
-}
   return (
 
     <div className="w-full flex flex-col gap-6 p-6">
@@ -69,9 +61,6 @@ const handleNotificationTest=()=>{
     </div> */}
 
     <CoursePerformance courses={courses}/>
-    <button onClick={handleNotificationTest}>
-      Click for Notification
-    </button>
     </div>
 
 

@@ -8,4 +8,4 @@ router.get("/:courseId",verifiedUser,getCourseChatMessages);
 router.post("/:courseId",verifiedUser,writeMessage);
 
 
-export default router;
+export default router; 

@@ -16,7 +16,7 @@ import CourseSkeleton from "./CourseSkeleton";
 import { useNavigate } from "react-router-dom";
 
 const MyLearning = () => {
-  const navigate=useNavigate();
+  const navigate = useNavigate();
   const [courses, setCourses] = useState([
     {
       _id: "",
@@ -26,11 +26,9 @@ const MyLearning = () => {
     },
   ]);
   const user = useSelector((state) => state.auth.user);
-  console.log("user: ", user);
   // const navigate=useNavigate()
   const { data, loading } = useGet(`user/${user?._id}/enrolledCourse`);
   useEffect(() => {
-    console.log("Data: ", data);
     const formattedData = (data?.data || [])?.map((data) => ({
       _id: data?._id,
       img: data?.thumbnail,
@@ -38,13 +36,10 @@ const MyLearning = () => {
       price: data?.price,
       instructorName: data?.instructor?.name,
       instructorImg: data?.instructor?.photoUrl,
+      enrolledStudents:data?.enrolledStudents,
     }));
     setCourses(formattedData);
   }, [data]);
-  useEffect(() => {
-    console.log("courses: ", courses);
-  }, [courses]);
-
   const initials = (Name) => {
     return Name?.split(" ")
       ?.map((name) => name[0])
@@ -52,15 +47,26 @@ const MyLearning = () => {
       ?.toUpperCase();
   };
 
-  const handleContinueLearning=(courseId )=>{
-    console.log("courseId in My Learn: ",courseId);
-    navigate(`/student/learn/${courseId }`)
-  }
+  const handleContinueLearning = (courseId) => {
+
+    navigate(`/student/learn/${courseId}`);
+  };
+
+  const handleCourseDiscussion = (courseId,name,students) => {
+    navigate(`/student/discuss/${courseId}`, {
+      state: {
+        courseName: name,
+        coureStudetsCount: students?.length,
+      },
+    });
+  };
 
   return (
     <div>
       <h1 className="font-semibold text-xl">My Learning</h1>
-      <h2 className="font-semibold text-lg my-4">Continue where you left off</h2>
+      <h2 className="font-semibold text-lg my-4">
+        Continue where you left off
+      </h2>
 
       <div className="grid grid-cols-4 gap-10">
         {!loading
@@ -72,7 +78,7 @@ const MyLearning = () => {
                 >
                   <div className="absolute inset-0 z-30 aspect-video bg-black/35" />
                   <img
-                    src={course?.img}
+                    src={course?.img ? course?.img : null}
                     alt="Event cover"
                     className="relative z-20 aspect-video w-full object-cover  dark:brightness-40"
                   />
@@ -106,13 +112,20 @@ const MyLearning = () => {
                         Advance
                       </Badge>
                     </div>
-                    <div className="flex items-center font-bold text-lg gap-2">
-                      <Icons.Rupee size={18} />
-                      {course?.price}
+                    <div className="flex items-center justify-between w-full font-bold text-lg gap-2">
+                      <div className="flex items-center gap-2">
+                        <Icons.Rupee size={18} />
+                        {course?.price}
+                      </div>
+                      <Button
+                        className="flex items-center "
+                        onClick={() => handleCourseDiscussion(course?._id,course?.name,course?.enrolledStudents)}
+                      >
+                        Discussion
+                      </Button>
                     </div>
                   </CardHeader>
                   <CardFooter>
-                    {console.log("id: ", course?._id)}
                     <Button
                       className="w-full cursor-pointer"
                       onClick={() => handleContinueLearning(course?._id)}

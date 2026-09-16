@@ -1,16 +1,8 @@
-// import { configureStore } from "@reduxjs/toolkit";
-// import authReducer from "../redux/AuthSlice"
-
-// export const index=configureStore({
-//   reducer:{
-//     auth:authReducer
-//   }
-// })
-
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "../redux/AuthSlice";
 import lectureReducer from "../redux/LectureSlice";
 import notificationReducer from "../redux/NotificationSlice";
+import chatReducer from "../redux/chatSlice"
 
 import storage from "redux-persist/es/storage";
 
@@ -28,6 +20,7 @@ export const store = configureStore({
     auth: persistedReducer,
     lectures: lectureReducer,
     notification: notificationReducer,
+    chat: chatReducer,
   },
 
   middleware: (getDefaultMiddleware) =>

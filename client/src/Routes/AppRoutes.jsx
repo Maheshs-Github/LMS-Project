@@ -28,6 +28,7 @@ import UserDetails from "@/components/admin/UserDetails";
 import CourseManagement from "@/pages/admin/courseManagement";
 import AdminCourseDetails from "@/components/admin/AdminCourseDetails";
 import Notifications from "@/components/common/Notifications";
+import CourseChat from "@/pages/course/CourseChat";
 
 const AppRoutes = () => {
   return (
@@ -48,6 +49,7 @@ const AppRoutes = () => {
           <Route path="new-course" element={<NewCourse />} />
           <Route path="edit-course/:id" element={<NewCourse />} />
           <Route path="notifications" element={<Notifications />} />
+          <Route path="discuss/:courseId" element={<CourseChat />} />
         </Route>
       </Route>
 
@@ -58,6 +60,7 @@ const AppRoutes = () => {
           <Route path="courses" element={<BrowseCourses />} />
           <Route path="my-learning" element={<MyLearning />} />
           <Route path="learn/:courseId" element={<LearningPlayer />} />
+          <Route path="discuss/:courseId" element={<CourseChat />} />
           <Route path="course/:id" element={<CourseDetails />} />
         </Route>
       </Route>
@@ -68,6 +71,7 @@ const AppRoutes = () => {
           <Route path="user-management/user-details" element={<UserDetails />} />
           <Route path="course-management" element={<CourseManagement />} />
           <Route path="course-management/course-details" element={<AdminCourseDetails />} />
+
 
         </Route>
       </Route>

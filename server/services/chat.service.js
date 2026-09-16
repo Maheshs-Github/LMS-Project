@@ -27,6 +27,8 @@ const createMessage = async (senderId, courseId, content) => {
     course: courseId,
     content: content.trim(),
   });
+
+  await createdMessage.populate("sender","name")
   return createdMessage;
 };
 

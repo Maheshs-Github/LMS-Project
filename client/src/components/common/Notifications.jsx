@@ -6,27 +6,28 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from "../../redux/NotificationSlice";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import Icons from "@/utils/Icons";
 
 const Notifications = () => {
   const notifications = useSelector(
-    (state) => state.notification.notifications,
+    (state) => state.notification.notifications || []
   );
-  const { mutate } = useMutation();
+  const { mutate, loading } = useMutation();
   const dispatch = useDispatch();
+
   const handleMarkAsRead = async (notificationId) => {
     try {
-      console.log("notificationId: ", notificationId);
       const res = await mutate({
         url: `notification/mark-as-read/${notificationId}`,
         body: {},
         method: "patch",
       });
-      console.log("res: ", res?.data?._id);
       dispatch(markNotificationRead(notificationId));
-      toast.success(res?.message || "Message Marked as Read Successfully");
+      toast.success(res?.message || "Notification marked as read");
     } catch (error) {
-      console.log("error: ", error);
-      toast.error(error?.message || "error while performaing mark as read");
+      toast.error(error?.message || "Failed to mark as read");
     }
   };
 
@@ -36,73 +37,100 @@ const Notifications = () => {
         url: `notification/mark-all-as-read`,
         method: "patch",
       });
-      console.log("res: ", res);
       dispatch(markAllNotificationsRead());
-      toast.success(res?.message || "All Marked As Read Successfully");
+      toast.success(res?.message || "All notifications marked as read");
     } catch (error) {
-      console.log("error: ", error);
-      toast.error(error?.message || "error while performaing mark all as read");
+      toast.error(error?.message || "Failed to mark all as read");
     }
   };
 
-  useEffect(() => {
-    console.log("🔥 Redux notifications updated:", notifications);
-  }, [notifications]);
+  const unreadCount = notifications.filter((n) => !n?.isRead).length;
+
   return (
-    <>
-      <div className="flex justify-between">
-        <h1 className="font-semibold text-xl">Notifications</h1>
-        <button
-          className="p-2 rounded-md bg-black text-white font-semibold cursor-pointer"
-          onClick={handleMarkAllAsRead}
-        >
-          Mark All As Read
-        </button>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between pb-3 border-b border-border/60">
+        <div className="flex items-center gap-2">
+          <h2 className="font-bold text-lg text-foreground">Notifications</h2>
+          {unreadCount > 0 && (
+            <Badge className="bg-primary/20 text-primary hover:bg-primary/30 text-xs px-2 py-0.5">
+              {unreadCount} new
+            </Badge>
+          )}
+        </div>
+        {unreadCount > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-primary font-medium hover:text-primary/80 cursor-pointer h-8 px-2"
+            onClick={handleMarkAllAsRead}
+            disabled={loading}
+          >
+            <Icons.Check className="w-3.5 h-3.5 mr-1" />
+            Mark all read
+          </Button>
+        )}
       </div>
 
-      {notifications?.length > 0 ? (
-        <div className="flex flex-col ">
-          {(notifications || []).map((notification) => (
-            <div
-              key={notification._id}
-              className={`group flex items-start gap-3 border-b px-4 py-3 cursor-pointer transition-colors ${
-                !notification?.isRead
-                  ? "bg-blue-50/70 hover:bg-blue-100/70"
-                  : "bg-background hover:bg-muted/50"
-              }`}
-              onClick={() => handleMarkAsRead(notification?._id)}
-            >
-              {/* Notification Content */}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <h2
-                    className={`truncate text-sm ${
-                      !notification?.isRead
-                        ? "font-semibold text-gray-900"
-                        : "font-medium text-gray-700"
-                    }`}
-                  >
-                    {notification?.title}
-                  </h2>
-
-                  {!notification?.isRead && (
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-blue-500" />
-                  )}
+      {notifications.length > 0 ? (
+        <div className="flex flex-col space-y-1.5 max-h-[420px] overflow-y-auto pr-1">
+          {notifications.map((notification) => {
+            const isUnread = !notification?.isRead;
+            return (
+              <div
+                key={notification._id}
+                className={`group flex items-start gap-3 p-3 rounded-xl border transition-all duration-200 cursor-pointer ${
+                  isUnread
+                    ? "bg-primary/5 border-primary/20 hover:bg-primary/10"
+                    : "bg-card border-border/40 hover:bg-muted/40"
+                }`}
+                onClick={() => isUnread && handleMarkAsRead(notification?._id)}
+              >
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
+                    isUnread
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  <Icons.Bell className="w-4 h-4" />
                 </div>
 
-                <p className="mt-1 line-clamp-2 text-sm leading-5 text-gray-500">
-                  {notification?.message}
-                </p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3
+                      className={`text-xs truncate ${
+                        isUnread
+                          ? "font-bold text-foreground"
+                          : "font-medium text-muted-foreground"
+                      }`}
+                    >
+                      {notification?.title || "Notification"}
+                    </h3>
+                    {isUnread && (
+                      <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
+                    )}
+                  </div>
+
+                  <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed">
+                    {notification?.message}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
-        <div className="flex justify-center items-center p-10">
-          <h2 className="text-lg font-semibold ">No Notifications Yet</h2>
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mb-2">
+            <Icons.Bell className="w-6 h-6 text-muted-foreground/50" />
+          </div>
+          <p className="text-sm font-semibold text-foreground">No notifications yet</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            We'll notify you when important course updates or messages arrive.
+          </p>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

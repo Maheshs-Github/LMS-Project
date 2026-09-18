@@ -36,7 +36,7 @@ const AppRoutes = () => {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/course/:id" element={<CourseDetails />} />
-        <Route path="/courses" element={<Courses />} />
+        <Route path="/courses" element={<BrowseCourses />} />
         <Route element={<AuthRoute />}>
           <Route path="/auth" element={<LoginSignUp />} />
         </Route>

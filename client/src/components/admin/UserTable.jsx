@@ -1,5 +1,3 @@
-// components/tables/UserTable.jsx
-
 import {
   Table,
   TableBody,
@@ -8,16 +6,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import Icons from "@/utils/Icons";
 import { formatDate } from "@/utils/formatters";
 import { useState } from "react";
 import InputField from "../common/InputField";
 
-const UserTable = ({ data = [], loading, handleView, handleBlockUnblock }) => {
+const UserTable = ({ data = [], loading = false, handleView, handleBlockUnblock }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [reason, setReason] = useState("");
   const [cUser, setCUser] = useState({
     id: "",
     status: false,
@@ -28,113 +25,146 @@ const UserTable = ({ data = [], loading, handleView, handleBlockUnblock }) => {
     handleBlockUnblock(user);
     setIsOpen(false);
   };
+
   return (
-    <div className="rounded-xl border bg-white overflow-x-auto">
-      <Table className="text-lg">
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
+    <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader className="bg-muted/40">
+            <TableRow>
+              <TableHead className="font-semibold text-foreground text-xs uppercase tracking-wider py-3.5">
+                User Name
+              </TableHead>
+              <TableHead className="font-semibold text-foreground text-xs uppercase tracking-wider py-3.5">
+                Email Address
+              </TableHead>
+              <TableHead className="font-semibold text-foreground text-xs uppercase tracking-wider py-3.5">
+                Role
+              </TableHead>
+              <TableHead className="font-semibold text-foreground text-xs uppercase tracking-wider py-3.5">
+                Account Status
+              </TableHead>
+              <TableHead className="font-semibold text-foreground text-xs uppercase tracking-wider py-3.5">
+                Joined Date
+              </TableHead>
+              <TableHead className="font-semibold text-foreground text-xs uppercase tracking-wider py-3.5 text-right">
+                Actions
+              </TableHead>
+            </TableRow>
+          </TableHeader>
 
-            <TableHead>Email</TableHead>
-
-            <TableHead>Role</TableHead>
-
-            <TableHead>Status</TableHead>
-
-            <TableHead>Joined</TableHead>
-
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-
-        <TableBody>
-          {!loading ? (
-            data.map((user) => (
-              <TableRow key={user._id}>
-                <TableCell className="font-medium capitalize">
-                  {user.name}
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground text-sm">
+                  Loading users...
                 </TableCell>
+              </TableRow>
+            ) : data && data.length > 0 ? (
+              data.map((user) => (
+                <TableRow key={user._id} className="hover:bg-muted/30 transition-colors">
+                  <TableCell className="font-semibold text-foreground capitalize text-sm py-3.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                        {user.name?.charAt(0)?.toUpperCase() || "U"}
+                      </div>
+                      <span>{user.name}</span>
+                    </div>
+                  </TableCell>
 
-                <TableCell>{user.email}</TableCell>
+                  <TableCell className="text-muted-foreground text-sm py-3.5">
+                    {user.email}
+                  </TableCell>
 
-                <TableCell>
-                  <span className="capitalize">{user.role}</span>
-                </TableCell>
+                  <TableCell className="py-3.5">
+                    <Badge variant="secondary" className="capitalize text-xs font-medium">
+                      {user.role}
+                    </Badge>
+                  </TableCell>
 
-                <TableCell>
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      user?.isBlocked
-                        ? "bg-red-100 text-red-700"
-                        : "bg-green-100 text-green-700"
-                    }`}
-                  >
-                    {user?.isBlocked ? "Blocked" : "Active"}
-                  </span>
-                </TableCell>
-
-                <TableCell>{formatDate(user.createdAt)}</TableCell>
-
-                <TableCell>
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      size="lg"
+                  <TableCell className="py-3.5">
+                    <Badge
                       variant="outline"
-                      onClick={() => handleView(user._id)}
-                      className="p-2! text-base cursor-pointer"
+                      className={`text-xs font-semibold px-2.5 py-0.5 ${
+                        user?.isBlocked
+                          ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
+                          : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                      }`}
                     >
-                      <Icons.Eye className="size-4 mr-1" />
-                      View
-                    </Button>
+                      {user?.isBlocked ? "Blocked" : "Active"}
+                    </Badge>
+                  </TableCell>
 
-                    {user?.isBlocked ? (
+                  <TableCell className="text-muted-foreground text-xs py-3.5">
+                    {formatDate(user.createdAt)}
+                  </TableCell>
+
+                  <TableCell className="text-right py-3.5">
+                    <div className="flex items-center justify-end gap-2">
                       <Button
-                        size="lg"
-                        className="bg-green-600 hover:bg-green-700 cursor-pointer"
-                        onClick={() =>
-                          handleBlockUnblock({
-                            id: user._id,
-                            status: !user.isBlocked,
-                          })
-                        }
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleView(user._id)}
+                        className="cursor-pointer h-8 px-2.5 text-xs"
                       >
-                        <Icons.UserCheck className="w-4 h-4 mr-1" />
-                        Unblock
+                        <Icons.Eye className="w-3.5 h-3.5 mr-1" />
+                        View
                       </Button>
-                    ) : (
-                      <Button
-                        size="lg"
-                        variant="destructive"
-                        className="cursor-pointer"
-                        onClick={() => {
-                          setIsOpen(true);
-                          setCUser({ id: user?._id, status: !user.isBlocked });
-                        }}
-                      >
-                        <Icons.UserX className="w-4 h-4 mr-1" />
-                        Block
-                      </Button>
-                    )}
+
+                      {user?.isBlocked ? (
+                        <Button
+                          size="sm"
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer h-8 px-2.5 text-xs"
+                          onClick={() =>
+                            handleBlockUnblock({
+                              id: user._id,
+                              status: !user.isBlocked,
+                            })
+                          }
+                        >
+                          <Icons.UserCheck className="w-3.5 h-3.5 mr-1" />
+                          Unblock
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="cursor-pointer h-8 px-2.5 text-xs"
+                          onClick={() => {
+                            setIsOpen(true);
+                            setCUser({ id: user?._id, status: !user.isBlocked });
+                          }}
+                        >
+                          <Icons.UserX className="w-3.5 h-3.5 mr-1" />
+                          Block
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground text-sm">
+                  <div className="flex flex-col items-center justify-center gap-1.5">
+                    <Icons.Users className="w-8 h-8 text-muted-foreground/40" />
+                    <span>No users found</span>
                   </div>
                 </TableCell>
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={6} className="text-center py-10">
-                Loading...
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
       {isOpen && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center w-full">
-          <div className="border-primary rounded-2xl bg-white p-4 sm:w-132.5 flex flex-col gap-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex justify-center items-center p-4 z-50">
+          <div className="rounded-2xl bg-card border border-border p-6 max-w-md w-full shadow-2xl space-y-4">
+            <h3 className="font-bold text-lg text-foreground">Block User Account</h3>
             <InputField
-              label={"Block Reason"}
+              label="Block Reason"
               name="reason"
-              placeholder="Enter the Reason"
+              placeholder="State reason for blocking account..."
               value={cUser.reason}
               onChange={(e) =>
                 setCUser((prev) => ({
@@ -145,21 +175,22 @@ const UserTable = ({ data = [], loading, handleView, handleBlockUnblock }) => {
               type="text"
               required={true}
             />
-            <div className="flex gap-3 w-full mt-2">
+            <div className="flex gap-3 justify-end pt-2">
               <Button
-                size="lg"
-                variant="secondary"
+                variant="outline"
+                size="sm"
                 onClick={() => setIsOpen(false)}
-                className={"flex-1"}
+                className="cursor-pointer"
               >
                 Cancel
               </Button>
               <Button
-                size="lg"
-                className={"flex-1"}
+                size="sm"
+                variant="destructive"
                 onClick={() => handleblock(cUser)}
+                className="cursor-pointer"
               >
-                Block User
+                Confirm Block
               </Button>
             </div>
           </div>

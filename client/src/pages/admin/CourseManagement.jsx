@@ -1,5 +1,6 @@
 import CourseTable from "@/components/admin/CourseTable";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -8,12 +9,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useGet } from "@/hooks/useGet";
-import { useMutation } from "@/hooks/useMutation";
 import { courseCategories } from "@/resources/Data";
 import Icons from "@/utils/Icons";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const CourseManagement = () => {
@@ -30,165 +28,194 @@ const CourseManagement = () => {
     sortBy: "",
   });
   const [page, setPage] = useState(1);
-  const navigate=useNavigate();
+  const navigate = useNavigate();
 
   const { data, loading, refetch } = useGet(
-    `admin/courses?searchValue=${appliedFilters.searchValue}&category=${appliedFilters.category}&status=${appliedFilters.status}&sortBy=${appliedFilters.sortBy}&page=${page}`,
+    `admin/courses?searchValue=${appliedFilters.searchValue}&category=${appliedFilters.category}&status=${appliedFilters.status}&sortBy=${appliedFilters.sortBy}&page=${page}`
   );
-
-  // useEffect(() => console.log("page: ", page), [page]);
-  // useEffect(()=>console.log("appliedFilters: ",appliedFilters),[appliedFilters])
 
   const courseData = data?.data?.data ?? [];
   const pagination = data?.data?.pagination;
-  // console.log("courseData: ",courseData)
 
-  const handleChnage = (e) => {
-    // console.log("e.target.value: ", e.target.value);
-    setFilters((filt) => ({ ...filt, searchValue: e.target.value }));
+  const handleChange = (e) => {
+    setFilters((prev) => ({ ...prev, searchValue: e.target.value }));
   };
-  const handleReset = async () => {
-    setFilters({
+
+  const handleReset = () => {
+    const defaultState = {
       searchValue: "",
       category: "",
-      status: "",
+      status: "all",
       sortBy: "",
-    });
-    setAppliedFilters({
-      searchValue: "",
-      category: "",
-      status: "",
-      sortBy: "",
-    });
-    // await refetch();
+    };
+    setFilters(defaultState);
+    setAppliedFilters(defaultState);
+    setPage(1);
   };
+
   const handleSearch = () => {
-    // console.log("filters: ", filters);
     setAppliedFilters(filters);
+    setPage(1);
   };
 
-  const handleView=async(id)=>{
-    console.log("id: ",id)
-    navigate("/admin/course-management/course-details",{
-      state:{id}
-    })
-  }
+  const handleView = (id) => {
+    navigate("/admin/course-management/course-details", {
+      state: { id },
+    });
+  };
+
+  const totalPages = pagination?.totalPages || 1;
+  const currentPage = pagination?.currentPage || page;
 
   return (
-    <div>
-      <div className="grid grid-cols-12 gap-2 w-full my-6">
-        <div className="relative sm:col-span-6 col-span-12">
-          <Icons.Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+    <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="border-b border-border/60 pb-4">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Course Management</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          Review, approve, and manage all instructor courses across the platform
+        </p>
+      </div>
+
+      {/* Filter and Search Bar */}
+      <div className="rounded-xl border border-border/60 bg-card p-4 shadow-sm flex flex-col lg:flex-row items-center gap-3">
+        <div className="relative w-full lg:flex-1">
+          <Icons.Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            className=" p-4 pl-10"
-            placeholder="Search Courses..."
-            onChange={handleChnage}
+            className="pl-9 h-10 text-sm"
+            placeholder="Search courses by title..."
+            onChange={handleChange}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             value={filters.searchValue}
             name="searchValue"
           />
         </div>
 
-        <div className="flex gap-4 sm:col-span-4 col-span-12 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full lg:w-auto">
           <Select
-            value={filters.category}
+            value={filters.category || "all"}
             onValueChange={(value) =>
-              setFilters((prev) => ({ ...prev, category: value }))
+              setFilters((prev) => ({ ...prev, category: value === "all" ? "" : value }))
             }
-            className=" w-full"
           >
-            <SelectTrigger className={"w-full"}>
+            <SelectTrigger className="w-full sm:w-[150px] h-10 text-sm">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
-
             <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              {courseCategories?.map((cate) => (
-                <SelectItem value={cate.value}>{cate.label}</SelectItem>
+              <SelectItem value="all">All Categories</SelectItem>
+              {courseCategories?.map((cate, idx) => (
+                <SelectItem key={idx} value={cate.value}>
+                  {cate.label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
+
           <Select
             value={filters.status}
             onValueChange={(value) =>
               setFilters((prev) => ({ ...prev, status: value }))
             }
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full sm:w-[130px] h-10 text-sm">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-
             <SelectContent>
-              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="approved">Approved</SelectItem>
               <SelectItem value="rejected">Rejected</SelectItem>
             </SelectContent>
           </Select>
+
           <Select
-            value={filters.sortBy}
+            value={filters.sortBy || "newest"}
             onValueChange={(value) =>
               setFilters((prev) => ({ ...prev, sortBy: value }))
             }
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full sm:w-[130px] h-10 text-sm">
               <SelectValue placeholder="Sort By" />
             </SelectTrigger>
-
             <SelectContent>
               <SelectItem value="newest">Newest</SelectItem>
               <SelectItem value="oldest">Oldest</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        <button
-          className="p-1 bg-black text-white font-semibold cursor-pointer  rounded-xl sm:col-span-1 col-span-12"
-          onClick={handleSearch}
-          disabled={loading}
-        >
-          Search
-        </button>
-        <button
-          className="p-1 bg-red-700 text-white font-semibold cursor-pointer  rounded-xl sm:col-span-1 col-span-12"
-          onClick={handleReset}
-          disabled={loading}
-        >
-          Reset
-        </button>
-      </div>
-      <CourseTable
-        data={courseData}
-        handleView={handleView}
-        // loading={loading}
-        // handleBlockUnblock={handleBlockUnblock}
-      />
-      <div className="flex justify-between items-center mt-3">
-        <div>
-          Showing{" "}
-          <span className="font-semibold">
-            {pagination?.currentPage * pagination?.pageLimit -
-              pagination?.pageLimit +
-              1}{" "}
-            - {pagination?.currentPage * pagination?.pageLimit}
-          </span>{" "}
-          Out of{" "}
-          <span className="font-semibold">{pagination?.totalCourses}</span>
+
+        <div className="flex items-center gap-2 w-full lg:w-auto">
+          <Button
+            className="flex-1 lg:flex-initial h-10 cursor-pointer shadow-xs"
+            onClick={handleSearch}
+            disabled={loading}
+          >
+            <Icons.Search className="w-4 h-4 mr-1.5" />
+            Search
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1 lg:flex-initial h-10 cursor-pointer"
+            onClick={handleReset}
+            disabled={loading}
+          >
+            Reset
+          </Button>
         </div>
-        <div className="flex gap-1 item-center ">
-          <button
-            className="p-1 bg-black text-white font-semibold cursor-pointer  rounded-xl sm:col-span-1 col-span-12 disabled:bg-gray-200 disabled:cursor-not-allowed"
-            onClick={() => setPage((page) => page - 1)}
-            disabled={page <= 1}
+      </div>
+
+      {/* Course Table */}
+      <CourseTable data={courseData} handleView={handleView} />
+
+      {/* Pagination Footer */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+        <p className="text-xs text-muted-foreground text-center sm:text-left">
+          Showing{" "}
+          <span className="font-semibold text-foreground">
+            {pagination?.totalCourses
+              ? (currentPage - 1) * (pagination?.pageLimit || 10) + 1
+              : 0}
+          </span>{" "}
+          to{" "}
+          <span className="font-semibold text-foreground">
+            {Math.min(
+              currentPage * (pagination?.pageLimit || 10),
+              pagination?.totalCourses || 0
+            )}
+          </span>{" "}
+          of{" "}
+          <span className="font-semibold text-foreground">
+            {pagination?.totalCourses ?? 0}
+          </span>{" "}
+          courses
+        </p>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="cursor-pointer"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage <= 1 || loading}
           >
-            <ArrowLeft />
-          </button>
-          <span className="text-xl">{pagination?.currentPage}</span>
-          <button
-            className="p-1 bg-black text-white font-semibold cursor-pointer  rounded-xl sm:col-span-1 col-span-12 disabled:bg-gray-200 disabled:cursor-not-allowed"
-            onClick={() => setPage((page) => page + 1)}
-            disabled={page == pagination?.totalPages}
+            <Icons.ArrowLeft className="w-4 h-4 mr-1" />
+            Previous
+          </Button>
+
+          <span className="text-xs font-semibold px-2">
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="cursor-pointer"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage >= totalPages || loading}
           >
-            <ArrowRight />
-          </button>
+            Next
+            <Icons.ArrowRight className="w-4 h-4 ml-1" />
+          </Button>
         </div>
       </div>
     </div>

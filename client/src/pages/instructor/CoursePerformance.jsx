@@ -7,73 +7,76 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import Icons from "@/utils/Icons";
 
 const CoursePerformance = ({ courses }) => {
   return (
-    <div>
-      <div className="rounded-xl border bg-white overflow-x-auto">
-        <Table className={"text-lg"}>
-          <TableHeader>
+    <div className="rounded-xl border border-border/60 bg-card overflow-hidden shadow-sm">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader className="bg-muted/40">
             <TableRow>
-              <TableHead>Course</TableHead>
-
-              <TableHead>Students</TableHead>
-              <TableHead>Lectures</TableHead>
-
-              <TableHead>Completion</TableHead>
+              <TableHead className="font-semibold text-foreground text-xs uppercase tracking-wider py-3.5">
+                Course Title
+              </TableHead>
+              <TableHead className="font-semibold text-foreground text-xs uppercase tracking-wider py-3.5 text-center">
+                Enrolled Students
+              </TableHead>
+              <TableHead className="font-semibold text-foreground text-xs uppercase tracking-wider py-3.5 text-center">
+                Total Lectures
+              </TableHead>
+              <TableHead className="font-semibold text-foreground text-xs uppercase tracking-wider py-3.5 text-center">
+                Completion Rate
+              </TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
-            {/* {data.map((course, index) => ( */}
-            {/* <TableRow key={index}>
-                <TableCell className="font-medium">{course.name}</TableCell>
+            {courses && courses.length > 0 ? (
+              courses.map((course, key) => (
+                <TableRow key={key} className="hover:bg-muted/30 transition-colors">
+                  <TableCell className="font-medium text-foreground py-3.5">
+                    <div className="flex items-center gap-2">
+                      <Icons.BookOpen className="w-4 h-4 text-primary shrink-0" />
+                      <span className="line-clamp-1">{course?.title || "Untitled"}</span>
+                    </div>
+                  </TableCell>
 
-                <TableCell>₹{course.price}</TableCell>
+                  <TableCell className="text-center font-semibold text-foreground py-3.5">
+                    {course?.students ?? 0}
+                  </TableCell>
 
-                <TableCell>
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      course.status === "Published"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {course.status}
-                  </span>
+                  <TableCell className="text-center text-muted-foreground py-3.5">
+                    {course?.lectures ?? 0}
+                  </TableCell>
+
+                  <TableCell className="text-center py-3.5">
+                    <Badge
+                      variant="secondary"
+                      className={`text-xs font-semibold px-2.5 py-0.5 ${
+                        (course?.completionRate || 0) >= 75
+                          ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                          : (course?.completionRate || 0) >= 30
+                          ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {course?.completionRate ?? 0}%
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-10 text-muted-foreground text-sm">
+                  <div className="flex flex-col items-center justify-center gap-1.5">
+                    <Icons.BookOpen className="w-8 h-8 text-muted-foreground/40" />
+                    <span>No course performance data available yet</span>
+                  </div>
                 </TableCell>
-
-                <TableCell>{course.students ?? 0}</TableCell>
-
-                <TableCell className="text-right">
-                  {console.log("(course._id): ", course._id)}
-
-                  <Button
-                    size="sm"
-                    className={"cursor-pointer p-4"}
-                    onClick={() => handleEdit(course._id)}
-                  >
-                    <Icons.SquarePen className="w-5 h-5 mr-1" />{" "}
-                    <span>Edit</span>
-                  </Button>
-                </TableCell>
-              </TableRow> */}
-            {/* ))} */}
-            {(courses || [])?.map((course,key) => (
-              <TableRow key={key}>
-                {/* {console.log("courses: ", courses)} */}
-                <TableCell className="font-medium">{course?.title}</TableCell>
-
-                <TableCell>{course?.students}</TableCell>
-
-                <TableCell>{course?.lectures}</TableCell>
-
-                <TableCell>{course?.completionRate ?? 0}%</TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </div>

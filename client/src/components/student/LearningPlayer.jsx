@@ -1,18 +1,10 @@
 import { useGet } from "@/hooks/useGet";
-import {
-  CheckCircle2,
-  Circle,
-  CircleDashed,
-  Play,
-  PlayCircle,
-  PlayCircleIcon,
-} from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
-import video from "../../assets/video/file_example_MP4_480_1_5MG.mp4";
+import { useParams, useNavigate } from "react-router-dom";
 import { useMutation } from "@/hooks/useMutation";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import Icons from "@/utils/Icons";
 import {
   Dialog,
@@ -34,70 +26,85 @@ const ReviewModel = ({ userReview }) => {
   const { mutate } = useMutation();
 
   const handleSave = async () => {
-    console.log("review: ", review, " Rating: ", rating);
     try {
       const res = await mutate({
         url: `reviewAndRating/${courseId}`,
         method: "post",
         body: { review, rating },
       });
-      console.log("res: ", res);
-      toast.success(res.message || "review has been added successfully");
+      toast.success(res?.message || "Review added successfully");
       setRating(0);
       setReview("");
       setOpenReviewPopup(false);
     } catch (error) {
-      console.log("error: ", error);
-      toast.error(error.message);
+      toast.error(error?.message || "Failed to submit review");
     }
   };
-  console.log("userReview: ", userReview);
+
   useEffect(() => {
     if (userReview) {
-      setRating(userReview?.rating);
-      setReview(userReview.review);
+      setRating(userReview?.rating || 0);
+      setReview(userReview?.review || "");
     }
   }, [userReview]);
 
-  const timestamp = new Date(review?.createdAt).getTime();
-
+  const timestamp = new Date(userReview?.createdAt).getTime();
   const days = Number.isNaN(timestamp)
-    ? 0
+    ? null
     : Math.floor((Date.now() - timestamp) / (1000 * 60 * 60 * 24));
+
   return (
     <>
-      <div className="border rounded-xl p-3 m-3 shadow-sm">
-        <div className="flex items-center justify-between">
-          {userReview ? null : (
-            <h2 className="text-lg font-semibold">Rate the Course</h2>
-          )}
+      <div className="rounded-xl border border-border/60 bg-muted/30 p-4 mt-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mt-2">
-              <div className="flex">
-                {Array.from({ length: userReview?.rating || 0 }).map((star) => (
-                  <Icons.Star
-                    key={star}
-                    size={18}
-                    className="fill-yellow-400 text-yellow-400"
-                  />
-                ))}
+            <h3 className="text-sm font-semibold text-foreground">
+              {userReview?.review ? "Your Course Review" : "Course Feedback & Rating"}
+            </h3>
+            {userReview?.review ? (
+              <div className="mt-1.5 space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Icons.Star
+                        key={star}
+                        size={15}
+                        className={
+                          star <= (userReview?.rating || 0)
+                            ? "fill-amber-400 text-amber-400"
+                            : "fill-muted text-muted-foreground/30"
+                        }
+                      />
+                    ))}
+                  </div>
+                  <span className="text-xs font-semibold text-foreground">
+                    {userReview?.rating} / 5
+                  </span>
+                  {days !== null && (
+                    <span className="text-xs text-muted-foreground">
+                      • {days === 0 ? "Today" : `${days}d ago`}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground line-clamp-2">
+                  "{userReview?.review}"
+                </p>
               </div>
-
-              <span className="font-medium">{userReview?.rating}</span>
-            </div>
-            <div className="text-muted-foreground">{userReview?.review}</div>
-            {userReview ? (
-              <div className="text-muted-foreground">
-                {days ?? "NA"} days ago
-              </div>
-            ) : null}
+            ) : (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Share your rating and feedback to help others and support the instructor.
+              </p>
+            )}
           </div>
 
           <Button
-            className="h-10 px-5 cursor-pointer"
+            variant="outline"
+            size="sm"
+            className="cursor-pointer shrink-0"
             onClick={() => setOpenReviewPopup(true)}
           >
-            {userReview ? "Edit Review" : "Write Review"}
+            <Icons.Star className="w-3.5 h-3.5 mr-1.5 text-amber-400 fill-amber-400" />
+            {userReview?.review ? "Edit Review" : "Write Review"}
           </Button>
         </div>
       </div>
@@ -105,49 +112,46 @@ const ReviewModel = ({ userReview }) => {
       <Dialog open={openReviewPopUp} onOpenChange={setOpenReviewPopup}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Rate this Course</DialogTitle>
-
+            <DialogTitle>Rate & Review this Course</DialogTitle>
             <DialogDescription>
-              Share your experience with other students.
+              Share your thoughts and feedback with the instructor and community.
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex flex-col items-center gap-2 py-4">
             <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((star) => {
-                // {console.log("star",star)}
-                return (
-                  <Icons.Star
-                    key={star}
-                    onClick={() => setRating(star)}
-                    className={`cursor-pointer transition-all hover:scale-110 ${
-                      star <= rating
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "fill-gray-300"
-                    }`}
-                  />
-                );
-              })}
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Icons.Star
+                  key={star}
+                  size={28}
+                  onClick={() => setRating(star)}
+                  className={`cursor-pointer transition-transform hover:scale-125 ${
+                    star <= rating
+                      ? "fill-amber-400 text-amber-400"
+                      : "fill-muted text-muted-foreground/30 hover:text-amber-300"
+                  }`}
+                />
+              ))}
             </div>
 
             {rating > 0 && (
-              <span className="text-sm text-muted-foreground">
-                You rated this course {rating} / 5
+              <span className="text-xs font-medium text-muted-foreground">
+                You rated this course {rating} of 5 stars
               </span>
             )}
           </div>
 
           <Textarea
             dir="ltr"
-            placeholder="Tell others what you liked or disliked about this course..."
-            className="min-h-28 text-left"
+            placeholder="Tell us what you loved or how this course can be improved..."
+            className="min-h-28 text-sm"
             value={review}
             onChange={(event) => setReview(event.target.value)}
           />
 
           <Button
             type="button"
-            className="w-full cursor-pointer"
+            className="w-full cursor-pointer mt-2"
             disabled={!rating}
             onClick={handleSave}
           >
@@ -163,17 +167,15 @@ const LearningPlayer = () => {
   const [isVideoCompleted, setIsVideoCompleted] = useState(false);
   const [userReview, setUserReview] = useState({});
   const { courseId } = useParams();
-  const isCompleteref = useRef();
-  console.log("courseId: ", courseId);
+  const navigate = useNavigate();
+  const isCompleteref = useRef(false);
+
   const { data, refetch } = useGet(`course/${courseId}/lectures`);
   const { data: lectureProgress, refetch: refetchprogress } = useGet(
-    `progress/${courseId}`,
+    `progress/${courseId}`
   );
-  const { data: certificateData, refetch: refetchCertificate } = useGet(
-    `certificate/${courseId}`,
-  );
-
   const { mutate } = useMutation();
+
   const [playingVideoData, setPlayingVideoData] = useState({
     _id: "",
     name: "",
@@ -192,12 +194,13 @@ const LearningPlayer = () => {
   const reviewUrl =
     progressPercentage === 100 ? `reviewAndRating/${courseId}` : null;
   const { data: reviewData } = useGet(reviewUrl);
-  useEffect(
-    () => console.log("certificateData: ", certificateData),
-    [certificateData],
-  );
 
-  useEffect(() => setUserReview(reviewData?.data), [reviewData]);
+  useEffect(() => {
+    if (reviewData?.data) {
+      setUserReview(reviewData.data);
+    }
+  }, [reviewData]);
+
   const handleVideoPlay = (lec) => {
     setPlayingVideoData({
       _id: lec?._id,
@@ -205,18 +208,12 @@ const LearningPlayer = () => {
       videoUrl: lec?.videoUrl,
     });
   };
-  // useEffect(
-  //   () => console.log("playingVieo: HERE", playingVideoData),
-  //   [playingVideoData],
-  // );
 
-  // useEffect(() => {});
   useEffect(() => {
     const isNotContain = lectures?.find(
       (lecData) =>
-        !lectureProgressData?.lecturesCompleted.includes(lecData?._id),
+        !lectureProgressData?.lecturesCompleted?.includes(lecData?._id)
     );
-    console.log("isNotContain: ", isNotContain);
     if (lectures.length > 0 && !playingVideoData.videoUrl) {
       if (isNotContain) {
         setPlayingVideoData({
@@ -232,51 +229,30 @@ const LearningPlayer = () => {
         });
       }
     }
-  }, [data, playingVideoData.videoUrl]);
-
-  // useEffect(() => {
-  //   const isAlllecComplete = lectureCount === completedLecturesCount;
-  //   if (isAlllecComplete)
-  //     toast.success("🎉 Congratulations! You've completed this course.");
-  // }, []);
+  }, [data, playingVideoData.videoUrl, lectures, lectureProgressData]);
 
   useEffect(() => {
     isCompleteref.current = false;
   }, [playingVideoData]);
 
-  // useEffect(async () => {
-  //   const res = await mutate({
-  //     url: "progress/6a1a7630f91aba30565481b8/6a2b77c72e14d13ee194bdad",
-  //     method: "post",
-  //   });
-  //   console.log("res: ", res);
-  // }, []);
-
   const handleVideoComplete = async (e) => {
     if (isCompleteref.current) return;
     try {
-      // console.log(
-      //   "Time: ",
-      //   e.target.currentTime,
-      //   " Duration: ",
-      //   e.target.duration,
-      // );
-      const video = e.target;
-      const videoWatchedPercn = (video.currentTime / video.duration) * 100;
+      const videoEl = e.target;
+      if (!videoEl || !videoEl.duration) return;
+      const videoWatchedPercn = (videoEl.currentTime / videoEl.duration) * 100;
       if (videoWatchedPercn >= 90) {
         isCompleteref.current = true;
-        console.log("Course:", lecture?._id);
-        console.log("Lecture:", playingVideoData?._id);
         const res = await mutate({
           url: `progress/${lecture?._id}/${playingVideoData?._id}`,
           method: "post",
         });
-        toast.success(res.message || "Set as Watched");
+        toast.success(res?.message || "Lecture completed!");
         refetch();
         refetchprogress();
       }
     } catch (error) {
-      toast.error(error.message || "Could able to set as Read");
+      toast.error(error?.message || "Failed to save lecture progress");
     }
   };
 
@@ -288,82 +264,128 @@ const LearningPlayer = () => {
       });
 
       const url = window.URL.createObjectURL(
-        new Blob([response.data], { type: "application/pdf" }),
+        new Blob([response.data], { type: "application/pdf" })
       );
 
       const link = document.createElement("a");
-
       link.href = url;
-      link.download = "certificate.pdf";
-
+      link.download = `Certificate-${courseId}.pdf`;
       document.body.appendChild(link);
       link.click();
-
       link.remove();
       window.URL.revokeObjectURL(url);
+      toast.success("Certificate downloaded successfully!");
     } catch (error) {
-      console.error(error);
+      toast.error("Unable to download certificate.");
     }
   };
 
-  // useEffect(() => {
-  //   console.log("reviewData: ", reviewData);
-  // }, [reviewData]);
-
   return (
-    <div className="p-6 w-full">
-      <h1 className="text-2xl  font-semibold">Learning Player</h1>
-      <h2 className="text-lg text-center w-full font-semibold my-4">
-        {lecture?.title}
-      </h2>
-      <div className="mb-6 border rounded-xl p-5 shadow-sm">
-        <h2 className="text-xl font-semibold mb-4">Course Progress</h2>
-
-        <div className="flex justify-between text-sm font-medium mb-2">
-          <span>
-            {completedLecturesCount ?? 0} / {lectureCount} Lectures Completed
-          </span>
-          <span>{progressPercentage ?? 0}%</span>
+    <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+      {/* Header bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border/60 pb-4">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="cursor-pointer"
+          >
+            <Icons.ArrowLeft className="w-4 h-4 mr-1" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground line-clamp-1">
+              {lecture?.title || "Course Player"}
+            </h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Interactive Learning & Video Lectures
+            </p>
+          </div>
         </div>
 
-        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            navigate(`/student/discuss/${courseId}`, {
+              state: {
+                courseName: lecture?.title,
+                coureStudetsCount: lecture?.enrolledStudents?.length || 0,
+              },
+            })
+          }
+          className="self-start sm:self-auto cursor-pointer"
+        >
+          <Icons.MessageSquare className="w-4 h-4 mr-1.5" />
+          Course Discussion
+        </Button>
+      </div>
+
+      {/* Progress & Stats Card */}
+      <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 className="text-base font-bold text-foreground">Course Completion Progress</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {completedLecturesCount} of {lectureCount} lectures completed
+            </p>
+          </div>
+          <Badge
+            variant={progressPercentage === 100 ? "default" : "secondary"}
+            className="self-start sm:self-auto font-bold text-xs px-3 py-1"
+          >
+            {progressPercentage}% Complete
+          </Badge>
+        </div>
+
+        <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden">
           <div
-            className="bg-green-500 h-full transition-all duration-500"
+            className="bg-emerald-500 h-full rounded-full transition-all duration-500"
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
 
-        <div className="grid grid-cols-3 gap-4 mt-5">
-          <div className="border rounded-lg p-3 text-center">
-            <p className="text-2xl font-bold text-green-600">
-              {completedLecturesCount ?? 0}
+        <div className="grid grid-cols-3 gap-3 pt-2">
+          <div className="rounded-xl border border-border/50 bg-background/50 p-3 text-center">
+            <p className="text-lg md:text-2xl font-extrabold text-emerald-500">
+              {completedLecturesCount}
             </p>
-            <p className="text-sm text-gray-500">Completed</p>
+            <p className="text-xs text-muted-foreground">Completed</p>
           </div>
-
-          <div className="border rounded-lg p-3 text-center">
-            <p className="text-2xl font-bold text-orange-500">
-              {lectureCount - (completedLecturesCount ?? 0) ?? 0}
+          <div className="rounded-xl border border-border/50 bg-background/50 p-3 text-center">
+            <p className="text-lg md:text-2xl font-extrabold text-amber-500">
+              {Math.max(0, lectureCount - completedLecturesCount)}
             </p>
-            <p className="text-sm text-gray-500">Remaining</p>
+            <p className="text-xs text-muted-foreground">Remaining</p>
           </div>
-
-          <div className="border rounded-lg p-3 text-center">
-            <p className="text-2xl font-bold">{lectureCount}</p>
-            <p className="text-sm text-gray-500">Total</p>
+          <div className="rounded-xl border border-border/50 bg-background/50 p-3 text-center">
+            <p className="text-lg md:text-2xl font-extrabold text-foreground">
+              {lectureCount}
+            </p>
+            <p className="text-xs text-muted-foreground">Total Lectures</p>
           </div>
         </div>
 
+        {/* Certificate banner */}
         {progressPercentage === 100 && (
-          <div className="flex gap-2 w-full items-center my-5">
-            <div className=" rounded-lg w-full bg-green-100 border border-green-300 p-3 text-center">
-              🎉 Congratulations! You have completed this course.
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0">
+                <Icons.Award className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-foreground">Course Completed! 🎉</h4>
+                <p className="text-xs text-muted-foreground">
+                  You've completed all lectures. Download your certificate of completion.
+                </p>
+              </div>
             </div>
             <Button
-              type="button"
-              className=" cursor-pointer  p-4 py-6 font-semibold text-lg"
+              className="w-full sm:w-auto cursor-pointer shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
               onClick={handleCertificateDownload}
             >
+              <Icons.Download className="w-4 h-4 mr-2" />
               Download Certificate
             </Button>
           </div>
@@ -371,97 +393,110 @@ const LearningPlayer = () => {
 
         <ReviewModel userReview={userReview} />
       </div>
-      {lectures.length ? (
-        <div className="grid grid-cols-12 p-5 border rounded-l-2xl mt-2">
-          {/* <div className="col-span-4">
-            {(data?.data?.lectures || [])?.map((lec) => (
-              <button
-                className={`flex items-center rounded-md cursor-pointer my-2 border-2 p-2 w-full gap-1 ${playingVideoData.videoUrl === lec?.videoUrl ? "bg-gray-400" : ""}`}
-                key={lec?._id}
-                onClick={() => handleVideoPlay(lec)}
-              >
-              {lectureProgress?.data?.lecturesCompleted.includes(lec?._id)?<Ticket />:< Circle />}
-                {console.log("lect: ", lec)}
-                <PlayCircleIcon className="" strokeWidth={3} size={18} />{" "}
-                <span className="text-lg">{lec?.title}</span>
-              </button>
-            ))}
-          </div> */}
 
-          <div className="col-span-4 border-r pr-4">
-            {lectures.map((lec) => {
-              const isCompleted =
-                lectureProgressData?.lecturesCompleted?.includes(lec?._id);
+      {/* Video Player & Playlist Layout */}
+      {lectures.length > 0 ? (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Main Video Viewport */}
+          <div className="lg:col-span-8 space-y-4">
+            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black border border-border/60 shadow-md">
+              {playingVideoData?.videoUrl ? (
+                <video
+                  key={playingVideoData.videoUrl}
+                  src={playingVideoData.videoUrl}
+                  controls
+                  autoPlay
+                  className="w-full h-full object-contain"
+                  onTimeUpdate={!isVideoCompleted ? handleVideoComplete : undefined}
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground p-6 text-center">
+                  <Icons.PlayCircle className="w-16 h-16 mb-2 opacity-50" />
+                  <p className="text-sm">Select a lecture from the playlist to begin playback</p>
+                </div>
+              )}
+            </div>
 
-              const isCurrent = playingVideoData?._id === lec?._id;
-
-              return (
-                <button
-                  key={lec?._id}
-                  onClick={() => handleVideoPlay(lec)}
-                  className={`w-full flex items-center gap-3 p-3 my-2 rounded-lg border transition-all duration-200 text-left
-                  ${
-                    isCurrent
-                      ? "bg-blue-100 border-blue-500 shadow-sm"
-                      : "hover:bg-gray-100"
-                  }
-                `}
-                >
-                  <div>
-                    {isCurrent ? (
-                      <Play size={18} className="text-orange-400" />
-                    ) : isCompleted ? (
-                      <CheckCircle2 size={18} className="text-green-600" />
-                    ) : (
-                      <CircleDashed size={18} className="text-gray-400" />
-                    )}
-                  </div>
-
-                  <PlayCircleIcon
-                    size={18}
-                    className={isCurrent ? "text-blue-600" : "text-gray-500"}
-                  />
-
-                  <div className="flex flex-col overflow-hidden">
-                    <span
-                      className={`truncate font-medium ${
-                        isCurrent ? "text-blue-700" : ""
-                      }`}
-                    >
-                      {lec?.title}
-                    </span>
-
-                    {isCompleted && (
-                      <span className="text-xs text-green-600">Completed</span>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
+            <div className="p-4 rounded-xl border border-border/60 bg-card">
+              <div className="flex items-center gap-2 text-xs font-semibold text-primary uppercase tracking-wider mb-1">
+                <Icons.Play className="w-3.5 h-3.5 fill-current" />
+                Now Playing
+              </div>
+              <h2 className="text-lg font-bold text-foreground">
+                {playingVideoData?.name || "Select a lecture"}
+              </h2>
+            </div>
           </div>
 
-          <div className="col-span-8 ">
-            <h2 className={`text-xl font-semibold flex justify-center `}>
-              {playingVideoData?.name}
-            </h2>
-            {playingVideoData?.videoUrl && (
-              <video
-                src={playingVideoData?.videoUrl ?? undefined}
-                muted
-                autoPlay
-                controls
-                className="justify-center items-center w-full flex aspect-video p-8 rounded-2xl"
-                // onTimeUpdate={handleVideoComplete}
-                onTimeUpdate={
-                  !isVideoCompleted ? handleVideoComplete : undefined
-                }
-              ></video>
-            )}
+          {/* Lecture Playlist Column */}
+          <div className="lg:col-span-4 rounded-2xl border border-border/60 bg-card p-4 space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <Icons.Layers className="w-4 h-4 text-primary" />
+                Course Content
+              </h3>
+              <span className="text-xs text-muted-foreground">
+                {completedLecturesCount}/{lectures.length} done
+              </span>
+            </div>
+
+            <div className="space-y-2 max-h-[520px] overflow-y-auto pr-1">
+              {lectures.map((lec, idx) => {
+                const isCompleted =
+                  lectureProgressData?.lecturesCompleted?.includes(lec?._id);
+                const isCurrent = playingVideoData?._id === lec?._id;
+
+                return (
+                  <button
+                    key={lec?._id || idx}
+                    onClick={() => handleVideoPlay(lec)}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
+                      isCurrent
+                        ? "bg-primary/10 border-primary text-primary font-semibold shadow-xs"
+                        : "border-border/40 hover:bg-muted/50 text-foreground"
+                    }`}
+                  >
+                    <div className="shrink-0">
+                      {isCompleted ? (
+                        <Icons.CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      ) : isCurrent ? (
+                        <Icons.Play className="w-4 h-4 text-primary fill-current" />
+                      ) : (
+                        <span className="w-4 h-4 rounded-full border border-muted-foreground/30 flex items-center justify-center text-[10px] text-muted-foreground font-mono">
+                          {idx + 1}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium truncate leading-tight">
+                        {lec?.title}
+                      </p>
+                      {lec?.duration && (
+                        <span className="text-[10px] text-muted-foreground mt-0.5 block">
+                          {lec.duration}
+                        </span>
+                      )}
+                    </div>
+
+                    {isCompleted && (
+                      <span className="text-[10px] font-semibold text-emerald-500 shrink-0">
+                        Watched
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       ) : (
-        <div className="flex justify-center w-full text-2xl font-semibold mt-10">
-          No lectures available yet.
+        <div className="flex flex-col items-center justify-center text-center p-12 rounded-2xl border border-dashed border-border bg-card/40">
+          <Icons.Video className="w-12 h-12 text-muted-foreground/60 mb-2" />
+          <h3 className="text-lg font-semibold text-foreground">No lectures available</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            The instructor has not uploaded any video lectures to this course yet.
+          </p>
         </div>
       )}
     </div>

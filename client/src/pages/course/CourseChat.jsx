@@ -2,23 +2,22 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-
+import BASE_URL from "@/utils/BASE_URL";
 import socket from "@/socket/socket";
-
 import { setMessages, addMessage, clearMessages } from "@/redux/chatSlice";
+import { Button } from "@/components/ui/button";
+import Icons from "@/utils/Icons";
 
-const CourseChat = ({ course }) => {
+const CourseChat = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const location=useLocation();
-  console.log("location: ",location)
-  const courseName=location?.state?.courseName;
-  const courseStudentsCount=location?.state?.coureStudetsCount;
+  const location = useLocation();
 
+  const courseName = location?.state?.courseName;
+  const courseStudentsCount = location?.state?.coureStudetsCount;
 
-  const messages = useSelector((state) => state.chat.messages);
-
+  const messages = useSelector((state) => state.chat.messages || []);
   const currentUser = useSelector((state) => state.auth.user);
 
   const [content, setContent] = useState("");
@@ -30,25 +29,16 @@ const CourseChat = ({ course }) => {
 
   const bottomRef = useRef(null);
 
-  // -----------------------------------------
-  // Scroll to latest message
-  // -----------------------------------------
-
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   useEffect(() => {
     const handleChatError = (data) => {
-      console.error("Chat error:", data);
-
       setError(data?.message || "You are not allowed to access this chat.");
     };
 
     socket.on("chat:error", handleChatError);
-
     return () => {
       socket.off("chat:error", handleChatError);
     };
@@ -58,7 +48,6 @@ const CourseChat = ({ course }) => {
     if (!courseId) return;
 
     const joinRoom = () => {
-      console.log("Joining course room:", courseId);
       socket.emit("chat:join", courseId);
     };
 
@@ -74,25 +63,17 @@ const CourseChat = ({ course }) => {
     };
   }, [courseId]);
 
-  // -----------------------------------------
-  // Socket connection status
-  // -----------------------------------------
-
   useEffect(() => {
     const handleConnect = () => {
-      console.log("🟢 Socket connected");
       setSocketConnected(true);
       setError("");
     };
 
     const handleDisconnect = () => {
-      console.log("🔴 Socket disconnected");
       setSocketConnected(false);
     };
 
-    const handleConnectError = (error) => {
-      console.error("Socket connection error:", error);
-
+    const handleConnectError = () => {
       setSocketConnected(false);
       setError("Unable to connect to chat.");
     };
@@ -108,142 +89,57 @@ const CourseChat = ({ course }) => {
     };
   }, []);
 
-  // -----------------------------------------
-  // Load messages + join room
-  // -----------------------------------------
-
   useEffect(() => {
-    if (!courseId) return;
-
-    let mounted = true;
-    let chatLoaded = false;
-    setChatReady(false);
-
-    const handleNewMessage = (message) => {
-      if (!mounted) return;
-
-      console.log("🔥 LIVE MESSAGE:", message);
-
-      dispatch(addMessage(message));
-    };
-
-    const handleChatError = (data) => {
-      console.error("❌ Chat error:", data);
-      setError(data?.message || "Chat error");
-    };
-
-    const joinRoom = () => {
-      console.log("🟢 Socket connected");
-      console.log("👥 Joining:", `course:${courseId}`);
-
-      socket.emit("chat:join", courseId, (result) => {
-        if (!mounted) return;
-
-        if (result?.ok) {
-          setChatReady(true);
-        } else {
-          setError(result?.message || "Unable to join the chat.");
-        }
-      });
-    };
-
-    const handleSocketConnect = () => {
-      if (chatLoaded) joinRoom();
-    };
-
-    const initializeChat = async () => {
+    const fetchChatHistory = async () => {
+      if (!courseId) return;
       try {
         setLoading(true);
-
-        // Register listeners FIRST
-        socket.on("chat:message", handleNewMessage);
-        socket.on("chat:error", handleChatError);
-
-        // Load old messages
-        const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}message/${courseId}`,
-          {
-            withCredentials: true,
-          },
-        );
-
-        if (!mounted) return;
-
-        dispatch(setMessages(response?.data?.data || []));
-        chatLoaded = true;
-
-        // If already connected → join immediately
-        if (socket.connected) {
-          joinRoom();
-        }
-      } catch (error) {
-        console.error("❌ Failed to load chat:", error);
-
-        if (mounted) {
-          setError(
-            error?.response?.data?.message || "Failed to load discussion",
-          );
-        }
+        const res = await axios.get(`${BASE_URL}chat/${courseId}`, {
+          withCredentials: true,
+        });
+        dispatch(setMessages(res.data?.data || []));
+        setChatReady(true);
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to load chat history.");
       } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     };
 
-    socket.on("connect", handleSocketConnect);
-    initializeChat();
+    fetchChatHistory();
 
     return () => {
-      mounted = false;
-
-      socket.off("connect", handleSocketConnect);
-
-      socket.emit("chat:leave", courseId);
-
-      socket.off("chat:message", handleNewMessage);
-      socket.off("chat:error", handleChatError);
-
       dispatch(clearMessages());
     };
   }, [courseId, dispatch]);
 
-  // -----------------------------------------
-  // Send message
-  // -----------------------------------------
+  useEffect(() => {
+    const handleNewMessage = (message) => {
+      dispatch(addMessage(message));
+    };
 
-  const sendMessage = () => {
-    const text = content.trim();
+    socket.on("chat:message", handleNewMessage);
+    return () => {
+      socket.off("chat:message", handleNewMessage);
+    };
+  }, [dispatch]);
 
-    if (!text) return;
+  const sendMessage = async () => {
+    if (!content.trim() || sending) return;
 
-    if (!socket.connected || !chatReady) {
-      setError("Chat is still connecting. Please try again.");
-      return;
+    try {
+      setSending(true);
+      socket.emit("chat:send", {
+        courseId,
+        content: content.trim(),
+      });
+      setContent("");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSending(false);
     }
-
-    setSending(true);
-    setError("");
-
-    socket.emit("chat:message", {
-      courseId,
-      content: text,
-    });
-
-    setContent("");
-
-    /*
-     * The backend broadcasts the saved message
-     * back through chat:message.
-     *
-     * So we don't manually add the message here.
-     */
-    setSending(false);
   };
-
-  // -----------------------------------------
-  // Enter to send
-  // -----------------------------------------
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -252,228 +148,187 @@ const CourseChat = ({ course }) => {
     }
   };
 
-  // -----------------------------------------
-  // Compare IDs
-  // -----------------------------------------
-
   const getId = (value) => {
     if (!value) return null;
-
-    if (typeof value === "object") {
-      return value._id?.toString();
-    }
-
+    if (typeof value === "object") return value._id?.toString();
     return value.toString();
   };
 
   const currentUserId = getId(currentUser?._id);
 
   return (
-    <div className="flex h-[100dvh] flex-col bg-gray-50">
-      {/* ================================= */}
-      {/* HEADER */}
-      {/* ================================= */}
+    <div className="flex h-[100dvh] flex-col bg-background">
+      {/* Header */}
+      <header className="shrink-0 border-b border-border/60 bg-card">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="cursor-pointer h-9 w-9 p-0"
+            >
+              <Icons.ArrowLeft className="w-4 h-4" />
+            </Button>
 
-      <header className="shrink-0 border-b bg-white">
-        <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3 sm:px-6">
-          {/* Back */}
+            <div>
+              <h1 className="truncate text-sm sm:text-base font-bold text-foreground">
+                {courseName || "Course Discussion"}
+              </h1>
 
-          <button
-            onClick={() => navigate(-1)}
-            className="rounded-lg px-3 py-2 text-sm transition hover:bg-gray-100"
-          >
-            ←
-          </button>
-
-          {/* Course */}
-
-          <div>
-            <h1 className="truncate text-base font-semibold sm:text-lg">
-              {courseName || "Course Discussion"}
-            </h1>
-
-            <div className="flex items-center gap-2 text-xs text-gray-500">
-              <span>{courseStudentsCount || 0} students</span>
-
-              <span>•</span>
-
-              <span>1 instructor</span>
-
-              <span>•</span>
-
-              <span className="flex items-center gap-1">
-                <span
-                  className={`h-2 w-2 rounded-full ${
-                    socketConnected ? "bg-green-500" : "bg-red-500"
-                  }`}
-                />
-
-                {socketConnected ? "Connected" : "Disconnected"}
-              </span>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>{courseStudentsCount || 0} students</span>
+                <span>•</span>
+                <span className="flex items-center gap-1.5">
+                  <span
+                    className={`h-2 w-2 rounded-full ${
+                      socketConnected ? "bg-emerald-500" : "bg-rose-500"
+                    }`}
+                  />
+                  {socketConnected ? "Live" : "Disconnected"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* ================================= */}
-      {/* ERROR */}
-      {/* ================================= */}
-
+      {/* Error state */}
       {error && (
-        <div className="flex h-screen items-center justify-center">
-          <div className="text-center">
-            <div className="mb-3 text-4xl">🔒</div>
-
-            <h2 className="text-lg font-semibold">Access Denied</h2>
-
-            <p className="mt-1 text-sm text-gray-500">
-              You don't have access to this course discussion.
-            </p>
-
-            <button
+        <div className="flex flex-1 items-center justify-center p-6">
+          <div className="text-center max-w-sm">
+            <div className="w-12 h-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto mb-3">
+              <Icons.ShieldAlert className="w-6 h-6" />
+            </div>
+            <h2 className="text-base font-bold text-foreground">Access Denied</h2>
+            <p className="mt-1 text-xs text-muted-foreground">{error}</p>
+            <Button
               onClick={() => navigate(-1)}
-              className="mt-4 rounded-lg bg-black px-4 py-2 text-sm text-white"
+              className="mt-4 cursor-pointer"
+              size="sm"
             >
               Go Back
-            </button>
+            </Button>
           </div>
         </div>
       )}
 
-      {/* ================================= */}
-      {/* MESSAGE AREA */}
-      {/* ================================= */}
-
-      <main className="flex-1 overflow-y-auto px-3 py-4 sm:px-6 sm:py-6">
-        <div className="mx-auto max-w-5xl">
-          {loading ? (
-            /* Loading */
-
-            <div className="space-y-4">
-              <div className="flex justify-start">
-                <div className="h-16 w-48 animate-pulse rounded-2xl bg-gray-200" />
-              </div>
-
-              <div className="flex justify-end">
-                <div className="h-14 w-56 animate-pulse rounded-2xl bg-gray-200" />
-              </div>
-
-              <div className="flex justify-start">
-                <div className="h-20 w-64 animate-pulse rounded-2xl bg-gray-200" />
-              </div>
-            </div>
-          ) : messages.length === 0 ? (
-            /* Empty state */
-
-            <div className="flex min-h-[60vh] items-center justify-center">
-              <div className="max-w-sm text-center">
-                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-2xl">
-                  💬
+      {/* Messages area */}
+      {!error && (
+        <main className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
+          <div className="mx-auto max-w-5xl">
+            {loading ? (
+              <div className="space-y-4">
+                <div className="flex justify-start">
+                  <div className="h-14 w-48 animate-pulse rounded-2xl bg-muted" />
                 </div>
-
-                <h2 className="text-lg font-semibold">Start the discussion</h2>
-
-                <p className="mt-2 text-sm leading-6 text-gray-500">
-                  Ask questions, share ideas, and discuss the course with your
-                  instructor and classmates.
-                </p>
+                <div className="flex justify-end">
+                  <div className="h-12 w-56 animate-pulse rounded-2xl bg-muted" />
+                </div>
+                <div className="flex justify-start">
+                  <div className="h-16 w-64 animate-pulse rounded-2xl bg-muted" />
+                </div>
               </div>
-            </div>
-          ) : (
-            /* Messages */
+            ) : messages.length === 0 ? (
+              <div className="flex min-h-[50vh] items-center justify-center">
+                <div className="max-w-sm text-center">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <Icons.MessageSquare className="w-6 h-6" />
+                  </div>
+                  <h2 className="text-base font-bold text-foreground">Start the discussion</h2>
+                  <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                    Ask questions, share ideas, and connect with your instructor and fellow classmates in real time.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3 sm:space-y-4">
+                {messages.map((message) => {
+                  const senderId = getId(message.sender?._id);
+                  const isOwnMessage = senderId === currentUserId;
 
-            <div className="space-y-3 sm:space-y-4">
-              {messages.map((message) => {
-                const senderId = getId(message.sender?._id);
-
-                const isOwnMessage = senderId === currentUserId;
-
-                return (
-                  <div
-                    key={message._id}
-                    className={`flex ${
-                      isOwnMessage ? "justify-end" : "justify-start"
-                    }`}
-                  >
+                  return (
                     <div
-                      className={`max-w-[85%] px-4 py-3 sm:max-w-[70%] ${
-                        isOwnMessage
-                          ? "rounded-2xl rounded-br-md bg-blue-600 text-white"
-                          : "rounded-2xl rounded-bl-md bg-white text-gray-900 shadow-sm"
+                      key={message._id}
+                      className={`flex ${
+                        isOwnMessage ? "justify-end" : "justify-start"
                       }`}
                     >
-                      {/* Other user's name */}
-
-                      {!isOwnMessage && (
-                        <p className="mb-1 text-xs font-semibold text-blue-600">
-                          {message.sender?.name || "User"}
-                        </p>
-                      )}
-
-                      {/* Message */}
-
-                      <p className="whitespace-pre-wrap break-words text-sm leading-5">
-                        {message.content}
-                      </p>
-
-                      {/* Time */}
-
-                      <p
-                        className={`mt-1 text-[10px] ${
-                          isOwnMessage ? "text-blue-100" : "text-gray-400"
+                      <div
+                        className={`max-w-[85%] px-4 py-2.5 sm:max-w-[70%] rounded-2xl ${
+                          isOwnMessage
+                            ? "rounded-br-xs bg-primary text-primary-foreground shadow-xs"
+                            : "rounded-bl-xs bg-card border border-border/60 text-foreground shadow-xs"
                         }`}
                       >
-                        {new Date(message.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
+                        {!isOwnMessage && (
+                          <p className="mb-0.5 text-[11px] font-bold text-primary">
+                            {message.sender?.name || "Student"}
+                          </p>
+                        )}
+
+                        <p className="whitespace-pre-wrap break-words text-xs md:text-sm leading-relaxed">
+                          {message.content}
+                        </p>
+
+                        <p
+                          className={`mt-1 text-[10px] ${
+                            isOwnMessage
+                              ? "text-primary-foreground/70 text-right"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {new Date(message.createdAt).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-
-              <div ref={bottomRef} />
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* ================================= */}
-      {/* INPUT */}
-      {/* ================================= */}
-
-      <footer className="shrink-0 border-t bg-white px-3 py-3 sm:px-6">
-        <div className="mx-auto max-w-5xl">
-          <div className="flex items-end gap-2">
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={
-                chatReady ? "Write a message..." : "Connecting to chat..."
-              }
-              disabled={!socketConnected || !chatReady}
-              rows={1}
-              className="max-h-32 min-h-[44px] flex-1 resize-none rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
-            />
-
-            <button
-              onClick={sendMessage}
-              disabled={
-                !content.trim() || !socketConnected || !chatReady || sending
-              }
-              className="rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
-            >
-              {sending ? "Sending..." : "Send"}
-            </button>
+                  );
+                })}
+                <div ref={bottomRef} />
+              </div>
+            )}
           </div>
+        </main>
+      )}
 
-          <p className="mt-1 hidden text-xs text-gray-400 sm:block">
-            Press Enter to send • Shift + Enter for a new line
-          </p>
-        </div>
-      </footer>
+      {/* Input bar */}
+      {!error && (
+        <footer className="shrink-0 border-t border-border/60 bg-card px-4 py-3 sm:px-6">
+          <div className="mx-auto max-w-5xl">
+            <div className="flex items-end gap-2">
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={
+                  chatReady ? "Type your message..." : "Connecting to chat..."
+                }
+                disabled={!socketConnected || !chatReady}
+                rows={1}
+                className="max-h-28 min-h-[42px] flex-1 resize-none rounded-xl border border-input bg-background px-4 py-2.5 text-xs md:text-sm outline-none transition focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50"
+              />
+
+              <Button
+                onClick={sendMessage}
+                disabled={
+                  !content.trim() || !socketConnected || !chatReady || sending
+                }
+                className="cursor-pointer shadow-xs h-[42px] px-4"
+              >
+                <Icons.Send className="w-4 h-4 mr-1 sm:mr-1.5" />
+                <span className="hidden sm:inline">Send</span>
+              </Button>
+            </div>
+
+            <p className="mt-1 hidden text-[11px] text-muted-foreground sm:block">
+              Press Enter to send • Shift + Enter for a new line
+            </p>
+          </div>
+        </footer>
+      )}
     </div>
   );
 };

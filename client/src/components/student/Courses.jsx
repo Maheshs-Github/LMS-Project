@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Friern from "../../assets/FrierenSama.jpg";
 import Icons from "@/utils/Icons";
 import CourseSkeleton from "./courseSkeleton";
 import { useGet } from "@/hooks/useGet";
@@ -24,12 +23,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { courseCategories } from "@/resources/Data";
-import {
-  ArrowLeft,
-  ArrowLeftSquare,
-  ArrowRight,
-  ArrowRightSquare,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const Courses = ({ isShow = true }) => {
   const location = useLocation();
@@ -56,7 +50,7 @@ const Courses = ({ isShow = true }) => {
     },
   ]);
   const page = 1,
-    limit = 3;
+    limit = 6;
   const [curPage, setCurPage] = useState(1);
   const { loading, data, refetch } = useGet(
     `course?searchValue=${appliedFilters.search}&sortBy=${appliedFilters.sort}&category=${appliedFilters.category}&page=${curPage}&limit=${limit}`,
@@ -80,12 +74,6 @@ const Courses = ({ isShow = true }) => {
     }));
     setCourses(formattedData);
   }, [data]);
-  // useEffect(() => {
-  //   console.log("courses: ", courses);
-  // }, [courses]);
-  // useEffect(()=>{
-  //   refetch();
-  // },[searchValue])
 
   const initials = (Name) => {
     return Name?.split(" ")
@@ -108,113 +96,127 @@ const Courses = ({ isShow = true }) => {
   };
 
   const handleChnage = (e) => {
-    // setSearch(e.target.value);
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
   const handleSearch = () => {
-    // setSearchValue(search);
-    // setCategoryValue(category);
-    // setSortValue(sort);
-
     setAppliedFilters(filters);
+    setCurPage(1);
   };
   const handleReset = () => {
     setFilters({
       search: "",
-      category: "",
+      category: "All",
       sort: "",
     });
-
     setAppliedFilters({
       search: "",
-      category: "",
+      category: "All",
       sort: "",
     });
+    setCurPage(1);
   };
   const paginationData = data?.data?.pagination;
 
-    const handleExplore=()=>{
-    navigate("/courses")
-  }
+  const handleExplore = () => {
+    navigate("/courses");
+  };
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between gap-4">
-      <h3 className="w-full text-center font-bold text-3xl mb-6">Courses</h3>
-      <button className="bg-black text-white font-semibold py-2 h-fit px-4 rounded-lg whitespace-nowrap cursor-pointer" onClick={handleExplore}>View All</button>
-      </div>
-
-      {isShow && (
-        <div className="grid grid-cols-12 gap-2 w-full my-6">
-          <div className="relative sm:col-span-6 col-span-12">
-            <Icons.Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              className=" p-4 pl-10"
-              placeholder="Search courses..."
-              onChange={handleChnage}
-              value={filters.search}
-              name="search"
-            />
-          </div>
-
-          <div className="flex gap-4 sm:col-span-4 col-span-12 w-full">
-            <Select
-              value={filters.category}
-              onValueChange={(value) =>
-                setFilters((prev) => ({ ...prev, category: value }))
-              }
-              className=" w-full"
-            >
-              <SelectTrigger className={"w-full"}>
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-
-              <SelectContent>
-                <SelectItem value="All">All</SelectItem>
-                {courseCategories.map((cate) => (
-                  <SelectItem value={cate.value} key={cate.value}>
-                    {cate.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={filters.sort}
-              onValueChange={(value) =>
-                setFilters((prev) => ({ ...prev, sort: value }))
-              }
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Sort By" />
-              </SelectTrigger>
-
-              <SelectContent>
-                <SelectItem value="newest">Newest</SelectItem>
-
-                <SelectItem value="price-low">Price Low → High</SelectItem>
-
-                <SelectItem value="price-high">Price High → Low</SelectItem>
-
-                <SelectItem value="rating">Highest Rated</SelectItem>
-              </SelectContent>
-            </Select>
+    <div className="w-full space-y-6">
+      {/* Section Header (when shown as featured courses on home) */}
+      {!isShow && (
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="font-bold text-2xl md:text-3xl tracking-tight text-foreground">
+              Featured Courses
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Top-rated programs chosen by thousands of learners
+            </p>
           </div>
           <button
-            className="p-1 bg-black text-white font-semibold cursor-pointer  rounded-xl sm:col-span-1 col-span-12"
-            onClick={handleSearch}
+            className="text-sm font-semibold text-primary hover:underline cursor-pointer whitespace-nowrap"
+            onClick={handleExplore}
           >
-            Search
-          </button>
-          <button
-            className="p-1 bg-red-700 text-white font-semibold cursor-pointer  rounded-xl sm:col-span-1 col-span-12"
-            onClick={handleReset}
-          >
-            Reset
+            View All →
           </button>
         </div>
       )}
 
-      <div className="grid grid-cols-4 gap-10">
+      {/* Filter Bar */}
+      {isShow && (
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-6">
+          {/* Search */}
+          <div className="relative flex-1 min-w-[180px]">
+            <Icons.Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              className="pl-9"
+              placeholder="Search courses..."
+              onChange={handleChnage}
+              value={filters.search}
+              name="search"
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            />
+          </div>
+
+          {/* Category */}
+          <Select
+            value={filters.category}
+            onValueChange={(value) =>
+              setFilters((prev) => ({ ...prev, category: value }))
+            }
+          >
+            <SelectTrigger className="w-full sm:w-44">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All Categories</SelectItem>
+              {courseCategories.map((cate) => (
+                <SelectItem value={cate.value} key={cate.value}>
+                  {cate.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Sort */}
+          <Select
+            value={filters.sort}
+            onValueChange={(value) =>
+              setFilters((prev) => ({ ...prev, sort: value }))
+            }
+          >
+            <SelectTrigger className="w-full sm:w-40">
+              <SelectValue placeholder="Sort By" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest</SelectItem>
+              <SelectItem value="price-low">Price: Low → High</SelectItem>
+              <SelectItem value="price-high">Price: High → Low</SelectItem>
+              <SelectItem value="rating">Highest Rated</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Action buttons */}
+          <div className="flex gap-2">
+            <button
+              className="flex-1 sm:flex-none px-5 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={handleSearch}
+            >
+              Search
+            </button>
+            <button
+              className="flex-1 sm:flex-none px-5 py-2 bg-destructive/10 text-destructive text-sm font-semibold rounded-lg cursor-pointer hover:bg-destructive/20 transition-colors border border-destructive/20"
+              onClick={handleReset}
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Course Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {!loading
           ? courses?.map((course, index) => {
               const isEnrolled = course?.enrolledStudents?.some(
@@ -222,71 +224,70 @@ const Courses = ({ isShow = true }) => {
               );
               return (
                 <Card
-                  className="relative mx-auto w-full max-w-sm pt-0 col-span-1"
+                  className="course-card relative mx-auto w-full pt-0 overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300"
                   key={index}
                 >
-                  <div className="absolute inset-0 z-30 aspect-video bg-black/35" />
+                  {/* Thumbnail overlay */}
+                  <div className="absolute inset-0 z-30 aspect-video bg-black/20" />
                   <img
                     src={course?.img ? course.img : undefined}
-                    alt="Event cover"
-                    className="relative z-20 aspect-video w-full object-cover  dark:brightness-40"
+                    alt={course?.name || "Course thumbnail"}
+                    className="relative z-20 aspect-video w-full object-cover"
                   />
-                  <CardHeader className={"flex flex-col gap-2"}>
+                  <CardHeader className={"flex flex-col gap-2 pt-3"}>
                     <CardTitle
-                      className={"text-lg truncate font-semibold w-[96%]"}
+                      className={"text-base font-semibold leading-snug line-clamp-2"}
                     >
                       {course?.name}
                     </CardTitle>
-                    <div className="flex gap-0.5 justify-between w-full items-center">
-                      <div className="flex gap-2 items-center">
+                    <div className="flex gap-2 justify-between w-full items-center">
+                      <div className="flex gap-1.5 items-center">
                         {course?.instructorImg ? (
                           <img
                             src={course?.instructorImg ?? ""}
-                            className="rounded-full w-8 h-8 "
+                            className="rounded-full w-7 h-7 object-cover"
                             alt=""
                           />
                         ) : (
-                          <div className="rounded-full w-8 h-8 flex justify-center gap-1 items-center bg-amber-600 text-white font-semibold">
+                          <div className="rounded-full w-7 h-7 flex justify-center items-center bg-amber-500 text-white text-xs font-bold shrink-0">
                             {initials(course?.instructorName)}
                           </div>
                         )}
-                        <h4 className="font-medium text-base capitalize">
+                        <span className="text-xs text-muted-foreground font-medium truncate max-w-24 capitalize">
                           {course?.instructorName}
-                        </h4>
+                        </span>
                       </div>
-                      <Badge
-                        variant="secondary"
-                        className={`${levelStyles[course?.level]} p-3 text-sm `}
-                      >
-                        {course?.level}
-                      </Badge>
+                      {course?.level && (
+                        <Badge
+                          variant="secondary"
+                          className={`${levelStyles[course?.level]} px-2 py-0.5 text-xs shrink-0`}
+                        >
+                          {course?.level}
+                        </Badge>
+                      )}
                     </div>
-                    <div className="flex items-center gap-4 font-semibold">
-                      <div className="flex items-center gap-1 text-lg">
-                        <Icons.Rupee size={18} />
-                        {course?.price}
+                    <div className="flex items-center gap-3 text-sm font-semibold">
+                      <div className="flex items-center gap-0.5">
+                        <Icons.Rupee size={15} />
+                        <span>{course?.price}</span>
                       </div>
-
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 text-muted-foreground font-normal">
                         <Icons.Star
-                          size={16}
+                          size={13}
                           className="fill-yellow-400 text-yellow-400"
                         />
-
-                        <span>
+                        <span className="font-medium text-foreground">
                           {course?.averageRating?.toFixed(1) || "0.0"}
                         </span>
-
-                        <span className="text-muted-foreground text-sm">
+                        <span className="text-xs">
                           ({course?.reviewCount || 0})
                         </span>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardFooter>
-
+                  <CardFooter className="pt-0 pb-4">
                     <Button
-                      className="w-full cursor-pointer"
+                      className="w-full cursor-pointer text-sm font-semibold"
                       onClick={() =>
                         !isEnrolled
                           ? handleEnroll(course?._id)
@@ -299,29 +300,35 @@ const Courses = ({ isShow = true }) => {
                 </Card>
               );
             })
-          : Array.from({ length: 4 }).map((_, i) => <CourseSkeleton key={i} />)}
+          : Array.from({ length: 6 }).map((_, i) => <CourseSkeleton key={i} />)}
       </div>
+
+      {/* Pagination */}
       {isShow && (
-        <div className="flex justify-end items-center gap-3 my-6 ">
-          <div>
-            <div className="flex items-center gap-4 my-3">
-              <button
-                className={`bg-black text-white font-semibold p-2 rounded-xl cursor-pointer disabled:bg-gray-200 disabled:cursor-not-allowed`}
-                onClick={() => setCurPage(curPage - 1)}
-                disabled={curPage == 1}
-              >
-                <ArrowLeft />
-              </button>
-              <p className="text-xl">{curPage}</p>
-              <button
-                className={`bg-black text-white font-semibold p-2 rounded-xl cursor-pointer disabled:bg-gray-200 disabled:cursor-not-allowed`}
-                onClick={() => setCurPage(curPage + 1)}
-                disabled={curPage == paginationData?.totalPages}
-              >
-                <ArrowRight />
-              </button>
-            </div>
-            <p>{`Showing ${limit * paginationData?.currentPage - limit + 1} - ${limit * paginationData?.currentPage} out of total ${paginationData?.totalCourses} Courses`}</p>
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mt-8">
+          <p className="text-sm text-muted-foreground">
+            {paginationData
+              ? `Showing ${limit * paginationData?.currentPage - limit + 1}–${Math.min(limit * paginationData?.currentPage, paginationData?.totalCourses)} of ${paginationData?.totalCourses} courses`
+              : "Loading..."}
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              className="p-2 rounded-lg border bg-background hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              onClick={() => setCurPage(curPage - 1)}
+              disabled={curPage === 1}
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <span className="px-3 py-1 rounded-lg border bg-primary text-primary-foreground text-sm font-semibold min-w-8 text-center">
+              {curPage}
+            </span>
+            <button
+              className="p-2 rounded-lg border bg-background hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              onClick={() => setCurPage(curPage + 1)}
+              disabled={curPage === paginationData?.totalPages}
+            >
+              <ArrowRight size={18} />
+            </button>
           </div>
         </div>
       )}

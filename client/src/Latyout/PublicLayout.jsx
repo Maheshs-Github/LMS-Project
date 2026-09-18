@@ -1,20 +1,19 @@
-import Home from '@/pages/Home'
-import { Login } from '@/pages/Login'
-import { SignUp } from '@/pages/SignUp'
-import React from 'react'
-import { Outlet, Route, Routes } from 'react-router-dom'
+import React from "react";
+import { Outlet, useLocation } from "react-router-dom";
+import Navbar from "@/components/Navbar";
 
 const PublicLayout = () => {
-  return (
-    <div>
-            {/* <Routes>
-        <Route path='/' element={<Home />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/signUp' element={<SignUp />} />
-      </Routes> */}
-      <Outlet />
-    </div>
-  )
-}
+  const location = useLocation();
+  const isAuthPage = location.pathname === "/auth";
 
-export default PublicLayout
+  return (
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
+      {!isAuthPage && <Navbar />}
+      <main className="flex-1 w-full">
+        <Outlet />
+      </main>
+    </div>
+  );
+};
+
+export default PublicLayout;

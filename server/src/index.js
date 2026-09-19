@@ -4,14 +4,13 @@ import { app } from "./app.js";
 import createDefaultAdmin from "../utils/createDefaultAdmin.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { ApiError } from "../utils/ApiError.js";
-import jwt from "jsonwebtoken";
-import { User } from "../models/user.model.js";
 import { initializeSocket } from "../socket/index.js";
+import { connectRedis } from "../config/redis.js";
 
 connDB()
   .then(() => {
     console.log("DB is Connected Successfully ");
+    connectRedis();
     createDefaultAdmin();
     const httpServer = createServer(app);
     const io = new Server(httpServer, {
@@ -22,8 +21,6 @@ connDB()
     });
 
     initializeSocket(io);
-
-
 
     httpServer.listen(process.env.PORT || 5000, () =>
       console.log(`Connected on the POrt ${process.env.PORT}`),

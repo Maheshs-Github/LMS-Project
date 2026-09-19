@@ -59,7 +59,7 @@ async function seedDatabase() {
     // 1. Create Users
     // ─────────────────────────────────────────────────────────────
     console.log("👤 Creating Users (Admin, Instructors, Students)...");
-    const hashedPassword = await bcrypt.hash("password123", 10);
+    const hashedPassword = "password123";
     const adminPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || "admin123", 10);
 
     const adminUser = await User.create({

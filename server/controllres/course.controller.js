@@ -8,6 +8,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Progress } from "../models/Progress.model.js";
+import redisClient from "../config/redis.js";
 
 const createCourse = asyncHandler(async (req, res) => {
   // console.log("Body: ",req.body);
@@ -213,7 +214,27 @@ const getCourseLectures = asyncHandler(async (req, res) => {
 
 const getAllCourses = asyncHandler(async (req, res) => {
   const { searchValue, sortBy, category, page = 1, limit = 2 } = req.query;
-  // console.log("searchValue: ",searchValue," sortBy: ",sortBy);
+  const cacheKey = `course:catalog:${JSON.stringify({
+    searchValue: searchValue || "",
+    sortBy: sortBy,
+    category: category || "All",
+    page: Number(page),
+    limit: Number(limit),
+  })}`;
+
+  const cachedCourses = await redisClient.get(cacheKey);
+
+  if (cachedCourses) {
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          JSON.parse(cachedCourses),
+          "Courses has been fetched succcessfully",
+        ),
+      );
+  }
   const matchStage = {};
   matchStage.isPublished = true;
 
@@ -258,55 +279,8 @@ const getAllCourses = asyncHandler(async (req, res) => {
   const currentPage = Number(page);
   const pageLimit = Number(limit);
   const skip = (currentPage - 1) * pageLimit;
-
-  // const courses = await Course.find().populate(
-  //   "instructor",
-  //   "-__v -updatedAt -createdAt -password",
-  // );
-
-  // const courseReviewData = await Course.aggregate([
-  //   {
-  //     $lookup: {
-  //       from: "reviewandratings",
-  //       localField: "_id",
-  //       foreignField: "courseId",
-  //       as: "courseReviews",
-  //     },
-  //   },
-  // ]);
-  // // console.log("courseReviewData: ", courseReviewData);
-  // const reviewData = courseReviewData.map((d1) => {
-  //   let ratingtotal = 0;
-  //   const courserevlen = d1.courseReviews.length;
-
-  //   // console.log("len: ", courserevlen);
-  //   // console.log("courseReviews: ",d1.courseReviews)
-  //   d1?.courseReviews.forEach((d2) => (ratingtotal += Number(d2.rating)));
-  //   // console.log("ratingtotal: ",ratingtotal)
-  //   return {
-  //     courseId: d1._id,
-  //     avg: courserevlen > 0 ? Number(ratingtotal / courserevlen) : 0,
-  //     reviewCount: courserevlen,
-  //   };
-  // });
-  // // console.log("data: ",data)
-  // if (!courses) throw new ApiError(404, "No Courses not Found");
-  // // console.log("courses: ", courses);
-
-  // const ans = courses.map((course) => {
-  //   const courseReview = reviewData.find(
-  //     (d) => d.courseId.toString() === course._id.toString(),
-  //   );
-  //   // const reData=data.find( (d) => console.log("d: ",d))
-  //   return {
-  //     ...course.toObject(),
-  //     averageRating: courseReview?.avg || 0,
-  //     reviewCount: courseReview?.reviewCount || 0,
-  //   };
-  // });
   const totalCourses = await Course.find(matchStage).countDocuments();
-  // console.log("totalCourse: ",totalCourses);
-  // let's see how we can do more effeciently
+
   const courseReviewData = await Course.aggregate([
     {
       $match: matchStage,
@@ -367,24 +341,27 @@ const getAllCourses = asyncHandler(async (req, res) => {
       $limit: pageLimit,
     },
   ]);
+  const responseData = {
+    courseReviewData,
+    pagination: {
+      totalCourses,
+      totalPages: pageLimit > 0 ? Math.ceil(totalCourses / pageLimit) : 0,
+      currentPage,
+      pageLimit,
+    },
+  };
 
-  // console.log("courseReviewData: ", courseReviewData);
-  // console.log("ans: ", ans);
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        courseReviewData,
-        pagination: {
-          totalCourses,
-          totalPages: pageLimit > 0 ? Math.ceil(totalCourses / pageLimit) : 0,
-          currentPage,
-          pageLimit,
-        },
-      },
-      "Courses has been succcessfully",
-    ),
-  );
+  await redisClient.set(
+  cacheKey,
+  JSON.stringify(responseData),
+  {
+    EX: 300,
+  },
+);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200,responseData,"Courses has been succcessfully"));
 });
 
 const courseEnroll = asyncHandler(async (req, res) => {

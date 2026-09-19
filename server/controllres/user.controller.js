@@ -75,7 +75,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   if (!isPasswordMatched) throw new ApiError(401, "Password is not Matched");
 
-  // console.log("isPasswordMatched: ",isPasswordMatched)
+// console.log("isPasswordMatched: ",isPasswordMatched)
   const Token = await loggedInUser.generateToken();
 
   console.log("Token: ", Token);

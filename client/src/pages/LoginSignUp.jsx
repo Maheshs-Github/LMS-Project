@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Login } from "./Login";
 import { SignUp } from "./SignUp";
 import Icons from "@/utils/Icons";
+import { Link } from "react-router-dom";
 
 export function TabsDemo() {
   return (
@@ -31,10 +32,10 @@ const LoginSignUp = () => {
         <div className="pointer-events-none absolute -bottom-20 -right-20 h-64 w-64 rounded-full bg-indigo-500/20 blur-3xl" />
 
         <div className="relative z-10 flex flex-col items-center gap-6 text-center max-w-sm">
-          <div className="flex items-center gap-3">
-            <Icons.School size={40} className="text-blue-300" />
+          <Link className="flex items-center gap-3" to="/">
+            <Icons.School size={40} className="text-blue-300 cursor-pointer"  />
             <span className="text-3xl font-extrabold tracking-tight">E-Learning</span>
-          </div>
+          </Link>
 
           <h2 className="text-2xl font-bold leading-snug">
             Start Learning Today
@@ -67,10 +68,10 @@ const LoginSignUp = () => {
       {/* ── Right Panel – Form ── */}
       <div className="flex flex-1 flex-col items-center justify-center px-4 py-10 sm:px-10 bg-background">
         {/* Mobile brand */}
-        <div className="flex lg:hidden items-center gap-2 mb-8">
+        <Link className="flex lg:hidden items-center gap-2 mb-8 cursor-pointer" to="/">
           <Icons.School size={28} className="text-primary" />
           <span className="text-2xl font-extrabold">E-Learning</span>
-        </div>
+        </Link>
 
         <div className="w-full max-w-md">
           <div className="mb-6 text-center">

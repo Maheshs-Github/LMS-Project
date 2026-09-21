@@ -5,7 +5,7 @@ import { User } from "../models/user.model.js";
 import { Course } from "../models/course.model.js";
 import { Lecture } from "../models/lecture.model.js";
 import { Payment } from "../models/payment.model.js";
-import { Progress } from "../models/progress.model.js";
+import { Progress } from "../models/Progress.model.js";
 import { ReviewAndRating } from "../models/review&rating.model.js";
 import { Certificate } from "../models/certification.model.js";
 import { Notification } from "../models/notification.model.js";

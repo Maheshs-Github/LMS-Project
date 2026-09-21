@@ -6,6 +6,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import createNotification from "../services/notification.service.js";
+import { invalidateCourseCatalogCache } from "../utils/cache.js";
 
 const getAdminDashboard = asyncHandler(async (req, res) => {
   const [
@@ -1073,6 +1074,8 @@ const updateCourseStatus = asyncHandler(async (req, res) => {
 
   console.log("updatedCourse: ", updatedCourse);
   if (!updatedCourse) throw new ApiError(404, "Course not found");
+
+  await invalidateCourseCatalogCache();
 
   await createNotification({
     recipient: updatedCourse?.instructor,

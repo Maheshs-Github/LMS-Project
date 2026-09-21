@@ -3,12 +3,13 @@ import { enrolledCourses, loggedOut, loginUser, registerUser, updateUser } from 
 import { verifiedUser } from "../middlewares/auth.middlewares.js";
 import { me } from "../middlewares/me.middlewares.js";
 import { upload } from "../middlewares/multer.middlewares.js";
+import { registerRateLimiter,loginRateLimiter } from "../middlewares/rateLimiter.js";
 
 
 const router=Router();
 
-router.post("/register",registerUser);
-router.post("/login",loginUser);
+router.post("/login", loginRateLimiter, loginUser);
+router.post("/register", registerRateLimiter, registerUser);
 router.post("/logout",verifiedUser,loggedOut);
 router.get("/me",verifiedUser,me);
 router.patch("/profile",verifiedUser, upload.single("photoUrl") ,updateUser)

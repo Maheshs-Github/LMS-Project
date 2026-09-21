@@ -1,16 +1,17 @@
 import "./env.js";
 import { connDB } from "../db/index.js";
-import { app } from "./app.js";
+import { connectRedis } from "../config/redis.js";
 import createDefaultAdmin from "../utils/createDefaultAdmin.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { initializeSocket } from "../socket/index.js";
-import { connectRedis } from "../config/redis.js";
 
 connDB()
-  .then(() => {
+  .then(async() => {
     console.log("DB is Connected Successfully ");
     connectRedis();
+        // Load app only after Redis is connected
+    const { app } = await import("./app.js");
     createDefaultAdmin();
     const httpServer = createServer(app);
     const io = new Server(httpServer, {

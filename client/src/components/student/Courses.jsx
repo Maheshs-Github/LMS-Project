@@ -82,7 +82,7 @@ const Courses = ({ isShow = true }) => {
       ?.toUpperCase();
   };
   const handleEnroll = (id) => {
-    navigate(user ? `/student/course/${id}` : `course/${id}`);
+    navigate(user ? `/student/course/${id}` : `/course/${id}`);
   };
 
   const handleContinueLearning = (courseId) => {

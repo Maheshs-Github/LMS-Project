@@ -76,6 +76,8 @@ const NewCourse = () => {
     setDescription(c.description ?? "");
   }, [data, id]);
 
+  useEffect(()=>console.log("courseData: ",courseData),[courseData])
+
   const handleSubmit = async () => {
     const formData = new FormData();
     formData.append("title", courseData.title);
@@ -87,6 +89,7 @@ const NewCourse = () => {
     if (courseData.thumbnail instanceof File) {
       formData.append("thumbnail", courseData.thumbnail);
     }
+    console.log("formData: ",formData)
     try {
       const res = await mutate({
         url: !id ? `course/` : `course/${courseData?._id}`,

@@ -7,8 +7,9 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
-import { Progress } from "../models/Progress.model.js";
 import redisClient from "../config/redis.js";
+import { invalidateCourseCatalogCache } from "../utils/cache.js";
+import { Progress } from "../models/Progress.model.js";
 
 const createCourse = asyncHandler(async (req, res) => {
   // console.log("Body: ",req.body);
@@ -45,15 +46,17 @@ const createCourse = asyncHandler(async (req, res) => {
     instructor: req?.user?.id,
   });
 
-  if (!createCourse)
+  if (!createdCourse)
     throw new ApiError(400, "There was Error while crating the Course");
+
+  await invalidateCourseCatalogCache();
 
   return res
     .status(200)
     .json(
       new ApiResponse(
         200,
-        createCourse,
+        createdCourse,
         "Course has been created successfully",
       ),
     );
@@ -130,7 +133,7 @@ const getCourseById = asyncHandler(async (req, res) => {
 });
 
 const updateCourse = asyncHandler(async (req, res) => {
-  // console.log("body: ", req.body);
+  console.log("body: ", req.body);
   const { title, subTitle, category, level, price, description } = req.body;
   // console.log("req User: ", req?.user);
   const { courseId } = req.params;
@@ -178,6 +181,8 @@ const updateCourse = asyncHandler(async (req, res) => {
   if (!updatedCourse)
     throw new ApiError(400, "There was Error while updating the Course");
 
+  await invalidateCourseCatalogCache();
+
   return res
     .status(200)
     .json(
@@ -222,7 +227,13 @@ const getAllCourses = asyncHandler(async (req, res) => {
     limit: Number(limit),
   })}`;
 
-  const cachedCourses = await redisClient.get(cacheKey);
+  let cachedCourses;
+  try {
+     cachedCourses = await redisClient.get(cacheKey);
+  } catch (error) {
+    console.log("REDIS FAILED ",error);
+  }
+
 
   if (cachedCourses) {
     return res
@@ -231,7 +242,7 @@ const getAllCourses = asyncHandler(async (req, res) => {
         new ApiResponse(
           200,
           JSON.parse(cachedCourses),
-          "Courses has been fetched succcessfully",
+          "Courses has been fetched succcessfully from redis cache",
         ),
       );
   }
@@ -350,18 +361,21 @@ const getAllCourses = asyncHandler(async (req, res) => {
       pageLimit,
     },
   };
-
-  await redisClient.set(
+  try {
+     await redisClient.set(
   cacheKey,
   JSON.stringify(responseData),
   {
     EX: 300,
   },
-);
+); 
+  } catch (error) {
+  console.log("REDIS FAILED: ",error);
+  }
 
   return res
     .status(200)
-    .json(new ApiResponse(200,responseData,"Courses has been succcessfully"));
+    .json(new ApiResponse(200,responseData,"Courses has been succcessfully from Mongodb"));
 });
 
 const courseEnroll = asyncHandler(async (req, res) => {
@@ -468,6 +482,8 @@ const updateCourseStatus = asyncHandler(async (req, res) => {
       "Course not found or you are not authorized to update it.",
     );
   }
+
+  await invalidateCourseCatalogCache();
 
   return res
     .status(200)

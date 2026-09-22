@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import razorpay from "../config/razorpay.js";
 import { Course } from "../models/course.model.js";
 import { Payment } from "../models/payment.model.js";
-import { Progress } from "../models/Progress.model.js";
+import { Progress } from "../models/progress.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -36,8 +36,6 @@ const createOrder = asyncHandler(async (req, res) => {
     receipt,
   };
   const order = await razorpay.orders.create(options);
-
-  console.log("order: ", order);
 
   if (!order) throw new ApiError(500, "Failed to create the Razorpay order");
 
@@ -159,13 +157,12 @@ const verifyPayment = asyncHandler(async (req, res) => {
     session.endSession();
 
     await createNotification({
-      recipient:course?.instructor,
-      type:"enrolledment_successful",
-      title:"New Student Enrollment",
-      message:`${user?.name} enrolled to your course: ${course?.title}`,
-      relatedCourse:course?._id,
-    })
-
+      recipient: course?.instructor,
+      type: "enrolledment_successful",
+      title: "New Student Enrollment",
+      message: `${user?.name} enrolled to your course: ${course?.title}`,
+      relatedCourse: course?._id,
+    });
 
     return res
       .status(200)

@@ -14,19 +14,15 @@ export const initializeSocket = (socketServer) => {
 
   io.use(async (socket, next) => {
     try {
-      console.log("Socket Authentication has been Started");
       const cookie = socket?.handshake?.headers?.cookie;
-      console.log("Socket Cookie: ", cookie);
       const accessToken = cookie
         ?.split(";")
         ?.find((item) => item?.trim()?.startsWith("accessToken="))
         ?.split("=")[1];
-      console.log("accessToken: ", accessToken);
       if (!accessToken) throw new ApiError(401, "Unauthrized User");
 
       const decodedToken = jwt.verify(accessToken, process.env.TOKEN_KEY);
 
-      console.log("decodedToken: ", decodedToken);
 
       const user = await User.findById(decodedToken?._id).select(
         "-password -createdAt -updatedAt -__v",
@@ -47,7 +43,7 @@ export const initializeSocket = (socketServer) => {
     const userRoom = `user:${socket.user._id}`;
     socket.join(userRoom);
 
-    console.log("Joined user room:", userRoom);
+    // console.log("Joined user room:", userRoom);
 
     // Chat Socket connection
     socket.on("chat:join", async (courseId, acknowledge) => {
@@ -63,7 +59,7 @@ export const initializeSocket = (socketServer) => {
         }
         const courseRoom = `course:${courseId}`;
         socket.join(courseRoom);
-        console.log(`👥 ${socket.user._id} joined ${courseRoom}`);
+        // console.log(`👥 ${socket.user._id} joined ${courseRoom}`);
         acknowledge?.({ ok: true });
       } catch (error) {
         console.error("Error While Joining Chat: ", error);
@@ -93,7 +89,6 @@ export const initializeSocket = (socketServer) => {
           courseId,
           content,
         );
-        console.log("message", message);
         const courseRoom = `course:${courseId}`;
         // The sender may have submitted just as the room join completed.
         // Emit directly to it, then broadcast to the other room members.
@@ -113,7 +108,7 @@ export const initializeSocket = (socketServer) => {
 
       socket.leave(courseRoom);
 
-      console.log(`👋 ${socket.user._id} left ${courseRoom}`);
+      // console.log(`👋 ${socket.user._id} left ${courseRoom}`);
     });
 
     socket.on("disconnect", (reason) => {

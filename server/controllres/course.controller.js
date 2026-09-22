@@ -9,13 +9,10 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import redisClient from "../config/redis.js";
 import { invalidateCourseCatalogCache } from "../utils/cache.js";
-import { Progress } from "../models/Progress.model.js";
+import { Progress } from "../models/progress.model.js";
 
 const createCourse = asyncHandler(async (req, res) => {
-  // console.log("Body: ",req.body);
-  // console.log("File: ",req.file);
   const { title, subTitle, category, level, price, description } = req.body;
-  console.log("req User: ", req?.user);
   if (
     [title, subTitle, category, level, price, description].some(
       (field) => !field || field.trim() === "",
@@ -24,11 +21,7 @@ const createCourse = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
 
   const thumbnailPath = req.file.path;
-  console.log("thumbnailPath: ", thumbnailPath);
-
   const uploadedThumb = await uploadOnCloudinary(thumbnailPath);
-  console.log("photo fromCloud: ", uploadedThumb);
-
   if (!uploadedThumb.url)
     throw new ApiError(
       400,
@@ -66,7 +59,6 @@ const getMyCourses = asyncHandler(async (req, res) => {
   const instructorCourses = await Course.find({
     instructor: req.user?.id,
   }).select("title price isPublished status");
-  // console.log("instructorCourses: ",instructorCourses);
   if (instructorCourses.length === 0)
     throw new ApiError(404, "NO Courses Found ");
 
@@ -84,7 +76,6 @@ const getMyCourses = asyncHandler(async (req, res) => {
 const getCourseById = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
   if (!courseId) throw new ApiError(400, "Id is Missing");
-  console.log("courseId: ", courseId);
   const fetchedCourse = await Course.findOne({
     _id: courseId,
     // we are showing inthe student side so inructor matcjhing is commented for now
@@ -93,7 +84,6 @@ const getCourseById = asyncHandler(async (req, res) => {
     .populate("lectures", "-__v -updatedAt -createdAt -course")
     .populate("instructor", "name");
 
-  // console.log("fetchedCourse: ", fetchedCourse);
   if (!fetchedCourse) throw new ApiError(404, "Course not found");
 
   const courseReviewData = await Course.aggregate([
@@ -111,14 +101,12 @@ const getCourseById = asyncHandler(async (req, res) => {
       },
     },
   ]);
-  // console.log("courseReview: ", courseReviewData[0]?.courseReview);
   let courseRatingSum = 0,
     reviewCount = courseReviewData[0]?.courseReview?.length ?? 0;
   (courseReviewData[0]?.courseReview || []).forEach(
     (rData) => (courseRatingSum += Number(rData.rating)),
   );
 
-  // console.log("courseRatingSum: ",courseRatingSum," reviewCount: ",reviewCount, "hello")
 
   const courseAvgRating = reviewCount > 0 ? courseRatingSum / reviewCount : 0;
   return res
@@ -133,9 +121,7 @@ const getCourseById = asyncHandler(async (req, res) => {
 });
 
 const updateCourse = asyncHandler(async (req, res) => {
-  console.log("body: ", req.body);
   const { title, subTitle, category, level, price, description } = req.body;
-  // console.log("req User: ", req?.user);
   const { courseId } = req.params;
 
   const course = await Course.findOne({
@@ -155,10 +141,8 @@ const updateCourse = asyncHandler(async (req, res) => {
 
   if (req.file) {
     const thumbnailPath = req.file.path;
-    console.log("thumbnailPath: ", thumbnailPath);
 
     const uploadedThumb = await uploadOnCloudinary(thumbnailPath);
-    console.log("photo fromCloud: ", uploadedThumb);
 
     if (!uploadedThumb.url)
       throw new ApiError(
@@ -200,7 +184,6 @@ const getCourseLectures = asyncHandler(async (req, res) => {
 
   // const courseLectures = await Lecture.find({ course: courseId });
   const courseLectures = await Course.findById(courseId).populate("lectures");
-  console.log("couser lec: ", courseLectures);
   // if (!courseLectures.length ) throw new ApiError(404, "No Lectures Found");
   if (!courseLectures) throw new ApiError(404, "No Lectures Found");
 
@@ -218,7 +201,7 @@ const getCourseLectures = asyncHandler(async (req, res) => {
 });
 
 const getAllCourses = asyncHandler(async (req, res) => {
-  const { searchValue, sortBy, category, page = 1, limit = 2 } = req.query;
+  const { searchValue, sortBy, category, page = 1, limit = 10 } = req.query;
   const cacheKey = `course:catalog:${JSON.stringify({
     searchValue: searchValue || "",
     sortBy: sortBy,
@@ -381,7 +364,6 @@ const getAllCourses = asyncHandler(async (req, res) => {
 const courseEnroll = asyncHandler(async (req, res) => {
   const userId = req.user.id;
   const { courseId } = req.params;
-  console.log("courseId: ", courseId);
 
   if ([courseId, userId].some((field) => !field || field.trim() === ""))
     throw new ApiError(400, "CourseId and UserId both are required");

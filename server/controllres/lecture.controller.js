@@ -8,13 +8,10 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 const uploadLecture = asyncHandler(async (req, res) => {
   const { title} = req.body;
   const {courseId}=req.params;
-  console.log("Title: ", title);
-  console.log("req.file: ", req.file);
   if (!title || title.trim() === "")
     throw new ApiError(400, "Video Title is required");
   if (!req.file) throw new ApiError(400, "Video File is Missing ");
   const uploadFile = await uploadOnCloudinary(req.file.path);
-  console.log("Up;oaded file: ", uploadFile);
   const isCourseExist = await Course.findById(courseId);
   if (!isCourseExist) throw new ApiError(404, "Course is not found");
 
@@ -75,7 +72,6 @@ const updateLecture = asyncHandler(async (req, res) => {
   if (!updatedLecture)
     throw new ApiError(404, "Error while updating the Lecture");
 
-  console.log("updateLecture: ",updateLecture)
 
   return res
     .status(200)

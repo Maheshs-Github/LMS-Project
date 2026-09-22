@@ -7,7 +7,6 @@ const addReviewAndRating = asyncHandler(async (req, res) => {
   const userId = req.user?._id;
   const { courseId } = req.params;
   const { rating, review } = req.body;
-  // console.log("Hwllo");
 
   if ([courseId, review].some((field) => !field || field.trim() === ""))
     throw new ApiError(400, "CourseId , review  are required");
@@ -33,9 +32,6 @@ const addReviewAndRating = asyncHandler(async (req, res) => {
     });
   }
 
-  // console.log("courseId,rating,review: ", courseId, rating, review);
-
-  // console.log("addedReview: ", addedReview);
   if (!reviewData) throw new ApiError(500, "Could not able to add the review ");
 
   return res
@@ -50,7 +46,6 @@ const getReviewAndratingByCourUser=asyncHandler(async(req,res)=>{
     throw new ApiError(400,"Course Id is found");
 
   const fetchedReview=await ReviewAndRating.findOne({courseId,userId});
-  console.log("fetchedReview: ",fetchedReview)
 
   return res.status(200).json(new ApiResponse(200,fetchedReview,"User Given review  has been fetched "));
 })

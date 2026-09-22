@@ -33,14 +33,12 @@ export function Login() {
     setLoginData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
   const handleLogin = async () => {
-    console.log("loginData: ", loginData);
     try {
       const res = await mutate({
         url: `user/login`,
         method: "post",
         body: loginData,
       });
-      console.log("res: ", res);
       toast.success(res.message || "Logged In Successfully");
       Dispatch(setUser(res?.data?.User));
       setLoginData({

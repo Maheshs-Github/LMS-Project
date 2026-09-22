@@ -389,7 +389,6 @@ const getRecentActivity = asyncHandler(async (req, res) => {
       ]),
     ]);
 
-  console.log("recentCoursePublished: ", recentCoursePublished);
 
   return res.status(200).json(
     new ApiResponse(
@@ -414,7 +413,6 @@ const getUsers = asyncHandler(async (req, res) => {
     sortBy = "latest",
   } = req.query;
 
-  console.log("role: ", role);
   let matchStage = {},
     sortStage = {};
 
@@ -448,16 +446,15 @@ const getUsers = asyncHandler(async (req, res) => {
       },
     ];
   }
-  console.log("match: ", matchStage);
 
   switch (sortBy) {
     case "oldest": {
-      sortStage = { createdAt: 1 };
+      sortStage = { createdAt: 1, _id:1 };
       break;
     }
 
     default:
-      sortStage = { createdAt: -1 };
+      sortStage = { createdAt: -1 , _id:-1};
   }
 
   const currentPage = Number(page);
@@ -498,12 +495,6 @@ const getUsers = asyncHandler(async (req, res) => {
       },
     },
   ]);
-  // console.log(
-  //   "Users: ",
-  //   result[0].users,
-  //   " totalUsers: ",
-  //   result[0].totalUsers[0].count,
-  // );
 
   return res.status(200).json(
     new ApiResponse(
@@ -529,7 +520,6 @@ const getUser = asyncHandler(async (req, res) => {
 
   const user = await User.findById(userId).select("role");
 
-  console.log("user: ", user);
 
   if (!user) throw new ApiError(400, "User  not Found");
 
@@ -798,7 +788,6 @@ const getUser = asyncHandler(async (req, res) => {
     ]);
   }
 
-  console.log("user: ", userData);
   return res
     .status(200)
     .json(new ApiResponse(200, userData, "User data fetched successfully"));
@@ -857,7 +846,7 @@ const toggleBlockStatus = asyncHandler(async (req, res) => {
 const getAllCourses = asyncHandler(async (req, res) => {
   const {
     searchValue,
-    sort,
+    sortBy,
     category,
     status = "all",
     page = 1,
@@ -881,16 +870,16 @@ const getAllCourses = asyncHandler(async (req, res) => {
     ];
   }
   let sortStage = {};
-  switch (sort) {
+  switch (sortBy) {
     case "newest":
-      sortStage = { createdAt: -1 };
+      sortStage = { createdAt: -1,_id:-1 };
       break;
     case "oldest":
-      sortStage = { createdAt: 1 };
+      sortStage = { createdAt: 1 ,_id:1};
       break;
 
     default:
-      sortStage = { createdAt: -1 };
+      sortStage = { createdAt: -1 ,_id:-1};
   }
 
   if (status && status !== "all") {
@@ -953,7 +942,6 @@ const getAllCourses = asyncHandler(async (req, res) => {
       },
     },
   ]);
-  // console.log("courseData: ",courseData)
   const totalCourses = courseData[0]?.totalCourses[0]?.count ?? 0;
   const totalPages = pageLimit > 0 ? Math.ceil(totalCourses / pageLimit) : 0;
 
@@ -1072,7 +1060,6 @@ const updateCourseStatus = asyncHandler(async (req, res) => {
     },
   );
 
-  console.log("updatedCourse: ", updatedCourse);
   if (!updatedCourse) throw new ApiError(404, "Course not found");
 
   await invalidateCourseCatalogCache();

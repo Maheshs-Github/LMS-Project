@@ -25,8 +25,6 @@ const markAsRead = asyncHandler(async (req, res) => {
   const { notificationId } = req.params;
   if(!notificationId)
     throw new ApiError(400,"Notification id is not found");
-  console.log("notificationId: ",notificationId)
-  console.log("Before DB update");
   const updatedNotificationRead = await Notification.findOneAndUpdate(
     {
       recipient: req?.user?.id,
@@ -41,8 +39,6 @@ const markAsRead = asyncHandler(async (req, res) => {
       new: true,
     },
   );
-console.log("After DB update");
-console.log("updatedNotificationRead:", updatedNotificationRead);
 
   if (!updatedNotificationRead)
     throw new ApiError(404, "Notification not found");

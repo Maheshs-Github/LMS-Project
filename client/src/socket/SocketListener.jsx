@@ -13,15 +13,11 @@ const SocketListener = () => {
 
   useEffect(() => {
     const handleConnect = () => {
-      console.log("Socket Connect: ", socket?.id);
-//       socket.emit("chat:join", "6a82e61753a3c524b9accb69");
-//       socket.emit("chat:message", {
-//   courseId: "6a82e61753a3c524b9accb69",
-//   content: "Hello from Socket.IO",
+      // console.log("Socket Connect: ", socket?.id);
 // });
     };
     const handleDisconnect = (reason) => {
-      console.log("Socket Disconnceted: ", reason);
+      // console.log("Socket Disconnceted: ", reason);
     };
     const handleError = (error) => {
       console.log("Error while connecting: ", error?.message);
@@ -56,8 +52,6 @@ const SocketListener = () => {
 
   useEffect(() => {
     const handleNotification = (notification) => {
-      console.log("🔔 New Notification:", notification);
-
       dispatch(addNotifications(notification));
     };
 

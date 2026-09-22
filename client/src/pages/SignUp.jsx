@@ -36,8 +36,6 @@ export function SignUp() {
   };
 
   const handleSignUpSubmit = async () => {
-    // console.log("Data: ", signUpData);
-    // console.log("BASE_URL: ",BASE_URL)
     try {
       const res = await mutate({
         url: `user/register`,
@@ -45,8 +43,6 @@ export function SignUp() {
         body: signUpData,
       });
       toast.success(res.message || "User Sign Up Successfully");
-      console.log("res: ", res);
-      console.log("res: ", res?.data?.User);
       Dispatch(setUser(res?.data?.User));
 
       setSignUpData({

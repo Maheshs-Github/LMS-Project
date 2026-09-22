@@ -94,7 +94,7 @@ const CourseChat = () => {
       if (!courseId) return;
       try {
         setLoading(true);
-        const res = await axios.get(`${BASE_URL}chat/${courseId}`, {
+        const res = await axios.get(`${BASE_URL}message/${courseId}`, {
           withCredentials: true,
         });
         dispatch(setMessages(res.data?.data || []));
@@ -129,7 +129,7 @@ const CourseChat = () => {
 
     try {
       setSending(true);
-      socket.emit("chat:send", {
+      socket.emit("chat:message", {
         courseId,
         content: content.trim(),
       });

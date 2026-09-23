@@ -25,7 +25,7 @@ import Courses from "@/components/student/Courses";
 import UserManagement from "@/pages/admin/UserManagement";
 
 import UserDetails from "@/components/admin/UserDetails";
-import CourseManagement from "@/pages/admin/courseManagement";
+import CourseManagement from "@/pages/admin/CourseManagement";
 import AdminCourseDetails from "@/components/admin/AdminCourseDetails";
 import Notifications from "@/components/common/Notifications";
 import CourseChat from "@/pages/course/CourseChat";

@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Icons from "@/utils/Icons";
-import CourseSkeleton from "./courseSkeleton";
+import CourseSkeleton from "./CourseSkeleton";
 import { useGet } from "@/hooks/useGet";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";

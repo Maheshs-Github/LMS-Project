@@ -25,7 +25,7 @@ const app=express();
 //   methods: ["GET", "POST", "PUT", "PATCH", "DELETE","OPTIONS"],
 // }));
 const allowedOrigins = [
-  // "https://YOUR-FRONTEND-DOMAIN.com",
+  "https://e-learn-flow.netlify.app",
 ];
 
 app.use(

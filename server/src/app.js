@@ -19,11 +19,39 @@ import cookieParser from "cookie-parser"
 
 const app=express();
 
-app.use(cors({
-  origin:"http://localhost:5173",
-  credentials:true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE","OPTIONS"],
-}));
+// app.use(cors({
+//   origin:"http://localhost:5173",
+//   credentials:true,
+//   methods: ["GET", "POST", "PUT", "PATCH", "DELETE","OPTIONS"],
+// }));
+const allowedOrigins = [
+  // "https://YOUR-FRONTEND-DOMAIN.com",
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Requests without an Origin
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      // Allow localhost during development
+      const isLocalhost = /^https?:\/\/localhost(:\d+)?$/.test(origin);
+
+      // Allow production frontend
+      const isProduction = allowedOrigins.includes(origin);
+
+      if (isLocalhost || isProduction) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  })
+);
 
 app.use(cookieParser())
 app.use(express.json())

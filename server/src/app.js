@@ -26,6 +26,7 @@ const app=express();
 // }));
 const allowedOrigins = [
   "https://e-learn-flow.netlify.app",
+  "https://lms-mahesh.duckdns.org",
 ];
 
 app.use(

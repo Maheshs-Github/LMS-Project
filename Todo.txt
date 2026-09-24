@@ -43,3 +43,5 @@ Let's see the full socket.io flow for the notifications
 for discussion by the view of interview too and understand teh flow 1st 
 
 
+next to do :
+our http image url issue for result.secure_url;

@@ -11,19 +11,10 @@ import certificateRouter from "../routes/certificate.route.js"
 import adminRouter from "../routes/admin.route.js"
 import notificationRouter from "../routes/notification.route.js"
 import messageRouter from "../routes/message.route.js"
-
-
-
 import cookieParser from "cookie-parser"
 
 
 const app=express();
-
-// app.use(cors({
-//   origin:"http://localhost:5173",
-//   credentials:true,
-//   methods: ["GET", "POST", "PUT", "PATCH", "DELETE","OPTIONS"],
-// }));
 const allowedOrigins = [
   "https://e-learn-flow.netlify.app",
   "https://lms-mahesh.duckdns.org",

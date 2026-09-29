@@ -157,7 +157,7 @@ const CourseChat = () => {
   const currentUserId = getId(currentUser?._id);
 
   return (
-    <div className="flex h-[100dvh] flex-col bg-background">
+    <div className="flex h-dvh flex-col bg-background">
       {/* Header */}
       <header className="shrink-0 border-b border-border/60 bg-card">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">

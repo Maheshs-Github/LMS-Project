@@ -22,7 +22,7 @@ const createCourse = asyncHandler(async (req, res) => {
 
   const thumbnailPath = req.file.path;
   const uploadedThumb = await uploadOnCloudinary(thumbnailPath);
-  if (!uploadedThumb.url)
+  if (!uploadedThumb.secure_url)
     throw new ApiError(
       400,
       "There was error while uploading the Thumbnail on cloudinary",
@@ -35,7 +35,7 @@ const createCourse = asyncHandler(async (req, res) => {
     level,
     price,
     description,
-    thumbnail: uploadedThumb.url,
+    thumbnail: uploadedThumb.secure_url,
     instructor: req?.user?.id,
   });
 
@@ -144,12 +144,12 @@ const updateCourse = asyncHandler(async (req, res) => {
 
     const uploadedThumb = await uploadOnCloudinary(thumbnailPath);
 
-    if (!uploadedThumb.url)
+    if (!uploadedThumb.secure_url)
       throw new ApiError(
         400,
         "There was error while uploading the Thumbnail on cloudinary",
       );
-    updateData.thumbnail = uploadedThumb.url;
+    updateData.thumbnail = uploadedThumb.secure_url;
   }
 
   const updatedCourse = await Course.findByIdAndUpdate(

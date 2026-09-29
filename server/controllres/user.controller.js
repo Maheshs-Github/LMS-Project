@@ -123,7 +123,6 @@ const loggedOut = asyncHandler(async (req, res) => {
 
 const updateUser = asyncHandler(async (req, res) => {
   const { name, email } = req.body;
-
   const updateData = {};
   if (req.file?.path) {
     const PhotoPath = req.file?.path;
@@ -132,9 +131,9 @@ const updateUser = asyncHandler(async (req, res) => {
 
     const photo = await uploadOnCloudinary(PhotoPath);
 
-    if (!photo.url)
+    if (!photo.secure_url)
       throw new ApiError(400, "Error Whlile Uploading FIle on Cloudinary");
-    updateData.photoUrl = photo?.url;
+    updateData.photoUrl = photo?.secure_url;
   }
   if (name?.trim()) updateData.name = name;
   if (email?.trim()) updateData.email = email;

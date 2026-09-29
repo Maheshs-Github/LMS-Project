@@ -17,7 +17,7 @@ const uploadLecture = asyncHandler(async (req, res) => {
 
   const addedVideo = await Lecture.create({
     title,
-    videoUrl: uploadFile.url,
+    videoUrl: uploadFile.secure_url,
     course: courseId,
   });
 
@@ -59,7 +59,7 @@ const updateLecture = asyncHandler(async (req, res) => {
     if (!upploadedfile)
       throw new ApiError(500, "Error while updating the Video");
 
-    updatedData.videoUrl = upploadedfile.url;
+    updatedData.videoUrl = upploadedfile.secure_url;
   }
   if (title) updatedData.title = title;
 

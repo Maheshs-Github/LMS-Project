@@ -39,9 +39,11 @@ what is projection update status of admin
 
 Notification- 
 What is a index , can we sort and all on find , what is lean()
-Let's see the full socket.io flow for the notifications 
-for discussion by the view of interview too and understand teh flow 1st 
 
 
 next to do :
-our http image url issue for result.secure_url;
+when i am in auth but try to come to home it is having issue 
+
+
+What Things to implment:
+SEO , email + OTP, reset password, Media donwload issue solve, ask antigravity what flaws in application

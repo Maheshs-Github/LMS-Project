@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 
 import { useDispatch, useSelector } from "react-redux";
 import { logout, setUser } from "./redux/AuthSlice";
@@ -11,7 +10,6 @@ import { persistor } from "./store";
 const App = () => {
   const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const { data, error } = useGet(user ? "user/me" : null);
 
   useEffect(() => {
@@ -21,12 +19,11 @@ const App = () => {
   }, [data, dispatch]);
 
   useEffect(() => {
-    if (error?.status === 401) {
+    if (user && error?.status === 401) {
       dispatch(logout());
       persistor.purge();
-      navigate("/auth", { replace: true });
     }
-  }, [error, dispatch, navigate]);
+  }, [error, user, dispatch]);
 
   return (
     <div>

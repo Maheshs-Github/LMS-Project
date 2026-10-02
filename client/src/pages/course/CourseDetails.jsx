@@ -58,94 +58,253 @@ const CourseDetails = () => {
   const reviewCount = data?.data?.reviewCount ?? 0;
   const courseAvgRating = data?.data?.courseAvgRating ?? 0;
 
-  const handleBuy = async (cId) => {
-    if (!user) {
-      toast.error("Please login to purchase courses");
-      navigate("/auth");
-      return;
-    }
+const handleBuy = async (cId) => {
+  if (!user) {
+    toast.error(
+      "Please login to purchase courses"
+    );
 
-    const isLoaded = await loadRazorpay();
-    if (!isLoaded) {
-      toast.error("Failed to load Razorpay SDK");
-      return;
-    }
+    navigate("/auth");
+    return;
+  }
 
-    try {
-      const res = await mutate({
-        url: "payment/create-order",
-        body: { courseId: cId },
-        method: "POST",
-      });
+  const isLoaded =
+    await loadRazorpay();
 
-      toast.success(res.message || "Order created successfully");
+  if (!isLoaded) {
+    toast.error(
+      "Failed to load Razorpay SDK"
+    );
 
-      const options = {
-        key: res.data.key,
-        amount: res.data.amount,
-        currency: res.data.currency,
-        order_id: res.data.orderId,
-        name: "Infinity LMS",
-        description: "Course Purchase",
-        prefill: {
-          name: user?.name || "Student",
-          email: user?.email,
-        },
-        theme: {
-          color: "#2563eb",
-        },
-        handler: async function (response) {
-          await handleVerifyPayment(response, cId);
-        },
-      };
+    return;
+  }
 
-      const paymentObject = new window.Razorpay(options);
+  try {
 
-      paymentObject.on("payment.failed", async function (response) {
+    // ─────────────────────────
+    // 1. Create order
+    // ─────────────────────────
+    const res = await mutate({
+      url: "payment/create-order",
+      body: {
+        courseId: cId,
+      },
+      method: "POST",
+    });
+
+
+    // ─────────────────────────
+    // 2. Configure Razorpay
+    // ─────────────────────────
+    const options = {
+      key: res.data.key,
+
+      amount: res.data.amount,
+
+      currency: res.data.currency,
+
+      order_id: res.data.orderId,
+
+      name: "Infinity LMS",
+
+      description:
+        "Course Purchase",
+
+      prefill: {
+        name:
+          user?.name ||
+          "Student",
+
+        email:
+          user?.email,
+      },
+
+      theme: {
+        color: "#2563eb",
+      },
+
+
+      // ─────────────────────────
+      // 3. Payment successful
+      // ─────────────────────────
+      handler: async function () {
+
+        const toastId =
+          toast.loading(
+            "Payment received. Confirming your enrollment..."
+          );
+
+        await checkPaymentStatus(
+          res.data.orderId,
+          toastId
+        );
+      },
+    };
+
+
+    // ─────────────────────────
+    // 4. Razorpay instance
+    // ─────────────────────────
+    const paymentObject =
+      new window.Razorpay(
+        options
+      );
+
+
+    // ─────────────────────────
+    // 5. Payment failed
+    // ─────────────────────────
+    paymentObject.on(
+      "payment.failed",
+      async function (response) {
+
         try {
+
           await mutate({
             url: "payment/failure",
+
             method: "POST",
+
             body: {
-              orderId: response.error.metadata.order_id,
-              code: response.error.code,
-              description: response.error.description,
-              reason: response.error.reason,
-              source: response.error.source,
-              step: response.error.step,
+              orderId:
+                response.error
+                  .metadata.order_id,
+
+              code:
+                response.error.code,
+
+              description:
+                response.error
+                  .description,
+
+              reason:
+                response.error.reason,
+
+              source:
+                response.error.source,
+
+              step:
+                response.error.step,
             },
           });
-          toast.error(response.error.description || "Payment Failed");
+
+          toast.error(
+            response.error
+              .description ||
+              "Payment Failed"
+          );
+
         } catch (error) {
-          toast.error("Failed to record payment failure");
+
+          toast.error(
+            "Failed to record payment failure"
+          );
         }
-      });
+      }
+    );
 
-      paymentObject.open();
-    } catch (error) {
-      toast.error(error?.message || "Failed to create order");
-    }
-  };
 
-  const handleVerifyPayment = async (response, cId) => {
+    // ─────────────────────────
+    // 6. Open Razorpay
+    // ─────────────────────────
+    paymentObject.open();
+
+  } catch (error) {
+
+    toast.error(
+      error?.message ||
+      "Failed to create order"
+    );
+  }
+};
+
+  const checkPaymentStatus = async (
+  orderId,
+  toastId
+) => {
+  const maxAttempts = 15;
+
+  for (
+    let attempt = 0;
+    attempt < maxAttempts;
+    attempt++
+  ) {
     try {
-      const verifyRes = await mutate({
-        url: "payment/verify",
-        method: "POST",
-        body: {
-          courseId: cId,
-          ...response,
-        },
+      const response = await mutate({
+        url: `payment/status/${orderId}`,
+        method: "GET",
       });
 
-      toast.success(verifyRes?.message || "Payment verified successfully!");
-      navigate("/student/my-learning");
-    } catch (error) {
-      toast.error(error?.message || "Payment verification failed");
-    }
-  };
+      const status =
+        response?.data?.status;
 
-  const lectures = Array.isArray(courseData?.lectures) ? courseData.lectures : [];
+      console.log(
+        `Payment status attempt ${attempt + 1}:`,
+        status
+      );
+
+      // Payment successfully processed
+      if (status === "paid") {
+        toast.success(
+          "Payment confirmed! Enrollment successful.",
+          {
+            id: toastId,
+          }
+        );
+
+        navigate(
+          "/student/my-learning"
+        );
+
+        return;
+      }
+
+      // Payment failed
+      if (status === "failed") {
+        toast.error(
+          "Payment failed.",
+          {
+            id: toastId,
+          }
+        );
+
+        return;
+      }
+
+      // Still waiting for webhook
+      await new Promise((resolve) =>
+        setTimeout(resolve, 2000)
+      );
+
+    } catch (error) {
+      console.error(
+        "Payment status check failed:",
+        error
+      );
+
+      toast.error(
+        error?.message ||
+          "Unable to check payment status",
+        {
+          id: toastId,
+        }
+      );
+
+      return;
+    }
+  }
+
+  toast.error(
+    "Payment is still being processed. Please check My Learning shortly.",
+    {
+      id: toastId,
+    }
+  );
+};
+
+  const lectures = Array.isArray(courseData?.lectures)
+    ? courseData.lectures
+    : [];
   const previewLecture = lectures[0];
 
   return (
@@ -161,7 +320,10 @@ const CourseDetails = () => {
               </Badge>
             )}
             {courseData.level && (
-              <Badge variant="secondary" className="bg-slate-800 text-slate-300 text-xs">
+              <Badge
+                variant="secondary"
+                className="bg-slate-800 text-slate-300 text-xs"
+              >
                 {courseData.level}
               </Badge>
             )}
@@ -200,7 +362,9 @@ const CourseDetails = () => {
             {/* Students count */}
             <div className="flex items-center gap-1.5 text-slate-400">
               <Icons.Users className="w-4 h-4" />
-              <span>{courseData?.enrolledStudents?.length || 0} students enrolled</span>
+              <span>
+                {courseData?.enrolledStudents?.length || 0} students enrolled
+              </span>
             </div>
 
             {/* Last updated */}
@@ -237,10 +401,14 @@ const CourseDetails = () => {
                   (courseData.description.includes("<") ? (
                     parse(courseData.description)
                   ) : (
-                    <p className="whitespace-pre-line">{courseData.description}</p>
+                    <p className="whitespace-pre-line">
+                      {courseData.description}
+                    </p>
                   ))
                 ) : (
-                  <p className="italic text-muted-foreground">No description provided.</p>
+                  <p className="italic text-muted-foreground">
+                    No description provided.
+                  </p>
                 )}
               </div>
             </div>
@@ -253,7 +421,8 @@ const CourseDetails = () => {
                   Course Curriculum
                 </h2>
                 <span className="text-xs text-muted-foreground font-medium">
-                  {lectures.length} {lectures.length === 1 ? "lecture" : "lectures"}
+                  {lectures.length}{" "}
+                  {lectures.length === 1 ? "lecture" : "lectures"}
                 </span>
               </div>
 
@@ -275,7 +444,9 @@ const CourseDetails = () => {
 
                       <div className="flex items-center gap-2 shrink-0">
                         <Icons.PlayCircle className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">Preview</span>
+                        <span className="text-xs text-muted-foreground">
+                          Preview
+                        </span>
                       </div>
                     </div>
                   ))}

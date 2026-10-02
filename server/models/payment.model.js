@@ -46,9 +46,7 @@ const paymentSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      required: true,
       enum: ["upi", "card", "netbanking", "wallet", "emi"],
-      default: "upi",
     },
     failureReason: {
       code: String,

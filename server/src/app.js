@@ -11,6 +11,7 @@ import certificateRouter from "../routes/certificate.route.js"
 import adminRouter from "../routes/admin.route.js"
 import notificationRouter from "../routes/notification.route.js"
 import messageRouter from "../routes/message.route.js"
+import razorpayWebhookRouter from "../routes/razorpaywebhook.route.js"
 import cookieParser from "cookie-parser"
 
 
@@ -46,6 +47,14 @@ app.use(
 );
 
 app.use(cookieParser())
+
+// Razorpay webhook MUST come before express.json()
+app.use(
+  "/api/webhooks/razorpay",
+  express.raw({ type: "application/json" }),
+  razorpayWebhookRouter,
+);
+
 app.use(express.json())
 
 app.use("/api/v1/user",userRouter)

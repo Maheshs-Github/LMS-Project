@@ -156,6 +156,8 @@ console.log("Body exists:", !!req.body);
   // 2. Parse body AFTER signature verification
   // --------------------------------------------------
 
+  console.log("✅ SIGNATURE VERIFIED");
+
   let event;
 
   try {
@@ -163,6 +165,8 @@ console.log("Body exists:", !!req.body);
   } catch (error) {
     throw new ApiError(400, "Invalid webhook payload");
   }
+
+  console.log("🔥 EVENT:", event.event);
 
   // --------------------------------------------------
   // 3. Only process payment.captured
@@ -174,6 +178,8 @@ console.log("Body exists:", !!req.body);
       message: "Webhook event ignored",
     });
   }
+
+  
 
   // --------------------------------------------------
   // 4. Extract payment entity
@@ -218,6 +224,7 @@ console.log("Body exists:", !!req.body);
       "Payment record not found",
     );
   }
+  console.log("🔥 PAYMENT FOUND:", payment?._id);
 
   // --------------------------------------------------
   // 6. IDEMPOTENCY

@@ -58,249 +58,156 @@ const CourseDetails = () => {
   const reviewCount = data?.data?.reviewCount ?? 0;
   const courseAvgRating = data?.data?.courseAvgRating ?? 0;
 
-const handleBuy = async (cId) => {
-  if (!user) {
-    toast.error(
-      "Please login to purchase courses"
-    );
+  const handleBuy = async (cId) => {
+    if (!user) {
+      toast.error("Please login to purchase courses");
 
-    navigate("/auth");
-    return;
-  }
+      navigate("/auth");
+      return;
+    }
 
-  const isLoaded =
-    await loadRazorpay();
+    const isLoaded = await loadRazorpay();
 
-  if (!isLoaded) {
-    toast.error(
-      "Failed to load Razorpay SDK"
-    );
-
-    return;
-  }
-
-  try {
-
-    // ─────────────────────────
-    // 1. Create order
-    // ─────────────────────────
-    const res = await mutate({
-      url: "payment/create-order",
-      body: {
-        courseId: cId,
-      },
-      method: "POST",
-    });
-
-
-    // ─────────────────────────
-    // 2. Configure Razorpay
-    // ─────────────────────────
-    const options = {
-      key: res.data.key,
-
-      amount: res.data.amount,
-
-      currency: res.data.currency,
-
-      order_id: res.data.orderId,
-
-      name: "Infinity LMS",
-
-      description:
-        "Course Purchase",
-
-      prefill: {
-        name:
-          user?.name ||
-          "Student",
-
-        email:
-          user?.email,
-      },
-
-      theme: {
-        color: "#2563eb",
-      },
-
-
-      // ─────────────────────────
-      // 3. Payment successful
-      // ─────────────────────────
-      handler: async function () {
-
-        const toastId =
-          toast.loading(
-            "Payment received. Confirming your enrollment..."
-          );
-
-        await checkPaymentStatus(
-          res.data.orderId,
-          toastId
-        );
-      },
-    };
-
-
-    // ─────────────────────────
-    // 4. Razorpay instance
-    // ─────────────────────────
-    const paymentObject =
-      new window.Razorpay(
-        options
-      );
-
-
-    // ─────────────────────────
-    // 5. Payment failed
-    // ─────────────────────────
-    paymentObject.on(
-      "payment.failed",
-      async function (response) {
-
-        try {
-
-          await mutate({
-            url: "payment/failure",
-
-            method: "POST",
-
-            body: {
-              orderId:
-                response.error
-                  .metadata.order_id,
-
-              code:
-                response.error.code,
-
-              description:
-                response.error
-                  .description,
-
-              reason:
-                response.error.reason,
-
-              source:
-                response.error.source,
-
-              step:
-                response.error.step,
-            },
-          });
-
-          toast.error(
-            response.error
-              .description ||
-              "Payment Failed"
-          );
-
-        } catch (error) {
-
-          toast.error(
-            "Failed to record payment failure"
-          );
-        }
-      }
-    );
-
-
-    // ─────────────────────────
-    // 6. Open Razorpay
-    // ─────────────────────────
-    paymentObject.open();
-
-  } catch (error) {
-
-    toast.error(
-      error?.message ||
-      "Failed to create order"
-    );
-  }
-};
-
-  const checkPaymentStatus = async (
-  orderId,
-  toastId
-) => {
-  const maxAttempts = 15;
-
-  for (
-    let attempt = 0;
-    attempt < maxAttempts;
-    attempt++
-  ) {
-    try {
-      const response = await mutate({
-        url: `payment/status/${orderId}`,
-        method: "GET",
-      });
-
-      const status =
-        response?.data?.status;
-
-      console.log(
-        `Payment status attempt ${attempt + 1}:`,
-        status
-      );
-
-      // Payment successfully processed
-      if (status === "paid") {
-        toast.success(
-          "Payment confirmed! Enrollment successful.",
-          {
-            id: toastId,
-          }
-        );
-
-        navigate(
-          "/student/my-learning"
-        );
-
-        return;
-      }
-
-      // Payment failed
-      if (status === "failed") {
-        toast.error(
-          "Payment failed.",
-          {
-            id: toastId,
-          }
-        );
-
-        return;
-      }
-
-      // Still waiting for webhook
-      await new Promise((resolve) =>
-        setTimeout(resolve, 2000)
-      );
-
-    } catch (error) {
-      console.error(
-        "Payment status check failed:",
-        error
-      );
-
-      toast.error(
-        error?.message ||
-          "Unable to check payment status",
-        {
-          id: toastId,
-        }
-      );
+    if (!isLoaded) {
+      toast.error("Failed to load Razorpay SDK");
 
       return;
     }
-  }
 
-  toast.error(
-    "Payment is still being processed. Please check My Learning shortly.",
-    {
-      id: toastId,
+    try {
+      // ─────────────────────────
+      // 1. Create order
+      // ─────────────────────────
+      const res = await mutate({
+        url: "payment/create-order",
+        body: {
+          courseId: cId,
+        },
+        method: "POST",
+      });
+
+      // ─────────────────────────
+      // 2. Configure Razorpay
+      // ─────────────────────────
+      const options = {
+        key: res.data.key,
+        amount: res.data.amount,
+        currency: res.data.currency,
+        order_id: res.data.orderId,
+        name: "Infinity LMS",
+        description: "Course Purchase",
+        prefill: {
+          name: user?.name || "Student",
+          email: user?.email,
+        },
+        theme: {
+          color: "#2563eb",
+        },
+
+        // ─────────────────────────
+        // 3. Payment successful
+        // ─────────────────────────
+        handler: async function () {
+          const toastId = toast.loading(
+            "Payment received. Confirming your enrollment...",
+          );
+
+          await checkPaymentStatus(res.data.orderId, toastId);
+        },
+      };
+
+      // ─────────────────────────
+      // 4. Razorpay instance
+      // ─────────────────────────
+      const paymentObject = new window.Razorpay(options);
+
+      // ─────────────────────────
+      // 5. Payment failed
+      // ─────────────────────────
+      paymentObject.on("payment.failed", async function (response) {
+        try {
+          await mutate({
+            url: "payment/failure",
+            method: "POST",
+            body: {
+              orderId: response.error.metadata.order_id,
+              code: response.error.code,
+              description: response.error.description,
+              reason: response.error.reason,
+              source: response.error.source,
+              step: response.error.step,
+            },
+          });
+
+          toast.error(response.error.description || "Payment Failed");
+        } catch (error) {
+          toast.error("Failed to record payment failure");
+        }
+      });
+
+      // ─────────────────────────
+      // 6. Open Razorpay
+      // ─────────────────────────
+      paymentObject.open();
+    } catch (error) {
+      toast.error(error?.message || "Failed to create order");
     }
-  );
-};
+  };
+
+  const checkPaymentStatus = async (orderId, toastId) => {
+    const maxAttempts = 15;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const response = await mutate({
+          url: `payment/status/${orderId}`,
+          method: "GET",
+        });
+
+        const status = response?.data?.status;
+
+        console.log(`Payment status attempt ${attempt + 1}:`, status);
+
+        // Payment successfully processed
+        if (status === "paid") {
+          toast.success("Payment confirmed! Enrollment successful.", {
+            id: toastId,
+          });
+
+          navigate("/student/my-learning");
+
+          return;
+        }
+
+        // Payment failed
+        if (status === "failed") {
+          toast.error("Payment failed.", {
+            id: toastId,
+          });
+
+          return;
+        }
+
+        // Still waiting for webhook
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      } catch (error) {
+        console.error("Payment status check failed:", error);
+
+        toast.error(error?.message || "Unable to check payment status", {
+          id: toastId,
+        });
+
+        return;
+      }
+    }
+
+    toast.error(
+      "Payment is still being processed. Please check My Learning shortly.",
+      {
+        id: toastId,
+      },
+    );
+  };
 
   const lectures = Array.isArray(courseData?.lectures)
     ? courseData.lectures

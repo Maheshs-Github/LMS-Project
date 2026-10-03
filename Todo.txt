@@ -50,3 +50,7 @@ SEO , email + OTP, reset password, Media donwload issue solve, ask antigravity w
 
 Payment Route Upgrade:
 What is HMAC 
+
+
+production Setup:
+socket origin from index.js , local and production env

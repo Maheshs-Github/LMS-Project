@@ -54,3 +54,6 @@ What is HMAC
 
 production Setup:
 socket origin from index.js , local and production env
+
+
+index.js is having single error for the all , let's do something about it 

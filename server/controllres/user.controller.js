@@ -8,8 +8,6 @@ import { Course } from "../models/course.model.js";
 
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password,role } = req.body;
-  if ([name, email, password,role].some((field) => !field || field.trim() === ""))
-    throw new ApiError(400, "All Field are required");
 
   const createdUser = await User.create({
     name: name,
@@ -51,8 +49,6 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  if ([email, password].some((field) => !field || field.trim() === ""))
-    throw new ApiError(400, "Both Email and Password is required");
 
   const loggedInUser = await User.findOne({ email });
   // find gives the array , but findOne gives the model

@@ -201,13 +201,13 @@ const getCourseLectures = asyncHandler(async (req, res) => {
 });
 
 const getAllCourses = asyncHandler(async (req, res) => {
-  const { searchValue, sortBy, category, page = 1, limit = 10 } = req.query;
+  const { searchValue, sortBy, category, page = 1, limit = 10 } = req.validated.query;
   const cacheKey = `course:catalog:${JSON.stringify({
     searchValue: searchValue || "",
     sortBy: sortBy,
     category: category || "All",
-    page: Number(page),
-    limit: Number(limit),
+    page: page,
+    limit: limit,
   })}`;
 
   let cachedCourses;
@@ -270,8 +270,8 @@ const getAllCourses = asyncHandler(async (req, res) => {
       sortStage = { createdAt: -1 };
   }
 
-  const currentPage = Number(page);
-  const pageLimit = Number(limit);
+  const currentPage = page;
+  const pageLimit = limit;
   const skip = (currentPage - 1) * pageLimit;
   const totalCourses = await Course.find(matchStage).countDocuments();
 

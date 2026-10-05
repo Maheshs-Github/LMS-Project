@@ -2,11 +2,13 @@ import { Router } from "express";
 import { verifiedUser } from "../middlewares/auth.middlewares.js";
 import { courseEnroll, createCourse, getAllCourses, getCourseById, getCourseLectures, getMyCourses, submitCourse, updateCourse, updateCourseStatus } from "../controllres/course.controller.js";
 import { upload } from "../middlewares/multer.middlewares.js";
+import { validate } from "../middlewares/validate.middlewares.js";
+import { getAllCoursesSchema } from "../validators/course.schema.js";
 
 const router=Router();
 
 router.post("",verifiedUser, upload.single("thumbnail"),createCourse);
-router.get("",getAllCourses);
+router.get("",validate(getAllCoursesSchema), getAllCourses);
 router.get("/myCourses",verifiedUser,getMyCourses);
 router.get("/:courseId",getCourseById);
 router.post("/:courseId",verifiedUser,courseEnroll);

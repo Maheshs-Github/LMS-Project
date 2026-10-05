@@ -34,6 +34,7 @@ export function Login() {
   };
   const handleLogin = async () => {
     try {
+      const result=loginSchema.safeParse(loginData);
       const res = await mutate({
         url: `user/login`,
         method: "post",

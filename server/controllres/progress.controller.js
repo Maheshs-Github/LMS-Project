@@ -9,13 +9,6 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 const addLectureProgress = asyncHandler(async (req, res) => {
   const { lectureId, courseId } = req.params;
   const userId = req.user?.id;
-  if (
-    [lectureId, userId, courseId].some((field) => !field || field.trim() === "")
-  )
-    throw new ApiError(
-      400,
-      "All Course Id , User Id and Lecture Id are required ",
-    );
 
   const [progressStored, course, user] = await Promise.all([
     Progress.findOne({

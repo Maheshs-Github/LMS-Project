@@ -12,13 +12,12 @@ import { invalidateCourseCatalogCache } from "../utils/cache.js";
 import { Progress } from "../models/progress.model.js";
 
 const createCourse = asyncHandler(async (req, res) => {
-  const { title, subTitle, category, level, price, description } = req.body;
-  if (
-    [title, subTitle, category, level, price, description].some(
-      (field) => !field || field.trim() === "",
-    )
-  )
-    throw new ApiError(400, "All fields are required");
+  const { title, subTitle, category, level, price, description } = req.validated.body;
+
+  if (!req.file) {
+  throw new ApiError(400, "Thumbnail is required");
+}
+
 
   const thumbnailPath = req.file.path;
   const uploadedThumb = await uploadOnCloudinary(thumbnailPath);
@@ -27,6 +26,8 @@ const createCourse = asyncHandler(async (req, res) => {
       400,
       "There was error while uploading the Thumbnail on cloudinary",
     );
+
+    
 
   const createdCourse = await Course.create({
     title,
@@ -121,8 +122,8 @@ const getCourseById = asyncHandler(async (req, res) => {
 });
 
 const updateCourse = asyncHandler(async (req, res) => {
-  const { title, subTitle, category, level, price, description } = req.body;
-  const { courseId } = req.params;
+  const { title, subTitle, category, level, price, description } = req.validated.body;
+  const { courseId } = req.validated.params;
 
   const course = await Course.findOne({
     _id: courseId,
@@ -151,6 +152,10 @@ const updateCourse = asyncHandler(async (req, res) => {
       );
     updateData.thumbnail = uploadedThumb.secure_url;
   }
+
+  if (Object.keys(updateData).length === 0) {
+  throw new ApiError(400, "No fields provided for update");
+}
 
   const updatedCourse = await Course.findByIdAndUpdate(
     { _id: courseId, instructor: req.user.id },
@@ -201,7 +206,7 @@ const getCourseLectures = asyncHandler(async (req, res) => {
 });
 
 const getAllCourses = asyncHandler(async (req, res) => {
-  const { searchValue, sortBy, category, page = 1, limit = 10 } = req.validated.query;
+  const { searchValue, sortBy, category, page , limit } = req.validated.query;
   const cacheKey = `course:catalog:${JSON.stringify({
     searchValue: searchValue || "",
     sortBy: sortBy,

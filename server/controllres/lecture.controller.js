@@ -6,10 +6,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const uploadLecture = asyncHandler(async (req, res) => {
-  const { title} = req.body;
-  const {courseId}=req.params;
-  if (!title || title.trim() === "")
-    throw new ApiError(400, "Video Title is required");
+  const { title} = req.validated.body;
+  const {courseId}=req.validated.params;
   if (!req.file) throw new ApiError(400, "Video File is Missing ");
   const uploadFile = await uploadOnCloudinary(req.file.path);
   const isCourseExist = await Course.findById(courseId);
@@ -51,8 +49,8 @@ const getLectureById = asyncHandler(async (req, res) => {
 });
 
 const updateLecture = asyncHandler(async (req, res) => {
-  const { title } = req.body;
-  const { lectureId } = req.params;
+  const { title } = req.validated.body;
+  const { lectureId } = req.validated.params;
   const updatedData = {};
   if (req.file) {
     const upploadedfile = await uploadOnCloudinary(req.file.path);
@@ -61,7 +59,13 @@ const updateLecture = asyncHandler(async (req, res) => {
 
     updatedData.videoUrl = upploadedfile.secure_url;
   }
-  if (title) updatedData.title = title;
+  if (title !== undefined) {
+    updatedData.title = title;
+  }
+
+  if (Object.keys(updatedData).length === 0) {
+    throw new ApiError(400, "No fields provided for update");
+  }
 
   const updatedLecture = await Lecture.findByIdAndUpdate(
     lectureId,
@@ -85,13 +89,11 @@ const updateLecture = asyncHandler(async (req, res) => {
 });
 
 const deleteLecture=asyncHandler(async(req,res)=>{
-  const {lectureId}=req.params;
-  if(!lectureId)
-    throw new ApiError(400,"No COurse Id is FOund");
+  const {lectureId}=req.validated.params;
 
   const deletedLecture=await Lecture.findByIdAndDelete(lectureId);
 
-  if(!deleteLecture)
+  if(!deletedLecture)
     throw new ApiError(404,"Lecture is not FOund");
 
   return res.status(200).json(new ApiResponse(204,{},"Lecture has been deleted Successfully"));

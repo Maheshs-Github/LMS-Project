@@ -49,11 +49,24 @@ What Things to implment:
 SEO , email + OTP, reset password, Media donwload issue solve, ask antigravity what flaws in application
 
 Payment Route Upgrade:
-What is HMAC 
+What is HMAC ?
+So after created order , the razorpay payment UI is opened and after successful payment, what happended till we goto the backend controller 
+What is Start Session , session 3rd para for the updateOne, whole trasction thing , idempotency?
+what is men by polling window 
+
 
 
 production Setup:
 socket origin from index.js , local and production env
 
 
-index.js is having single error for the all , let's do something about it 
+
+see about it 
+  const options = {
+    httpOnly: true,
+    // secure: true,
+     secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production"
+    ? "none"
+    : "lax",
+  };

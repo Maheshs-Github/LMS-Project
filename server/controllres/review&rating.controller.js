@@ -5,13 +5,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 const addReviewAndRating = asyncHandler(async (req, res) => {
   const userId = req.user?._id;
-  const { courseId } = req.params;
-  const { rating, review } = req.body;
-
-  if ([courseId, review].some((field) => !field || field.trim() === ""))
-    throw new ApiError(400, "CourseId , review  are required");
-
-  if (!rating) throw new ApiError(400, "rating is required");
+  const { courseId } = req.validated.params;
+  const { rating, review } = req.validated.body;
 
   const isReviewGiven = await ReviewAndRating.findOne({ userId, courseId });
 

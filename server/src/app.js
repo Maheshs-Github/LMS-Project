@@ -13,6 +13,7 @@ import notificationRouter from "../routes/notification.route.js"
 import messageRouter from "../routes/message.route.js"
 import razorpayWebhookRouter from "../routes/razorpaywebhook.route.js"
 import cookieParser from "cookie-parser"
+import { ApiError } from "../utils/ApiError.js";
 
 
 const app=express();
@@ -71,13 +72,58 @@ app.use("/api/v1/message",messageRouter)
 
 
 
-app.use((err,req,res,next)=>{
-  console.log("err: ",err)
-  res.status(err.statusCode ||500).json({
-    message: err.message || "Something Went Wrong",
-    error:err.errors,
-    success:false,
-  })
-})
+// app.use((err,req,res,next)=>{
+//   console.log("err: ",err)
+//   res.status(err.statusCode ||500).json({
+//     message: err.message || "Something Went Wrong",
+//     error:err.errors,
+//     success:false,
+//   })
+// })
+
+app.use((req, res, next) => {
+  next(new ApiError(404, `Route not found: ${req.originalUrl}`));
+});
+
+
+app.use((err, req, res, next) => {
+  const isProduction = process.env.NODE_ENV === "production";
+
+  const statusCode =
+    Number.isInteger(err.statusCode) &&
+    err.statusCode >= 400 &&
+    err.statusCode <= 599
+      ? err.statusCode
+      : 500;
+
+  // Log the error on the server, not through the API response.
+  console.error("Request error:", err);
+
+  // Show expected client errors, but hide unexpected server details in production.
+  const message =
+    statusCode < 500
+      ? err.message || "Request failed"
+      : isProduction
+        ? "Internal Server Error"
+        : err.message || "Something went wrong";
+
+  const response = {
+    success: false,
+    message,
+  };
+
+  // Preserve field-level errors for client-side validation.
+  if (statusCode < 500 && Array.isArray(err.errors) && err.errors.length > 0) {
+    response.errors = err.errors;
+  }
+
+  // Stack traces are available only during development.
+  if (!isProduction) {
+    response.stack = err.stack;
+  }
+
+  res.status(statusCode).json(response);
+});
+
 
 export {app}

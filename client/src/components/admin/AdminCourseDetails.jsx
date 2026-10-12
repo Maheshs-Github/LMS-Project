@@ -174,12 +174,12 @@ const AdminCourseDetails = () => {
           <Icons.FileText className="w-4 h-4 text-primary" />
           Course Description
         </h3>
-        <div className="text-sm text-muted-foreground leading-relaxed">
+        <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere] ">
           {course?.description ? (
             typeof course.description === "string" && course.description.includes("<") ? (
               parse(course.description)
             ) : (
-              <p className="whitespace-pre-line">{course.description}</p>
+              <p className="">{course.description}</p>
             )
           ) : (
             <p className="italic">No description provided.</p>

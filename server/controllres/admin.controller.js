@@ -794,17 +794,7 @@ const getUser = asyncHandler(async (req, res) => {
 });
 
 const toggleBlockStatus = asyncHandler(async (req, res) => {
-  const { userId, blockStatus, blockReason } = req.body;
-  if (!userId) {
-    throw new ApiError(400, "User ID is required");
-  }
-
-  if (typeof blockStatus !== "boolean") {
-    throw new ApiError(400, "Invalid block status");
-  }
-
-  if (blockStatus && (!blockReason || blockReason.trim() === ""))
-    throw new ApiError(400, "Block Reaseon is required");
+  const { userId, blockStatus, blockReason } = req.validated.body;
 
   const updateData = {};
   updateData.isBlocked = blockStatus;
@@ -1016,20 +1006,20 @@ const getCourseDetails = asyncHandler(async (req, res) => {
 });
 
 const updateCourseStatus = asyncHandler(async (req, res) => {
-  const { status, rejectedReason = null } = req.body;
-  const { courseId } = req.params;
-  if (!courseId) throw new ApiError(400, "Course Id is missing");
-  if (!["approved", "rejected"].includes(status.toLowerCase()))
-    throw new ApiError(400, "Invalid Status ");
+  const { status, rejectedReason = null } = req.validated.body;
+  const { courseId } = req.validated.params;
+  // if (!courseId) throw new ApiError(400, "Course Id is missing");
+  // if (!["approved", "rejected"].includes(status.toLowerCase()))
+  //   throw new ApiError(400, "Invalid Status ");
   const normalizedStatus = status?.toLowerCase();
-  if (normalizedStatus === "rejected" && !rejectedReason)
-    throw new ApiError(400, "rejected reason is required for the same status");
+  // if (normalizedStatus === "rejected" && !rejectedReason)
+  //   throw new ApiError(400, "rejected reason is required for the same status");
   const course = await Course.findById(courseId);
-  if (!["approved", "rejected", "pending"].includes(course?.status))
-    throw new ApiError(
-      400,
-      "course is not submitted , could not update the status of the course",
-    );
+  // if (!["approved", "rejected", "pending"].includes(course?.status))
+  //   throw new ApiError(
+  //     400,
+  //     "course is not submitted , could not update the status of the course",
+  //   );
 
   // old logic
   // const updateStatusData={

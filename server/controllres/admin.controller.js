@@ -411,7 +411,7 @@ const getUsers = asyncHandler(async (req, res) => {
     role = "All",
     status = "All",
     sortBy = "latest",
-  } = req.query;
+  } = req.validated.query;
 
   let matchStage = {},
     sortStage = {};
@@ -515,7 +515,7 @@ const getUsers = asyncHandler(async (req, res) => {
 });
 
 const getUser = asyncHandler(async (req, res) => {
-  const { userId } = req.params;
+  const { userId } = req.validated.params;
   if (!userId) throw new ApiError(400, "User Id is not Found");
 
   const user = await User.findById(userId).select("role");
@@ -841,11 +841,11 @@ const getAllCourses = asyncHandler(async (req, res) => {
     status = "all",
     page = 1,
     limit = 2,
-  } = req.query;
+  } = req.validated.query;
   let matchStage = {};
   if (searchValue) {
     matchStage.$or = [
-      {
+      { 
         title: {
           $regex: searchValue,
           $options: "i",
@@ -953,7 +953,7 @@ const getAllCourses = asyncHandler(async (req, res) => {
 });
 
 const getCourseDetails = asyncHandler(async (req, res) => {
-  const { courseId } = req.params;
+  const { courseId } = req.validated.params;
   if (!courseId) throw new ApiError(400, "Course Id id missing");
   const course = await Course.aggregate([
     {

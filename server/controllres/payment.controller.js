@@ -11,7 +11,7 @@ import crypto from "crypto";
 import createNotification from "../services/notification.service.js";
 
 const createOrder = asyncHandler(async (req, res) => {
-  const { courseId } = req.body;
+  const { courseId } = req.validated.body;
 
   if (!courseId) {
     throw new ApiError(400, "Course ID is required");
@@ -85,7 +85,7 @@ const failurePayment = asyncHandler(async (req, res) => {
     reason,
     source,
     step,
-  } = req.body;
+  } = req.validated.body;
 
   if (!orderId) {
     throw new ApiError(400, "Order ID is not found");
@@ -425,7 +425,7 @@ const verifyRazorpayWebhookSignature = (rawBody, signature) => {
 };
 
 const getPaymentStatus = asyncHandler(async (req, res) => {
-  const { orderId } = req.params;
+  const { orderId } = req.validated.params;
 
   if (!orderId) {
     throw new ApiError(400, "Order ID is required");

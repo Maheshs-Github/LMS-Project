@@ -8,7 +8,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 const getCourseChatMessages = asyncHandler(async (req, res) => {
-  const { courseId } = req.params;
+  const { courseId } = req.validated.params;
   const userId = req?.user?.id;
   if (!courseId) throw new ApiError(400, "Course Id is required");
   const isAllowedToGetMessages = await isUserAllowedInCourseChat(
@@ -24,9 +24,9 @@ const getCourseChatMessages = asyncHandler(async (req, res) => {
 });
 
 const writeMessage = asyncHandler(async (req, res) => {
-  const { courseId } = req.params;
+  const { courseId } = req.validated.params;
   const userId = req?.user?.id;
-  const { content } = req.body;
+  const { content } = req.validated.body;
   if (!courseId) throw new ApiError(400, "Course Id is required");
   const isAllowedtoWriteMessages = await isUserAllowedInCourseChat(
     userId,

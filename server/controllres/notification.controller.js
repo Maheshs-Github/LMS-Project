@@ -22,7 +22,7 @@ const getMyNotifications = asyncHandler(async (req, res) => {
 });
 
 const markAsRead = asyncHandler(async (req, res) => {
-  const { notificationId } = req.params;
+  const { notificationId } = req.validated.params;
   if(!notificationId)
     throw new ApiError(400,"Notification id is not found");
   const updatedNotificationRead = await Notification.findOneAndUpdate(

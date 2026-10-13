@@ -14,6 +14,8 @@ import messageRouter from "../routes/message.route.js"
 import razorpayWebhookRouter from "../routes/razorpaywebhook.route.js"
 import cookieParser from "cookie-parser"
 import { ApiError } from "../utils/ApiError.js";
+import logger from "../utils/logger.js";
+import requestLogger from "../middlewares/requestLogger.middleware.js";
 
 
 const app=express();
@@ -47,12 +49,18 @@ app.use(
   })
 );
 
+app.use(requestLogger);
+
 app.use(cookieParser())
 
 // Razorpay webhook MUST come before express.json()
 app.use(
   "/api/webhooks/razorpay",
   express.raw({ type: "application/json" }),
+    (req, res, next) => {
+    console.log("🔥 WEBHOOK ROUTE REACHED");
+    next();
+  },
   razorpayWebhookRouter,
 );
 
@@ -72,15 +80,6 @@ app.use("/api/v1/message",messageRouter)
 
 
 
-// app.use((err,req,res,next)=>{
-//   console.log("err: ",err)
-//   res.status(err.statusCode ||500).json({
-//     message: err.message || "Something Went Wrong",
-//     error:err.errors,
-//     success:false,
-//   })
-// })
-
 app.use((req, res, next) => {
   next(new ApiError(404, `Route not found: ${req.originalUrl}`));
 });
@@ -88,6 +87,23 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
   const isProduction = process.env.NODE_ENV === "production";
+
+  if (err instanceof SyntaxError && "body" in err) {
+  err.statusCode = 400;
+  err.message = "Invalid JSON payload";
+}
+
+
+if (err.name === "ValidationError") {
+  err.statusCode = 400;
+  err.message = "Invalid data provided";
+}
+
+if (err.code === 11000) {
+  err.statusCode = 409;
+  err.message = "A record with this value already exists";
+}
+
 
   const statusCode =
     Number.isInteger(err.statusCode) &&
@@ -97,7 +113,14 @@ app.use((err, req, res, next) => {
       : 500;
 
   // Log the error on the server, not through the API response.
-  console.error("Request error:", err);
+  // console.error("Request error:", err);
+  logger.error("Request error", {
+  message: err.message,
+  statusCode,
+  stack: err.stack,
+  method: req.method,
+  path: req.originalUrl,
+});
 
   // Show expected client errors, but hide unexpected server details in production.
   const message =

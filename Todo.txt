@@ -46,7 +46,7 @@ when i am in auth but try to come to home it is having issue
 
 
 What Things to implment:
-SEO , email + OTP, reset password, Media donwload issue solve, ask antigravity what flaws in application
+SEO , email + OTP, reset password, Media donwload issue solve, ask antigravity what flaws in application, whole flow testing , also does live site should have some othere changes than now , like we will host it 
 
 Payment Route Upgrade:
 What is HMAC ?

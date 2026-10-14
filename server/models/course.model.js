@@ -6,6 +6,12 @@ const courseSchama = new mongoose.Schema(
       required: true,
       type: String,
     },
+        slug: {
+      required: true,
+      type: String,
+        unique: true,
+  trim: true,
+    },
     subTitle: {
       type: String,
     },

@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 const CourseDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  console.log("id: "+id)
   const { data } = useGet(id ? `course/${id}` : null);
   const user = useSelector((state) => state.auth.user);
   const { mutate, loading: buyingLoading } = useMutation();

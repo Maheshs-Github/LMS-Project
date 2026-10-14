@@ -10,14 +10,15 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import redisClient from "../config/redis.js";
 import { invalidateCourseCatalogCache } from "../utils/cache.js";
 import { Progress } from "../models/progress.model.js";
+import generateSlug from "../utils/generateSlug.js";
 
 const createCourse = asyncHandler(async (req, res) => {
-  const { title, subTitle, category, level, price, description } = req.validated.body;
+  const { title, subTitle, category, level, price, description } =
+    req.validated.body;
 
   if (!req.file) {
-  throw new ApiError(400, "Thumbnail is required");
-}
-
+    throw new ApiError(400, "Thumbnail is required");
+  }
 
   const thumbnailPath = req.file.path;
   const uploadedThumb = await uploadOnCloudinary(thumbnailPath);
@@ -27,10 +28,13 @@ const createCourse = asyncHandler(async (req, res) => {
       "There was error while uploading the Thumbnail on cloudinary",
     );
 
-    
+  const courseId = new mongoose.Types.ObjectId();
+  const slug = generateSlug(title, courseId);
 
   const createdCourse = await Course.create({
+    _id: courseId,
     title,
+    slug,
     subTitle,
     category,
     level,
@@ -77,11 +81,11 @@ const getMyCourses = asyncHandler(async (req, res) => {
 const getCourseById = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
   if (!courseId) throw new ApiError(400, "Id is Missing");
-  const fetchedCourse = await Course.findOne({
-    _id: courseId,
-    // we are showing inthe student side so inructor matcjhing is commented for now
-    // instructor: req.user.id,
-  })
+
+  const isObjectId = mongoose.isValidObjectId(courseId);
+  const fetchedCourse = await Course.findOne(
+    isObjectId ? { _id: courseId } : { slug: courseId },
+  )
     .populate("lectures", "-__v -updatedAt -createdAt -course")
     .populate("instructor", "name");
 
@@ -90,7 +94,7 @@ const getCourseById = asyncHandler(async (req, res) => {
   const courseReviewData = await Course.aggregate([
     {
       $match: {
-        _id: new mongoose.Types.ObjectId(courseId),
+       _id: fetchedCourse._id,
       },
     },
     {
@@ -108,7 +112,6 @@ const getCourseById = asyncHandler(async (req, res) => {
     (rData) => (courseRatingSum += Number(rData.rating)),
   );
 
-
   const courseAvgRating = reviewCount > 0 ? courseRatingSum / reviewCount : 0;
   return res
     .status(200)
@@ -122,7 +125,8 @@ const getCourseById = asyncHandler(async (req, res) => {
 });
 
 const updateCourse = asyncHandler(async (req, res) => {
-  const { title, subTitle, category, level, price, description } = req.validated.body;
+  const { title, subTitle, category, level, price, description } =
+    req.validated.body;
   const { courseId } = req.validated.params;
 
   const course = await Course.findOne({
@@ -154,8 +158,8 @@ const updateCourse = asyncHandler(async (req, res) => {
   }
 
   if (Object.keys(updateData).length === 0) {
-  throw new ApiError(400, "No fields provided for update");
-}
+    throw new ApiError(400, "No fields provided for update");
+  }
 
   const updatedCourse = await Course.findByIdAndUpdate(
     { _id: courseId, instructor: req.user.id },
@@ -206,7 +210,7 @@ const getCourseLectures = asyncHandler(async (req, res) => {
 });
 
 const getAllCourses = asyncHandler(async (req, res) => {
-  const { searchValue, sortBy, category, page , limit } = req.validated.query;
+  const { searchValue, sortBy, category, page, limit } = req.validated.query;
   const cacheKey = `course:catalog:${JSON.stringify({
     searchValue: searchValue || "",
     sortBy: sortBy,
@@ -217,11 +221,10 @@ const getAllCourses = asyncHandler(async (req, res) => {
 
   let cachedCourses;
   try {
-     cachedCourses = await redisClient.get(cacheKey);
+    cachedCourses = await redisClient.get(cacheKey);
   } catch (error) {
-    console.log("REDIS FAILED ",error);
+    console.log("REDIS FAILED ", error);
   }
-
 
   if (cachedCourses) {
     return res
@@ -323,6 +326,7 @@ const getAllCourses = asyncHandler(async (req, res) => {
         averageRating: 1,
         reviewCount: 1,
         enrolledStudents: 1,
+        slug: 1,
 
         "instructor._id": 1,
         "instructor.name": 1,
@@ -350,20 +354,22 @@ const getAllCourses = asyncHandler(async (req, res) => {
     },
   };
   try {
-     await redisClient.set(
-  cacheKey,
-  JSON.stringify(responseData),
-  {
-    EX: 300,
-  },
-); 
+    await redisClient.set(cacheKey, JSON.stringify(responseData), {
+      EX: 300,
+    });
   } catch (error) {
-  console.log("REDIS FAILED: ",error);
+    console.log("REDIS FAILED: ", error);
   }
 
   return res
     .status(200)
-    .json(new ApiResponse(200,responseData,"Courses has been succcessfully from Mongodb"));
+    .json(
+      new ApiResponse(
+        200,
+        responseData,
+        "Courses has been succcessfully from Mongodb",
+      ),
+    );
 });
 
 const courseEnroll = asyncHandler(async (req, res) => {

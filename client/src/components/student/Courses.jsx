@@ -66,6 +66,7 @@ const Courses = ({ isShow = true }) => {
       name: data?.title,
       price: data?.price,
       level: data?.level,
+      slug:data?.slug,
       averageRating: data?.averageRating,
       reviewCount: data?.reviewCount,
       instructorName: data?.instructor?.name,
@@ -82,6 +83,7 @@ const Courses = ({ isShow = true }) => {
       ?.toUpperCase();
   };
   const handleEnroll = (id) => {
+    console.log("id: "+id)
     navigate(user ? `/student/course/${id}` : `/course/${id}`);
   };
 
@@ -290,8 +292,8 @@ const Courses = ({ isShow = true }) => {
                       className="w-full cursor-pointer text-sm font-semibold"
                       onClick={() =>
                         !isEnrolled
-                          ? handleEnroll(course?._id)
-                          : handleContinueLearning(course?._id)
+                          ? handleEnroll(course?.slug)
+                          : handleContinueLearning(course?.slug)
                       }
                     >
                       {isEnrolled ? "Continue Learning" : "Enroll Now"}

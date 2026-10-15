@@ -17,6 +17,7 @@ import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setUser } from "../redux/AuthSlice";
+import Seo from "@/components/Seo";
 
 export function Login() {
   const user = useSelector((state) => state.auth.user);
@@ -54,6 +55,10 @@ export function Login() {
   };
   return (
     <Card className="w-full">
+      <Seo
+  title="Login"
+  noindex
+/>
       <CardHeader>
         <CardTitle>Login to your account</CardTitle>
         <CardDescription>

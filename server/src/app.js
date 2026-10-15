@@ -16,6 +16,7 @@ import cookieParser from "cookie-parser"
 import { ApiError } from "../utils/ApiError.js";
 import logger from "../utils/logger.js";
 import requestLogger from "../middlewares/requestLogger.middleware.js";
+import { getSitemap } from "../controllres/sitemap.controller.js";
 
 
 const app=express();
@@ -77,6 +78,7 @@ app.use("/api/v1/certificate",certificateRouter)
 app.use("/api/v1/admin",adminRouter)
 app.use("/api/v1/notification",notificationRouter)
 app.use("/api/v1/message",messageRouter)
+app.get("/sitemap.xml", getSitemap);
 
 
 

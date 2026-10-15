@@ -4,6 +4,7 @@ import { Login } from "./Login";
 import { SignUp } from "./SignUp";
 import Icons from "@/utils/Icons";
 import { Link } from "react-router-dom";
+import Seo from "@/components/Seo";
 
 export function TabsDemo() {
   return (
@@ -25,6 +26,10 @@ export function TabsDemo() {
 const LoginSignUp = () => {
   return (
     <div className="min-h-screen flex">
+      <Seo
+  title="LoginIn Sign "
+  noindex
+/>
       {/* ── Left Panel – Branding ── */}
       <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center gap-8 bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-900 text-white px-12 relative overflow-hidden">
         {/* Decorative blobs */}

@@ -18,6 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setUser } from "../redux/AuthSlice";
 import Icons from "@/utils/Icons";
+import Seo from "@/components/Seo";
 
 export function SignUp() {
   const user = useSelector((state) => state.auth.user);
@@ -59,6 +60,10 @@ export function SignUp() {
   };
   return (
     <Card className="w-full ">
+      <Seo
+  title="Sign Up"
+  noindex
+/>
       <CardHeader>
         <CardTitle>Create New account</CardTitle>
         <CardDescription className={" w-full"}>

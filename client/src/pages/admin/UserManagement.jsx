@@ -14,6 +14,7 @@ import Icons from "@/utils/Icons";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import Seo from "@/components/Seo";
 
 const UserManagement = () => {
   const navigate = useNavigate();
@@ -92,6 +93,10 @@ const UserManagement = () => {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+      <Seo
+  title="Admin User Management"
+  noindex
+/>
       {/* Header */}
       <div className="border-b border-border/60 pb-4">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">User Management</h1>

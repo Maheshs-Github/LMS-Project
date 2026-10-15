@@ -13,6 +13,7 @@ import { courseCategories } from "@/resources/Data";
 import Icons from "@/utils/Icons";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Seo from "@/components/Seo";
 
 const CourseManagement = () => {
   const [filters, setFilters] = useState({
@@ -69,6 +70,10 @@ const CourseManagement = () => {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+      <Seo
+  title="Admin Course Management"
+  noindex
+/>
       {/* Header */}
       <div className="border-b border-border/60 pb-4">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Course Management</h1>

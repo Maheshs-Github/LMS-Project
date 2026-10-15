@@ -11,6 +11,7 @@ import Icons from "@/utils/Icons";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useSelector } from "react-redux";
+import Seo from "@/components/Seo";
 
 const StudentDashBoard = () => {
   const { data, loading } = useGet("dashboard/student");
@@ -80,6 +81,10 @@ const StudentDashBoard = () => {
 
   return (
     <div className="space-y-8 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+      <Seo
+  title="Student Dashboard"
+  noindex
+/>
       {/* Welcome Banner */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/15 via-primary/5 to-transparent border border-primary/20 p-6 md:p-8">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">

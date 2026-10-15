@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /auth
+Disallow: /student/
+Disallow: /instructor/
+Disallow: /admin/
+Disallow: /checkout
+
+Sitemap: https://lms-mahesh.duckdns.org/sitemap.xml

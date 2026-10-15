@@ -4,6 +4,7 @@ import { useGet } from "@/hooks/useGet";
 import Icons from "@/utils/Icons";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import Seo from "@/components/Seo";
 
 const InstructorDashboard = () => {
   const { data } = useGet("dashboard/instructor");
@@ -60,6 +61,10 @@ const InstructorDashboard = () => {
 
   return (
     <div className="w-full flex flex-col gap-6 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+      <Seo
+  title="Instructor Dashboard"
+  noindex
+/>
       {/* Header section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-4">
         <div>

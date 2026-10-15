@@ -5,6 +5,7 @@ import Hero from "../components/student/Hero";
 import Courses from "@/components/student/Courses";
 import Icons from "@/utils/Icons";
 import { courseCategories } from "@/resources/Data";
+import Seo from "@/components/Seo";
 
 // ── Category icons mapping ──────────────────────────────────
 const categoryIcons = {
@@ -66,6 +67,10 @@ const Home = () => {
 
   return (
     <div className="min-h-screen">
+      <Seo
+  title="Learn New Skills Online"
+  description="Discover practical online courses and build skills for your career."
+/>
       <Hero />
 
       {/* ── Featured Courses Section ── */}

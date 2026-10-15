@@ -20,4 +20,8 @@ const invalidateCourseCatalogCache = async () => {
   console.log(`Invalidated ${keys.length} course catalog cache keys`);
 };
 
-export { invalidateCourseCatalogCache };
+const invalidateSitemapCache = async () => {
+  await redisClient.del("sitemap:xml");
+};
+
+export { invalidateCourseCatalogCache, invalidateSitemapCache };

@@ -39,7 +39,7 @@ const RichTextEditor = ({
   });
 
 useEffect(() => {
-  if (!editor) return;
+  if (!editor) return null;
 
   editor.commands.setContent(value);
 }, [editor, value]);

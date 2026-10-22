@@ -1,4 +1,3 @@
-
 import { useLocation } from "react-router-dom";
 
 const SITE_NAME = "E-Learning";
@@ -12,6 +11,7 @@ const Seo = ({
   image,
   noindex = false,
   canonical,
+  structuredData,
 }) => {
   const location = useLocation();
 
@@ -52,6 +52,12 @@ const Seo = ({
 
       {image && (
         <meta name="twitter:image" content={image} />
+      )}
+
+      {structuredData && !noindex && (
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
       )}
     </>
   );

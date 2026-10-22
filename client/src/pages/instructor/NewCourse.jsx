@@ -1,6 +1,10 @@
 import InputField from "@/components/common/InputField";
-import RichTextEditor from "@/components/common/RichTextEditor";
-import React, { useEffect, useState } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
+
+const RichTextEditor = lazy(
+  () => import("@/components/common/RichTextEditor")
+);
+// import RichTextEditor from "@/components/common/RichTextEditor";
 import {
   Select,
   SelectContent,
@@ -296,12 +300,18 @@ const NewCourse = () => {
           />
 
           <div className="space-y-1.5">
+            <Suspense
+  fallback={
+    <div className="min-h-40 animate-pulse rounded-lg bg-gray-100" />
+  }
+>
             <RichTextEditor
               value={description}
               onChange={setDescription}
               label="Full Description"
               placeholder="Provide a detailed description of what students will learn..."
             />
+            </Suspense>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">

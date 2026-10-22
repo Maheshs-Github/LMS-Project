@@ -3,10 +3,13 @@ import RecentPublishedCourses from "@/components/admin/RecentPublishedCourses";
 import RecentUsers from "@/components/admin/RecentUsers";
 import TopInstructors from "@/components/admin/TopInstructors";
 import TopSellingCourses from "@/components/admin/TopSellingCourses";
-import LineChart from "@/components/common/Charts";
+import React, { lazy, Suspense, useMemo } from "react";
+
+const LineChart = lazy(
+  () => import("@/components/common/Charts")
+);
 import { useGet } from "@/hooks/useGet";
 import { MONTHS } from "@/resources/Data";
-import React, { useMemo } from "react";
 import Icons from "@/utils/Icons";
 import Seo from "@/components/Seo";
 
@@ -157,16 +160,20 @@ const AdminDashboard = () => {
 
       {/* Analytics Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full min-w-0 overflow-hidden">
+        <Suspense fallback={<div className="h-64 animate-pulse rounded-lg bg-gray-100" />}>
         <LineChart
           title="Enrollments Overview"
           categories={analytics?.categories}
           series={analytics?.enrollmentSeries}
         />
+        </Suspense>
+        <Suspense fallback={<div className="h-64 animate-pulse rounded-lg bg-gray-100" />}>
         <LineChart
           title="Revenue Overview"
           categories={analytics?.categories}
           series={analytics?.revenueSeries}
         />
+        </Suspense>
       </div>
     </div>
   );

@@ -15,7 +15,7 @@ import Seo from "@/components/Seo";
 const CourseDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  console.log("id: "+id)
+  console.log("id: " + id);
   const { data } = useGet(id ? `course/${id}` : null);
   const user = useSelector((state) => state.auth.user);
   const { mutate, loading: buyingLoading } = useMutation();
@@ -24,7 +24,7 @@ const CourseDetails = () => {
     _id: "",
     title: "",
     subTitle: "",
-    slug:"",
+    slug: "",
     category: "",
     createdAt: "",
     description: "",
@@ -220,11 +220,24 @@ const CourseDetails = () => {
   return (
     <div className="space-y-8 pb-12">
       <Seo
-  title={courseData.title}
-  description={courseData.subTitle || courseData.description}
-  image={courseData.thumbnail}
-  canonical={`${window.location.origin}/course/${courseData.slug}`}
-/>
+        title={courseData.title}
+        description={courseData.subTitle || courseData.description}
+        image={courseData.thumbnail}
+        canonical={`${window.location.origin}/course/${courseData.slug}`}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "Course",
+          name: courseData.title,
+          description: courseData.subTitle || courseData.description,
+          url: `${window.location.origin}/course/${courseData.slug}`,
+          image: courseData.thumbnail,
+          provider: {
+            "@type": "Organization",
+            name: "E-Learning",
+            url: window.location.origin,
+          },
+        }}
+      />
       {/* Course Hero Header Banner */}
       <div className="relative overflow-hidden bg-slate-950 text-slate-50 border-b border-slate-800 py-10 md:py-14">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-950/40 via-indigo-950/30 to-purple-950/20" />

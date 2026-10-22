@@ -24,6 +24,7 @@ import {
 } from "../ui/select";
 import { courseCategories } from "@/resources/Data";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import Seo from "../Seo";
 
 const Courses = ({ isShow = true }) => {
   const location = useLocation();
@@ -216,6 +217,25 @@ const Courses = ({ isShow = true }) => {
           </div>
         </div>
       )}
+
+      <Seo
+  title="Explore Courses"
+  description="Explore online courses and develop practical skills with our learning platform."
+  canonical={`${window.location.origin}/courses`}
+  structuredData={{
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Available Courses",
+    itemListElement: courses
+      .filter((course) => course.slug && course.name)
+      .map((course, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        url: `${window.location.origin}/course/${course.slug}`,
+        name: course.name,
+      })),
+  }}
+/>
 
       {/* Course Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">

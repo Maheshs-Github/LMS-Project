@@ -25,6 +25,12 @@ const allowedOrigins = [
   "https://lms-mahesh.duckdns.org",
 ];
 
+app.get('/', (req, res) => {
+  res.send(`Your IP address is: ${req.ip}`);
+  console.log(`Your IP address is: ${req.ip}`)
+});
+
+
 app.use(
   cors({
     origin: (origin, callback) => {

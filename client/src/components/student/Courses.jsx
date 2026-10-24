@@ -67,7 +67,7 @@ const Courses = ({ isShow = true }) => {
       name: data?.title,
       price: data?.price,
       level: data?.level,
-      slug:data?.slug,
+      slug: data?.slug,
       averageRating: data?.averageRating,
       reviewCount: data?.reviewCount,
       instructorName: data?.instructor?.name,
@@ -84,7 +84,7 @@ const Courses = ({ isShow = true }) => {
       ?.toUpperCase();
   };
   const handleEnroll = (id) => {
-    console.log("id: "+id)
+    console.log("id: " + id);
     navigate(user ? `/student/course/${id}` : `/course/${id}`);
   };
 
@@ -219,23 +219,23 @@ const Courses = ({ isShow = true }) => {
       )}
 
       <Seo
-  title="Explore Courses"
-  description="Explore online courses and develop practical skills with our learning platform."
-  canonical={`${window.location.origin}/courses`}
-  structuredData={{
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    name: "Available Courses",
-    itemListElement: courses
-      .filter((course) => course.slug && course.name)
-      .map((course, index) => ({
-        "@type": "ListItem",
-        position: index + 1,
-        url: `${window.location.origin}/course/${course.slug}`,
-        name: course.name,
-      })),
-  }}
-/>
+        title="Explore Courses"
+        description="Explore online courses and develop practical skills with our learning platform."
+        canonical={`${window.location.origin}/courses`}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: "Available Courses",
+          itemListElement: courses
+            .filter((course) => course.slug && course.name)
+            .map((course, index) => ({
+              "@type": "ListItem",
+              position: index + 1,
+              url: `${window.location.origin}/course/${course.slug}`,
+              name: course.name,
+            })),
+        }}
+      />
 
       {/* Course Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -252,13 +252,26 @@ const Courses = ({ isShow = true }) => {
                   {/* Thumbnail overlay */}
                   <div className="absolute inset-0 z-30 aspect-video bg-black/20" />
                   <img
-                    src={course?.img ? course.img : undefined}
+                    src={
+                      course?.img
+                        ? course.img.replace(
+                            "/image/upload/",
+                            "/image/upload/f_auto,q_auto,w_400,c_limit/",
+                          )
+                        : undefined
+                    }
                     alt={course?.name || "Course thumbnail"}
                     className="relative z-20 aspect-video w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                    width="400"
+                    height="225"
                   />
                   <CardHeader className={"flex flex-col gap-2 pt-3"}>
                     <CardTitle
-                      className={"text-base font-semibold leading-snug line-clamp-2"}
+                      className={
+                        "text-base font-semibold leading-snug line-clamp-2"
+                      }
                     >
                       {course?.name}
                     </CardTitle>

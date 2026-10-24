@@ -6,12 +6,12 @@ import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import { persistor, store } from "./store/index";
 import { PersistGate } from "redux-persist/integration/react";
-import SocketListener from "./socket/SocketListener";
+// import SocketListener from "./socket/SocketListener";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <Provider store={store}>
-      <SocketListener />
+      {/* <SocketListener /> */}
       <PersistGate loading={null} persistor={persistor}>
         <App />
       </PersistGate>

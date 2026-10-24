@@ -395,7 +395,9 @@ const CourseDetails = () => {
                 {previewLecture?.videoUrl ? (
                   <video
                     src={previewLecture.videoUrl}
-                    controls
+                      controls
+  preload="none"
+  playsInline
                     className="w-full h-full object-cover"
                   />
                 ) : courseData.thumbnail ? (

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { Suspense, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -6,6 +6,7 @@ import { logout, setUser } from "./redux/AuthSlice";
 import { useGet } from "./hooks/useGet";
 import AppRoutes from "./Routes/AppRoutes";
 import { persistor } from "./store";
+import SocketListener from "./socket/SocketListener";
 
 const App = () => {
   const user = useSelector((state) => state.auth.user);
@@ -34,6 +35,11 @@ const App = () => {
         }}
         // reverseOrder={false}
       />
+       {user && (
+      <Suspense fallback={null}>
+        <SocketListener />
+      </Suspense>
+    )}
 
       <AppRoutes />
     </div>

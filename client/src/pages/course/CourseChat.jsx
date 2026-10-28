@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
 import BASE_URL from "@/utils/BASE_URL";
 import socket from "@/socket/socket";
 import { setMessages, addMessage, clearMessages } from "@/redux/chatSlice";
 import { Button } from "@/components/ui/button";
 import Icons from "@/utils/Icons";
+import { useGet } from "@/hooks/useGet";
 
 const CourseChat = () => {
   const { courseId } = useParams();
@@ -28,6 +28,11 @@ const CourseChat = () => {
   const [error, setError] = useState("");
 
   const bottomRef = useRef(null);
+  const {data}=useGet(`message/${courseId}`)
+
+// useEffect(() => {
+//   console.log("data:", data?.data);
+// }, [data]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -92,12 +97,10 @@ const CourseChat = () => {
   useEffect(() => {
     const fetchChatHistory = async () => {
       if (!courseId) return;
+      if (!data) return;
       try {
         setLoading(true);
-        const res = await axios.get(`${BASE_URL}message/${courseId}`, {
-          withCredentials: true,
-        });
-        dispatch(setMessages(res.data?.data || []));
+        dispatch(setMessages(data?.data || []));
         setChatReady(true);
       } catch (err) {
         setError(err.response?.data?.message || "Failed to load chat history.");
@@ -111,7 +114,7 @@ const CourseChat = () => {
     return () => {
       dispatch(clearMessages());
     };
-  }, [courseId, dispatch]);
+  }, [courseId,data, dispatch]);
 
   useEffect(() => {
     const handleNewMessage = (message) => {

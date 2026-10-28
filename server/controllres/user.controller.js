@@ -13,7 +13,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 const issueTokens = async (user, res, familyId) => {
-  const accessToken = user.generateToken();
+  const accessToken = await user.generateToken();
   const refresh = await createRefreshToken(user._id, familyId);
 
   res.cookie("accessToken", accessToken, {
@@ -128,7 +128,7 @@ const refreshSession = asyncHandler(async (req, res) => {
         replacedBy: next.record._id,
       },
     },
-    { new: true }
+    { returnDocument: "after" }
   );
 
   if (!rotated) {
@@ -142,7 +142,7 @@ const refreshSession = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Refresh token reuse detected");
   }
 
-  res.cookie("accessToken", user.generateToken(), {
+  res.cookie("accessToken",await user.generateToken(), {
     ...accessCookieOptions(),
     maxAge: 15 * 60 * 1000,
   });

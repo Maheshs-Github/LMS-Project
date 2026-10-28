@@ -12,29 +12,46 @@ let io;
 export const initializeSocket = (socketServer) => {
   io = socketServer;
 
-  io.use(async (socket, next) => {
-    try {
-      const cookie = socket?.handshake?.headers?.cookie;
-      const accessToken = cookie
-        ?.split(";")
-        ?.find((item) => item?.trim()?.startsWith("accessToken="))
-        ?.split("=")[1];
-      if (!accessToken) throw new ApiError(401, "Unauthrized User");
 
-      const decodedToken = jwt.verify(accessToken, process.env.TOKEN_KEY);
+io.use(async (socket, next) => {
+  try {
+    const cookie = socket.handshake.headers.cookie;
 
+    const accessToken = cookie
+      ?.split(";")
+      .find((item) => item.trim().startsWith("accessToken="))
+      ?.split("=")
+      .slice(1)
+      .join("=");
 
-      const user = await User.findById(decodedToken?._id).select(
-        "-password -createdAt -updatedAt -__v",
-      );
-      socket.user = user;
-      console.log("✅ Socket authenticated:", user._id);
-      next();
-    } catch (error) {
-      console.log("❌ Socket authentication error:", error);
-      next(error);
+    if (!accessToken) {
+      return next(new Error("Unauthorized User"));
     }
-  });
+
+    const decodedToken = jwt.verify(
+      accessToken,
+      process.env.TOKEN_KEY
+    );
+
+    const user = await User.findById(decodedToken._id).select(
+      "-password -createdAt -updatedAt -__v"
+    );
+
+    if (!user || user.isBlocked) {
+      return next(new Error("Unauthorized User"));
+    }
+
+    socket.user = user;
+
+    console.log("✅ Socket authenticated:", user._id);
+
+    return next();
+  } catch (error) {
+    console.log("❌ Socket authentication error:", error.message);
+    return next(new Error("Unauthorized User"));
+  }
+});
+
 
   io.on("connection", (socket) => {
     console.log("🟢 Socket connected:", socket.id);

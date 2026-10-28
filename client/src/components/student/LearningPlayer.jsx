@@ -258,10 +258,9 @@ const LearningPlayer = () => {
 
   const handleCertificateDownload = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}certificate/${courseId}`, {
-        responseType: "blob",
-        withCredentials: true,
-      });
+const response = await apiClient(`certificate/${courseId}`, {
+  responseType: "blob",
+});
 
       const url = window.URL.createObjectURL(
         new Blob([response.data], { type: "application/pdf" })

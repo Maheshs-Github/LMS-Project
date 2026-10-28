@@ -5,7 +5,7 @@ import BASE_URL from "./BASE_URL";
 
 let refreshPromise = null;
 
-const refreshSession = async () => {
+export const refreshSession = async () => {
   if (!refreshPromise) {
     console.log("In refresh fun");
     refreshPromise = fetch(`${BASE_URL}user/refresh`, {
@@ -28,26 +28,30 @@ const refreshSession = async () => {
 };
 
 export const apiClient = async (url, options = {}, hasRetried = false) => {
-  const res = await fetch(`${BASE_URL}${url}`, {
-    ...options,
-    credentials: "include",
-    headers: {
-      ...(options.body instanceof FormData
-        ? {}
-        : {
-            "Content-Type": "application/json",
-          }),
-      ...options.headers,
-    },
-  });
+const { responseType, ...fetchOptions } = options;
 
-  let data;
+const res = await fetch(`${BASE_URL}${url}`, {
+  ...fetchOptions,
+  credentials: "include",
+  headers: {
+    ...(fetchOptions.body instanceof FormData
+      ? {}
+      : { "Content-Type": "application/json" }),
+    ...fetchOptions.headers,
+  },
+});
 
+ let data;
+
+if (options.responseType === "blob") {
+  data = await res.blob();
+} else {
   try {
     data = await res.json();
   } catch {
     data = null;
   }
+}
 
   console.log("API response:", url, res.status, "Retried:", hasRetried);
   if (res.status === 401 && !hasRetried) {

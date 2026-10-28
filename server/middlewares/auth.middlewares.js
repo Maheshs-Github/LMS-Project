@@ -3,35 +3,49 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 
+
 const verifiedUser = asyncHandler(async (req, res, next) => {
   try {
-
-    const Token =
+    const token =
       req.cookies?.accessToken ||
-      req.header("Authorization")?.replace("Bearer", "");
-    if (!Token) throw new ApiError(401, "Unauthrized User");
+      req.header("Authorization")?.split(" ")[1];
 
-    const decodedToken = await jwt.verify(Token, process.env.TOKEN_KEY);
+    if (!token) {
+      throw new ApiError(401, "Unauthorized User");
+    }
 
+    const decodedToken = jwt.verify(token, process.env.TOKEN_KEY);
 
     const user = await User.findById(decodedToken?._id).select(
-      "-password -createdAt -updatedAt -__v",
+      "-password -createdAt -updatedAt -__v"
     );
 
+    if (!user) {
+      throw new ApiError(401, "Invalid Access Token");
+    }
+
     if (user.isBlocked) {
-  throw new ApiError(403, "Account is blocked");
-}
-
-
-    if (!user) throw new ApiError(401, "Invalid Access Token");
+      throw new ApiError(403, "Account is blocked");
+    }
 
     req.user = user;
     next();
   } catch (error) {
-    console.log("There is been some Error: ", error);
-    throw new ApiError(401, error?.message || "Invalid Access");
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    if (
+      error.name === "JsonWebTokenError" ||
+      error.name === "TokenExpiredError"
+    ) {
+      throw new ApiError(401, "Invalid or expired access token");
+    }
+
+    throw error;
   }
 });
+
 
 const isAdmin = asyncHandler(async (req, res,next) => {
   const token =

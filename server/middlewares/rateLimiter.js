@@ -2,6 +2,17 @@ import { rateLimit } from "express-rate-limit";
 import { RedisStore } from "rate-limit-redis";
 import redisClient from "../config/redis.js";
 
+
+const productionOnly = (limiter) => (req, res, next) => {
+  if (process.env.NODE_ENV !== "production") {
+    return next();
+  }
+
+  return limiter(req, res, next);
+};
+
+
+
 const loginRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 5,
@@ -50,4 +61,13 @@ const refreshRateLimiter = rateLimit({
   },
 });
 
-export { loginRateLimiter, registerRateLimiter,refreshRateLimiter };
+// export { loginRateLimiter, registerRateLimiter,refreshRateLimiter };
+
+export const productionLoginRateLimiter =
+  productionOnly(loginRateLimiter);
+
+export const productionRegisterRateLimiter =
+  productionOnly(registerRateLimiter);
+
+export const productionRefreshRateLimiter =
+  productionOnly(refreshRateLimiter);

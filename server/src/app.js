@@ -17,6 +17,7 @@ import { ApiError } from "../utils/ApiError.js";
 import logger from "../utils/logger.js";
 import requestLogger from "../middlewares/requestLogger.middleware.js";
 import { getSitemap } from "../controllres/sitemap.controller.js";
+import helmet from "helmet";
 
 
 const app=express();
@@ -59,6 +60,7 @@ app.use(
 app.use(requestLogger);
 
 app.use(cookieParser())
+app.use(helmet());
 
 // Razorpay webhook MUST come before express.json()
 app.use(

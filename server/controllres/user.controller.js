@@ -1,120 +1,184 @@
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import { User } from "../models/user.model.js";
+import { RefreshToken } from "../models/refreshToken.model.js";
+import {
+  createRefreshToken,
+  hashRefreshToken,
+  accessCookieOptions,
+  refreshCookieOptions,
+} from "../services/refreshToken.service.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
-import { User } from "../models/user.model.js";
-import jwt from "jsonwebtoken";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
-import { Course } from "../models/course.model.js";
 
-const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password,role } = req.body;
+const issueTokens = async (user, res, familyId) => {
+  const accessToken = user.generateToken();
+  const refresh = await createRefreshToken(user._id, familyId);
 
-  const createdUser = await User.create({
-    name: name,
-    email: email,
-    password: password,
-    role
+  res.cookie("accessToken", accessToken, {
+    ...accessCookieOptions(),
+    maxAge: 15 * 60 * 1000,
   });
 
-  const FinalUser=createdUser.toObject();
-  delete FinalUser.password;
+  res.cookie("refreshToken", refresh.token, refreshCookieOptions());
+};
 
-  const Token = await createdUser.generateToken();
+const safeUser = (user) => ({
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  photoUrl: user.photoUrl,
+  createdAt: user.createdAt,
+  updatedAt: user.updatedAt,
+});
 
-  if (!Token) throw new ApiError(400, "Error While genartaing the Token");
+const registerUser = asyncHandler(async (req, res) => {
+  const { name, email, password } = req.body;
 
+  const existing = await User.findOne({ email: email.toLowerCase() });
+  if (existing) throw new ApiError(409, "Unable to register with this email");
 
-  const options = {
-    httpOnly: true,
-    // secure: true,
-     secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production"
-    ? "none"
-    : "lax",
-  };
+  const user = await User.create({
+    name,
+    email: email.toLowerCase(),
+    password,
+    role: "student",
+  });
 
-  return res
-    .cookie("accessToken", Token, options)
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        { User: FinalUser,
-          //  Token: Token 
-          },
-        "User has been Created Successfully",
-      ),
-    );
+  await issueTokens(user, res);
+
+  return res.status(201).json(
+    new ApiResponse(201, { User: safeUser(user) }, "Registration successful")
+  );
 });
 
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  const loggedInUser = await User.findOne({ email });
-  // find gives the array , but findOne gives the model
+  const user = await User.findOne({ email: email.toLowerCase() });
 
-  if (!loggedInUser) throw new ApiError(404, "No User Found");
+  if (!user || !(await user.isPasswordCorrect(password))) {
+    throw new ApiError(401, "Invalid email or password");
+  }
 
+  if (user.isBlocked) {
+    throw new ApiError(403, "Account is blocked");
+  }
 
-  const isPasswordMatched = await loggedInUser.isPasswordCorrect(password);
+  await issueTokens(user, res);
 
-  if (!isPasswordMatched) throw new ApiError(401, "Password is not Matched");
+  return res.status(200).json(
+    new ApiResponse(200, { User: safeUser(user) }, "Login successful")
+  );
+});
 
-  const Token = await loggedInUser.generateToken();
+const refreshSession = asyncHandler(async (req, res) => {
+  const rawToken = req.cookies?.refreshToken;
 
+  if (!rawToken) {
+    throw new ApiError(401, "Refresh token required");
+  }
 
-  const options = {
-    httpOnly: true,
-    // secure: true,
-     secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production"
-    ? "none"
-    : "lax",
-  };
+  const tokenHash = hashRefreshToken(rawToken);
+  const current = await RefreshToken.findOne({ tokenHash });
 
-  const FinalLoggedUser = {
-    _id: loggedInUser?._id,
-    name: loggedInUser?.name,
-    email: loggedInUser?.email,
-    role: loggedInUser?.role,
-    createdAt: loggedInUser?.createdAt,
-    updatedAt: loggedInUser?.updatedAt,
-  };
+  if (!current) {
+    throw new ApiError(401, "Invalid refresh token");
+  }
 
-
-  return res
-    .cookie("accessToken", Token, options)
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        { "User": FinalLoggedUser
-          // , Tokwn: Token 
-        },
-        "User has logged in sucessfully",
-      ),
+  // Reuse of a rotated token revokes the affected session family.
+  if (current.revokedAt) {
+    await RefreshToken.updateMany(
+      { familyId: current.familyId, revokedAt: null },
+      { $set: { revokedAt: new Date() } }
     );
+
+    throw new ApiError(401, "Session revoked. Please log in again.");
+  }
+
+  if (current.expiresAt <= new Date()) {
+    throw new ApiError(401, "Refresh token expired");
+  }
+
+  const user = await User.findById(current.user);
+
+  if (!user || user.isBlocked) {
+    await RefreshToken.updateMany(
+      { familyId: current.familyId, revokedAt: null },
+      { $set: { revokedAt: new Date() } }
+    );
+
+    throw new ApiError(401, "Session is no longer valid");
+  }
+
+  const next = await createRefreshToken(user._id, current.familyId);
+
+  // Only one request can successfully rotate this token.
+  const rotated = await RefreshToken.findOneAndUpdate(
+    {
+      _id: current._id,
+      revokedAt: null,
+      expiresAt: { $gt: new Date() },
+    },
+    {
+      $set: {
+        revokedAt: new Date(),
+        replacedBy: next.record._id,
+      },
+    },
+    { new: true }
+  );
+
+  if (!rotated) {
+    await RefreshToken.deleteOne({ _id: next.record._id });
+
+    await RefreshToken.updateMany(
+      { familyId: current.familyId, revokedAt: null },
+      { $set: { revokedAt: new Date() } }
+    );
+
+    throw new ApiError(401, "Refresh token reuse detected");
+  }
+
+  res.cookie("accessToken", user.generateToken(), {
+    ...accessCookieOptions(),
+    maxAge: 15 * 60 * 1000,
+  });
+
+  res.cookie("refreshToken", next.token, refreshCookieOptions());
+
+  return res.status(200).json(
+    new ApiResponse(200, { User: safeUser(user) }, "Session refreshed")
+  );
 });
 
 const loggedOut = asyncHandler(async (req, res) => {
+  const rawToken = req.cookies?.refreshToken;
 
-  const Token =
-    req?.cookies?.accessToken ||
-    req?.header("Authorization").replace("Bearer", "");
+  if (rawToken) {
+    const current = await RefreshToken.findOne({
+      tokenHash: hashRefreshToken(rawToken),
+    });
 
-  const options = {
-    httpOnly: true,
-    // secure: true,
-     secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production"
-    ? "none"
-    : "lax",
-  };
+    if (current) {
+      await RefreshToken.updateMany(
+        { familyId: current.familyId, revokedAt: null },
+        { $set: { revokedAt: new Date() } }
+      );
+    }
+  }
 
-  return res
-    .clearCookie("accessToken", options)
-    .status(200)
-    .json(new ApiResponse(200, {}, "Logged Out Successfully"));
+  res.clearCookie("accessToken", accessCookieOptions());
+  res.clearCookie("refreshToken", {
+    ...refreshCookieOptions(),
+    maxAge: undefined,
+  });
+
+  return res.status(200).json(
+    new ApiResponse(200, {}, "Logged out successfully")
+  );
 });
 
 const updateUser = asyncHandler(async (req, res) => {
@@ -172,4 +236,12 @@ const enrolledCourses = asyncHandler(async (req, res) => {
     );
 });
 
-export { registerUser, loginUser, loggedOut, updateUser, enrolledCourses };
+
+export {
+  registerUser,
+  loginUser,
+  loggedOut,
+  refreshSession,
+  updateUser,
+  enrolledCourses
+};

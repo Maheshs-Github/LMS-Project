@@ -18,6 +18,11 @@ const verifiedUser = asyncHandler(async (req, res, next) => {
       "-password -createdAt -updatedAt -__v",
     );
 
+    if (user.isBlocked) {
+  throw new ApiError(403, "Account is blocked");
+}
+
+
     if (!user) throw new ApiError(401, "Invalid Access Token");
 
     req.user = user;

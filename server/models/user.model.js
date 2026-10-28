@@ -77,4 +77,15 @@ userSchema.methods.generateToken = async function () {
   );
 };
 
+userSchema.methods.generateToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+      role: this.role,
+    },
+    process.env.TOKEN_KEY,
+    { expiresIn: "15m" }
+  );
+};
+
 export const User = mongoose.model("User", userSchema);

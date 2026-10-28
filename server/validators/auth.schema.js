@@ -17,10 +17,10 @@ const registerSchema = z.object({
       .string()
       .min(8, "Password must be at least 8 characters"),
 
-          role: z.enum(
-      ["student", "instructor"],
-      "Invalid user role"
-    ),
+    //       role: z.enum(
+    //   ["student", "instructor"],
+    //   "Invalid user role"
+    // ),
   }).strict(),
 
   params: z.object({}),

@@ -36,6 +36,18 @@ const registerRateLimiter = rateLimit({
   },
 });
 
-export { loginRateLimiter, registerRateLimiter };
+const refreshRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  store: new RedisStore({
+    sendCommand: (...args) => redisClient.sendCommand(args),
+  }),
+  message: {
+    success: false,
+    message: "Too many refresh attempts. Please try again later.",
+  },
+});
 
-// that video , i also want to improve speaking so i will record teh video , will discuss about what to discuss about that movie 
+export { loginRateLimiter, registerRateLimiter,refreshRateLimiter };
